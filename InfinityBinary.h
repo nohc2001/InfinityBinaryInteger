@@ -103,7 +103,7 @@ class ibi{
         }
     }
 
-    void carry(ibi* num, int carryloc){
+    static void carry(ibi* num, int carryloc){
         if(num->integer_data.size() <= carryloc){
             num->integer_data.push_back(1);
         }
@@ -117,21 +117,43 @@ class ibi{
         }
     }
 
-    ibi operator+(ibi& A){
-        ibi r = *this;
-        if(r.isPositive == A.isPositive){
-            int maxsiz = (A.integer_data.size() > r.integer_data.size()) ? A.integer_data.size() : r.integer_data.size();
-            int i;
-            for(i=0;i<maxsiz;++i){
-                unsigned int Ax = A.integer_data[i];
-                unsigned int Tx = r.integer_data[i];
-                unsigned int max = (Ax>Tx)?Ax:Tx;
-                Tx += Ax;
-                if(Tx < max){
-                    carry(&r, i+1);
-                }
-                r.integer_data[i] = Tx;
+    static ibi add_absolute(ibi A, ibi B){
+        ibi r = B;
+        int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
+        int i;
+        for(i=0;i<maxsiz;++i){
+            unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
+            unsigned int Tx = (r.integer_data.up > i) / r.integer_data[i] : 0;
+            unsigned int max = (Ax>Tx)?Ax:Tx;
+            Tx += Ax;
+            if(Tx < max){
+                carry(&r, i+1);
             }
+            r.integer_data[i] = Tx;
+        }
+        return r;
+    }
+
+    static ibi sub_absolute(ibi A, ibi B){
+        ibi r = B;
+        int minsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
+        int i;
+        for(i=0;i<maxsiz;++i){
+            unsigned int Ax = A.integer_data[i];
+            unsigned int Tx = r.integer_data[i];
+            unsigned int max = (Ax>Tx)?Ax:Tx;
+            Tx += Ax;
+            if(Tx < max){
+                carry(&r, i+1);
+            }
+            r.integer_data[i] = Tx;
+        }
+        return r;
+    }
+
+    ibi operator+(ibi& A){
+        if(isPositive == A.isPositive){
+            return ibi::add_absolute(*this, A);
         }
         else{
 
