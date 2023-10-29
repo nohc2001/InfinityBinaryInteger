@@ -256,6 +256,25 @@ class ibi{
     }
 
     ibi operator*(ibi& A){
-        
+        ibi r;
+        r.Init(false);
+        r.integer_data.push_back(0);
+        ibi* thismulibi = new ibi[A.integer_data.up];
+        for(int i=0;i<integer_data.up;++i){
+            thismulibi[i].Init(true);
+            thismulibi[i].integer_data.push_back(0);
+            unsigned int uii = integer_data[i];
+            ibi* mulibi = new ibi[A.integer_data.up];
+            for(int k=0;k<A.integer_data.up;++k){
+                ibi[k].Init(true);
+                ibi[k] = mul_32(uii, A.integer_data[k]);
+                thismulibi = thismulibi + ibi[k];
+            }
+            delete[] mulibi;
+            r = r + thismulibi[i];
+        }
+        delete[] thismulibi;
+        return r;
     }
 };
+
