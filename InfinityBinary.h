@@ -795,7 +795,7 @@ class ibr{
         return r;
     }
 
-    ibr exp_approximate(ibr& A, unsigned int operation_times){
+    ibr exp_approximate(ibr& A, ibi& operation_times){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(1);
@@ -806,7 +806,7 @@ class ibr{
         one.Init(false);
         one.integer_data.push_back(1);
 
-        for(int i=0;i<operation_times;++i){
+        for(;one<operation_times;one = one + 1){
             fm->_tempPushLayer();
             ibr rn0;
             rn0.Init(false);
@@ -825,6 +825,30 @@ class ibr{
         r.denominator.pow(A.numerator);
         r.numerator.pow(A.numerator);
 
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr gamma_approximate(ibr& A, ibi& operation_times){
+        ibr r;
+        r.Init(false);
+        fm->_tempPushLayer();
+        ibr one;
+        one.Init(false);
+        one.numerator.integer_data.push_back(1);
+        one.denominator.integer_data.push_back(1);
+
+        ibr n;
+        n.Init(false);
+        n.numerator.integer_data.push_back(1);
+        n.denominator.integer_data.push_back(1);
+
+        r = one / A;
+        for(;n.numerator < operation_times;n = n + one){
+            fm->_tempPushLayer();
+            r = r * (one + (one / n)).exp_approximate(A, operation_times) / (one + A / n);
+            fm->_tempPopLayer();
+        }
         fm->_tempPopLayer();
         return r;
     }
