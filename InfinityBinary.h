@@ -538,6 +538,67 @@ class ibi{
 
         fm->_tempPopLayer();
     }
+
+    ibi abs(){
+        ibi r;
+        r.Init(false);
+        r = *this;
+        r.isPositive = true;
+    }
+
+    ibi pow(ibi& A){
+        ibi r;
+        r.Init(false);
+        r.integer_data.push_back(1);
+        
+        fm->_tempPushLayer();
+
+        unsigned int addsiz = 32 * (A.integer_data.up-1);
+        unsigned int v = A.integer_data.last();
+        for(int i=0;i<32;++i){
+            v = v >> 1;
+            if(v == 0){
+                break;
+            }
+            else{
+                --addsiz;
+            }
+        }
+
+        ibi muln;
+        muln.Init(false);
+        muln = *this;
+        unsigned int loc = 0;
+        for(loc=0;loc<addsiz;++loc){
+            if(A.integer_data[loc/32] & (1 << (loc % 32))){
+                r = r * muln;
+            }
+            muln = muln * muln;
+        }
+
+        fm->_tempPopLayer();
+
+        return r;
+    }
+
+    ibi sqrt_approximate(ibi& A, unsigned int operation_times){
+        ibi r;
+        r.Init(false);
+        r.integer_data.push_back(1);
+        
+        fm->_tempPushLayer();
+
+        ibi one;
+        one.Init(false);
+        one.integer_data.push_back(1);
+
+        for(int i=0;i<operation_times;++i){
+            r = ((A - one) * r) + (*this / r.pow(A-one)) / A;
+        }
+
+        fm->_tempPopLayer();
+        return r;
+    }
 };
 
 class ibr{
@@ -608,4 +669,142 @@ class ibr{
         fm->_tempPopLayer();
     }
 
+    bool operator>(ibr& A){
+        if(this->isPositive != A.isPositive){
+            return isPositive;
+        }
+        else{
+            return !XOR(A.denominator * this->numerator > A.numerator * this->denominator, isPositive);
+        }
+    }
+    
+    bool operator<(ibr& A){
+        if(this->isPositive != A.isPositive){
+            return !isPositive;
+        }
+        else{
+            return !XOR(A.denominator * this->numerator < A.numerator * this->denominator, isPositive);
+        }
+    }
+
+    bool operator==(ibr& A){
+        return (A.denominator * this->numerator == A.numerator * this->denominator) && isPositive == A.isPositive;
+    }
+
+    bool operator!=(ibr& A){
+        return !(*this == A);
+    }
+
+    bool operator>=(ibr& A){
+        return (*this > A) || (*this == A);
+    }
+
+    bool operator<=(ibr& A){
+        return (*this < A) || (*this == A);
+    }
+
+    ibr operator+(ibr& A){
+        ibr r;
+        r.Init(false);
+        fm->_tempPushLayer();
+
+        r.denominator = this->denominator * A.denominator;
+        if(this->isPositive == A.isPositive){
+            r.numerator = (this->denominator * A.numerator) + (this->numerator * A.denominator);
+        }
+        else{
+            if(A.denominator * this->numerator > A.numerator * this->denominator){
+                r.numerator = (this->numerator * A.denominator) - (this->denominator * A.numerator);
+            }
+            else{
+                r.numerator = (this->denominator * A.numerator) - (this->numerator * A.denominator);
+                isPositive = !isPositive;
+            }
+        }
+        r.clean();
+
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr operator-(ibr& A){
+        ibr r;
+        r.Init(false);
+        fm->_tempPushLayer();
+
+        r.denominator = this->denominator * A.denominator;
+        if(this->isPositive == A.isPositive){
+            if(A.denominator * this->numerator > A.numerator * this->denominator){
+                r.numerator = (this->numerator * A.denominator) - (this->denominator * A.numerator);
+            }
+            else{
+                r.numerator = (this->denominator * A.numerator) - (this->numerator * A.denominator);
+                isPositive = !isPositive;
+            }
+        }
+        else{
+            r.numerator = (this->numerator * A.denominator) + (this->denominator * A.numerator);
+        }
+        r.clean();
+
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr operator*(ibr& A){
+        ibr r;
+        r.Init(false);
+        fm->_tempPushLayer();
+        r.numerator = this->numerator * A.numerator;
+        r.denominator = this->denominator * A.denominator;
+        r.clean();
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr operator/(ibr& A){
+        ibr r;
+        r.Init(false);
+        fm->_tempPushLayer();
+        r.numerator = this->numerator * A.denominator;
+        r.denominator = this->denominator * A.numerator;
+        r.clean();
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr exp_approximate(ibr& A, unsigned int operation_times){
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(1);
+        r.denominator.integer_data.push_back(1);
+        fm->_tempPushLayer();
+
+        ibi one;
+        one.Init(false);
+        one.integer_data.push_back(1);
+
+        for(int i=0;i<operation_times;++i){
+            fm->_tempPushLayer();
+            ibr rn0;
+            rn0.Init(false);
+            rn0.denominator = r.denominator;
+            rn0.numerator = r.numerator * (A.denominator - one);
+            ibr rn1;
+            rn1.Init(false);
+            rn1.denominator = r.denominator.pow(A.denominator - one);
+            rn1.numerator = *this * r.numerator.pow(A.denominator - one);
+            r = rn0 + rn1;
+            r.denominator = r.denominator * A.denominator;
+            r.clean();
+            fm->_tempPopLayer();
+        }
+
+        r.denominator.pow(A.numerator);
+        r.numerator.pow(A.numerator);
+
+        fm->_tempPopLayer();
+
+        return 0;
+    }
 };

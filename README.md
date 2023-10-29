@@ -7,4 +7,7 @@ ibc is complex number class
 they are developed for making correct math reserch program.
 
 ibi integer provide follow operations
-: =, >, <, >=, <=, ==, +, -, *, /, %, exp_approximate(exponetial, sqrt ...), get_new_prime, PrimeFactorization...
+: =, >, <, >=, <=, ==, +, -, *, /, %, pow, sqrt_approximate, get_new_prime, PrimeFactorization...
+
+ibr rational number provide follow operations
+: =, >, <, >=, <=, ==, +, -, *, /, exp_approximate(exponetial, sqrt ...)
