@@ -1,5 +1,5 @@
 # InfinityBinaryInteger
-InfinityBinaryInteger is Special Utility of express numbers correctly and no error like floating point.
+InfinityBinaryInteger is Special Utility of express numbers correctly and no "error like floating point".
 ibi is integer class
 ibr is rational number class
 ibc is complex number class

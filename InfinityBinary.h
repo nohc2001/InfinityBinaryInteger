@@ -599,6 +599,28 @@ class ibi{
         fm->_tempPopLayer();
         return r;
     }
+
+    ibi tetration(ibi& A){
+        ibi r;
+        r.Init(false);
+        r = *this;
+
+        fm->_tempPushLayer();
+
+        ibi k;
+        k.Init(false);
+        k = *this;
+
+        ibi one;
+        one.Init(false);
+        one.integer_data.push_back(1);
+        for(; one < k; one = one + 1){
+            r = k.pow(r);
+        }
+        
+        fm->_tempPopLayer();
+        return r;
+    }
 };
 
 class ibr{
