@@ -43,7 +43,7 @@ class ibi{
         integer_data.release();
     }
 
-    ibi& operator=(ibi& ref){
+    void operator=(ibi& ref){
         isPositive = ref.isPositive;
         size_t ref_size = ref.integer_data.size();
         if(ref_size > integer_data.size())
@@ -130,7 +130,7 @@ class ibi{
         num->integer_data[carryloc] -= 1;
     }
 
-    static ibi& add_absolute(ibi& A, ibi& B){
+    static ibi add_absolute(ibi& A, ibi& B){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -292,14 +292,179 @@ class ibi{
         fm->_tempPopLayer();
         return r;
     }
+
+    ibi div_32(ibi& A, unsigned int divn){
+        ibi r;
+        r.Init(false);
+        r.integer_data.push_back(0);
+        r.integer_data.Init(A.integer_data.up, false);
+        for(int i=0;i<r.integer_data.up;++i){
+            r.integer_data[i] = 0;
+        }
+        if(divn == 0){
+            return r;
+        }
+
+        fm->_tempPushLayer();
+
+        ibi tempA;
+        tempA.Init(false)
+        tempA = A;
+
+        ibi tempDivn;
+        tempDivn.Init(false)
+        tempDivn = divn;
+
+        constexpr double max = pow(2, 32);
+        double dv = (double)divn;
+        bool updatefirst = true;
+
+        bool zero_stack = 0;
+        for(int i=tempA.integer_data.up-1;i>=0;--i){
+            if(zero_stack == false){
+                unsigned int ad = tempA.integer_data[i] / divn;
+                if(ad == 0){
+                    zero_stack = true;
+                }
+                else{
+                    r.integer_data[i] = ad;
+                }
+            }
+            else{
+                unsigned int seekstart = (unsigned int)((double)tempA.integer_data[i+1] * max / dv);
+                bool saturate = false;
+                unsigned int lastnum = seekstart;
+                while(!saturate){
+                    fm->_tempPushLayer();
+                    ibi temp;
+                    temp.Init(false);
+                    temp.integer_data.push_back(A.integer_data[i]); temp.integer_data.push_back(tempA.integer_data[i+1])
+                    ibi dv = mul_32(divn, seekstart);
+                    if(dv > temp){
+                        saturate = true;
+                    }
+                    else{
+                        lastnum = seekstart;
+                        ++seekstart;
+                    }
+                    fm->_tempPopLayer();
+                }
+
+                ibi tempB;
+                tempB.Init(false);
+                tempB.integer_data.Init(i, false);
+                for(int k=0;k<i;++k){
+                    tempB.integer_data[k] = 0;
+                }
+                tempB.integer_data[i] = lastnum;
+                
+                if(updatefirst) r.integer_data.up = i+1;
+                r.integer_data[i] = lastnum;
+                tempA = tempA - (tempB * tempDivn);
+                zero_stack = false;
+            }
+        }
+
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibi operator/(ibi& A){
+        //this / a
+        ibi r;
+        r.Init(false);
+
+        fm->_tempPushLayer();
+
+        // tempV / A
+        ibi tempV;
+        tempV.Init(false);
+        tempV = *this;
+
+        ibi tempA;
+        tempA.Init(false);
+        tempA = A;
+
+        int shift = tempA.integer_data.up - 1;
+        int vpos = 1;
+        while (vpos < 0)
+        {
+            fm->_tempPushLayer();
+            vpos = tempV.integer_data.up - 1 - (shift + 1);
+            ibi tV;
+            tV.Init(false);
+            tV = tempV >> shift;
+
+            ibi tR;
+            unsigned int tA = tempA.integer_data.last();
+            bool saturate = true;
+            while (saturate)
+            {
+                tR.Init(false);
+                tR = div_32(tV, tA);
+                tR = tR << vpos;
+
+                if (tempV < (tempA * tR))
+                {
+                    saturate = true;
+                    tA -= 1;
+                }
+                else{
+                    saturate = false;
+                }
+            }
+
+            tempV = tempV - (tempA * tR);
+            for(int k=tempV.up-1;k>=0;--k){
+                if(tempV[k] == 0) tempA.integer_data.up -= 1;
+                else{
+                    break;
+                }
+            }
+            r = r + tR;
+
+            fm->_tempPopLayer();
+        }
+        fm->_tempPopLayer();
+        return r;
+    }
 };
 
 class ibr{
     public:
-    bool isPositive;
+    bool isPositive = true;
+    bool islocal = false;
     ibi numerator;
     ibi denominator;
 
     ibr(){}
-    ~ibr(){}
+    ibr(ibr& ref){
+        isPositive = ref.isPositive;
+        numerator = ref.numerator;
+        denominator = ref.denominator;
+    }
+    ~ibr(){
+        if(islocal){
+            numerator.integer_data.release();
+            denominator.integer_data.release();
+        }
+    }
+
+    void Init(bool local){
+        islocal = local;
+        numerator.Init(local);
+        denominator.Init(local);
+    }
+
+    void operator=(ibi& ref){
+        isPositive = ref.isPositive;
+        numerator = ref.numerator;
+        denominator = ref.denominator;
+    }
+
+    //fraction
+    //약분
+    void clean(){
+
+    }
 };
