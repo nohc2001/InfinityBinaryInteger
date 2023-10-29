@@ -1,4 +1,6 @@
 #include "arr_expend.h"
+#include "Utill_FreeMemory.h"
+using namespace freemem;
 
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 
@@ -10,7 +12,7 @@ class ibi{
     public:
     bool isPositive = true;
     bool islocal = true;
-    vecarr<unsigned int> integer_data;
+    fmvecarr<unsigned int> integer_data;
 
     ibi() : isPositive(true)
     {
@@ -128,9 +130,10 @@ class ibi{
         num->integer_data[carryloc] -= 1;
     }
 
-    static ibi add_absolute(ibi A, ibi B){
+    static ibi& add_absolute(ibi& A, ibi& B){
         ibi r;
         r.Init(false);
+        fm->_tempPushLayer();
         r = B;
         int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
         int i;
@@ -144,15 +147,17 @@ class ibi{
             }
             r.integer_data[i] = Tx;
         }
+        fm->_tempPopLayer();
         return r;
     }
 
-    static ibi sub_absolute(ibi A, ibi B){
+    static ibi sub_absolute(ibi& A, ibi& B){
         bool pos[2] = {A.isPositive, B.isPositive};
         A.isPositive = true;
         B.isPositive = true;
         ibi r;
         r.Init(false);
+        fm->_tempPushLayer();
         if(A > B){
             r = A;
             for(int i=0;i<A.integer_data.up;++i){
@@ -179,6 +184,7 @@ class ibi{
             }
             r.isPositive = pos[1];
         }
+        fm->_tempPopLayer();
         return r;
     }
 
@@ -205,24 +211,32 @@ class ibi{
     ibi operator<<(int n){
         ibi r;
         r.Init(false);
+        fm->_tempPushLayer();
         r = *this;
         for(int i=0;i<n;++i){
             r.integer_data.insert(0, 0);
         }
+        fm->_tempPopLayer();
         return r;
     }
 
     ibi operator>>(int n){
         ibi r;
         r.Init(false);
+        fm->_tempPushLayer();
         r = *this;
         for(int i=0;i<n;++i){
             r.integer_data.erase(0);
         }
+        fm->_tempPopLayer();
         return r;
     }
 
     ibi mul_32(unsigned int A, unsigned int B){
+        ibi r;
+        r.Init(false);
+        fm->_tempPushLayer();
+
         unsigned short A1 = A >> 16;
         unsigned short A0 = (A << 16) >> 16;
         unsigned short B1 = B >> 16;
@@ -248,16 +262,17 @@ class ibi{
         operand[2].integer_data[0] = R12;
         operand[2].integer_data[1] = R12;
 
-        ibi r;
-        r.Init(false);
         r = operand[0] + operand[1];
         r = r + operand[2];
+
+        fm->_tempPopLayer();
         return r;
     }
 
     ibi operator*(ibi& A){
         ibi r;
         r.Init(false);
+        fm->_tempPushLayer();
         r.integer_data.push_back(0);
         ibi* thismulibi = new ibi[A.integer_data.up];
         for(int i=0;i<integer_data.up;++i){
@@ -274,6 +289,7 @@ class ibi{
             r = r + thismulibi[i];
         }
         delete[] thismulibi;
+        fm->_tempPopLayer();
         return r;
     }
 };

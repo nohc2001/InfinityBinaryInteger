@@ -1104,20 +1104,23 @@ namespace freemem
 			large.release();
 		}
 
-		byte8 *_New(unsigned int size)
+		byte8 *_New(unsigned int size, int fmlayer = -1)
 		{
 			vecarr<FM_Model0*>* fm0 = tempFM.at(tempFM.up-1);
 			//watch("fm0up", fm0->up);
 			//watch("lsize", tempFM.up);
 			unsigned int lsize = fm0->size();
+			vecarr<FM_Model0*>* tm;
+			if(fmlayer < 0 || fmlayer >= tempFM.up) tm = tempFM.last();
+			else tm = tempFM.at(fmlayer);
 			
 			for (int i = 0; i < lsize; ++i)
 			{
 				//watch("i", i);
-				int remain = 4096 - tempFM.last()->at(i)->Fup;
+				int remain = 4096 - tm->at(i)->Fup;
 				if (remain >= size)
 				{
-					return tempFM.last()->at(i)->_New(size);
+					return tm->at(i)->_New(size);
 				}
 			}
 
@@ -1125,8 +1128,8 @@ namespace freemem
 			{
 				FM_Model0 *fm0 = new FM_Model0();
 				fm0->SetHeapData(new byte8[4096], 4096);
-				tempFM.last()->push_back(fm0);
-				return tempFM.last()->last()->_New(size);
+				tm->push_back(fm0);
+				return tm->last()->_New(size);
 			}
 			else
 			{
@@ -1407,9 +1410,9 @@ namespace freemem
 			tempStack[get_threadid(std::this_thread::get_id())]->PopLayer();
 		}
 
-		byte8 *_tempNew(unsigned int byteSiz)
+		byte8 *_tempNew(unsigned int byteSiz, int fmlayer = -1)
 		{
-			return tempStack[get_threadid(std::this_thread::get_id())]->_New(byteSiz);
+			return tempStack[get_threadid(std::this_thread::get_id())]->_New(byteSiz, fmlayer);
 		}
 
 		byte8 *_New(unsigned int byteSiz, bool isHeapDebug)
@@ -1739,6 +1742,7 @@ namespace freemem
 		int up = 0;
 		bool islocal = true;
 		bool isdebug = false;
+		int fmlayer = 0;
 
 		fmvecarr()
 		{
@@ -1746,6 +1750,7 @@ namespace freemem
 			maxsize = 0;
 			up = 0;
 			islocal = true;
+			fmlayer = 0;
 		}
 
 		virtual ~ fmvecarr()
@@ -1776,7 +1781,7 @@ namespace freemem
 			}
 			else
 			{
-				newArr = (T *) fm->_tempNew(sizeof(T) * siz);
+				newArr = (T *) fm->_tempNew(sizeof(T) * siz, fmlayer);
 			}
 			if (Arr != nullptr)
 			{
