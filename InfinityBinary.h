@@ -533,6 +533,7 @@ class ibi{
                 //make new prime
                 ibi::make_new_prime();
             }
+            prime = ibi::prime_numbers[prime_index];
         }
 
         fm->_tempPopLayer();
