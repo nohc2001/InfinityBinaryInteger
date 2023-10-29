@@ -617,7 +617,7 @@ class ibi{
         for(; one < k; one = one + 1){
             r = k.pow(r);
         }
-        
+
         fm->_tempPopLayer();
         return r;
     }
@@ -826,7 +826,6 @@ class ibr{
         r.numerator.pow(A.numerator);
 
         fm->_tempPopLayer();
-
-        return 0;
+        return r;
     }
 };
