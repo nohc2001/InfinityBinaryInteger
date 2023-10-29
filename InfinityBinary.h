@@ -15,10 +15,16 @@ class ibi{
     fmvecarr<unsigned int> integer_data;
 
     static vecarr<ibi*> prime_numbers;
+    static ibi* one = nullptr;
 
     ibi() : isPositive(true)
     {
         integer_data.NULLState();
+        if(one == nullptr){
+            one = (ibi*)fm->_New(sizeof(ibi), true);
+            one->Init(false);
+            one->integer_data.push_back(1);
+        }
     }
 
     ibi(ibi& ref){
@@ -630,7 +636,16 @@ class ibr{
     ibi numerator;
     ibi denominator;
 
-    ibr(){}
+    static ibr* one == nullptr;
+
+    ibr(){
+        if(one == nullptr){
+            one = (ibr*)fm->_New(sizeof(ibr), true);
+            one->Init(false);
+            one->numerator.integer_data.push_back(1);
+            one->denominator.integer_data.push_back(1);
+        }
+    }
     ibr(ibr& ref){
         isPositive = ref.isPositive;
         numerator = ref.numerator;
@@ -806,7 +821,7 @@ class ibr{
         one.Init(false);
         one.integer_data.push_back(1);
 
-        for(;one<operation_times;one = one + 1){
+        for(;one<operation_times;one = one + ibi::one){
             fm->_tempPushLayer();
             ibr rn0;
             rn0.Init(false);
@@ -829,26 +844,171 @@ class ibr{
         return r;
     }
 
-    ibr gamma_approximate(ibr& A, ibi& operation_times){
+    static ibr gamma_approximate(ibr& A, ibi& operation_times){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
-        ibr one;
-        one.Init(false);
-        one.numerator.integer_data.push_back(1);
-        one.denominator.integer_data.push_back(1);
 
         ibr n;
         n.Init(false);
         n.numerator.integer_data.push_back(1);
         n.denominator.integer_data.push_back(1);
 
-        r = one / A;
-        for(;n.numerator < operation_times;n = n + one){
+        r = ibr::one / A;
+        for(;n.numerator < operation_times;n = n + ibr::one){
             fm->_tempPushLayer();
-            r = r * (one + (one / n)).exp_approximate(A, operation_times) / (one + A / n);
+            r = r * (ibr::one + (one / n)).exp_approximate(A, operation_times) / (ibr::one + A / n);
             fm->_tempPopLayer();
         }
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    static ibr nCr(ibr& N, ibr& R, ibi& operation_times){
+        return ibr::gamma_approximate(N, operation_times) / (ibr::gamma_approximate(R, operation_times) * ibr::gamma_approximate(N-R, operation_times));
+    }
+
+    static ibr nHr(ibr& N, ibr& R, ibi& operation_times){
+        return ibr::gamma_approximate(N+R-ibr::one, operation_times) / (ibr::gamma_approximate(N-ibr::one, operation_times) * ibr::gamma_approximate(R, operation_times));
+    }
+
+    static ibr nPr(ibr& N, ibr& R, ibi& operation_times){
+        return ibr::gamma_approximate(N, operation_times) / ibr::gamma_approximate(R, operation_times);
+    }
+
+    static ibr ln_approximate(ibr& X, ibi& operation_times){
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(0);
+        r.denominator.integer_data.push_back(1);
+
+        if (X.numerator < X.denominator)
+        {
+            fm->_tempPushLayer();
+            ibi n;
+            n.Init(false);
+            n = ibi::one;
+            for (; n < operation_times; n = n + ibi::one)
+            {
+                fm->_tempPushLayer();
+                ibr frontm;
+                frontm.Init(false);
+                frontm = ibr::one;
+                frontm.isPositive = n.integer_data[0] % 2;
+
+                ibr tempX;
+                tempX.Init(false);
+                tempX = X - ibr::one;
+                tempX.numerator.pow(n);
+                tempX.denominator.pow(n);
+
+                ibr tempN;
+                tempN.Init(false);
+                tempN = n;
+
+                r = r + ((frontm * tempX) / tempN);
+                r.clean();
+                fm->_tempPopLayer();
+            }
+
+            fm->_tempPopLayer();
+        }
+        else{
+            fm->_tempPushLayer();
+            ibi n;
+            n.Init(false);
+            n = ibi::one;
+            for (; n < operation_times; n = n + ibi::one)
+            {
+                fm->_tempPushLayer();
+                ibr frontm;
+                frontm.Init(false);
+                frontm = ibr::one;
+                frontm.isPositive = (int)(n.integer_data[0] % 2) - 1;
+
+                ibr tempX;
+                tempX.Init(false);
+                tempX = (ibr::one / X) - ibr::one;
+                tempX.numerator.pow(n);
+                tempX.denominator.pow(n);
+
+                ibr tempN;
+                tempN.Init(false);
+                tempN = n;
+
+                r = r + ((frontm * tempX) / tempN);
+                r.clean();
+                fm->_tempPopLayer();
+            }
+
+            fm->_tempPopLayer();
+        }
+
+        return r;
+    }
+
+    static ibr getPI_approximate(ibi& operation_times){
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(0);
+        r.denominator.integer_data.push_back(1);
+
+        fm->_tempPushLayer();
+
+        ibi n;
+        n.Init(false);
+        n = ibi::one - ibi::one;
+
+        ibi two;
+        two.Init(false);
+        two = ibi::one + ibi::one;
+
+        for (; n < operation_times; n = n + ibi::one)
+        {
+            fm->_tempPushLayer();
+            ibr add;
+            add.Init(false);
+            add = ibr::one;
+            add.numerator = ibi::one;
+            add.denominator = two * n + ibi::one;
+            add.isPositive = n.integer_data[0] % 2;
+            r = r + add;
+            fm->_tempPopLayer();
+        }
+
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    static ibr sin_approximate(ibr& X, ibi& getPI_operation_times){
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(0);
+        r.denominator.integer_data.push_back(1);
+
+        fm->_tempPushLayer();
+
+        ibi n;
+        n.Init(false);
+        n = ibi::one - ibi::one;
+
+        ibi two;
+        two.Init(false);
+        two = ibi::one + ibi::one;
+
+        for (; n < operation_times; n = n + ibi::one)
+        {
+            fm->_tempPushLayer();
+            ibr add;
+            add.Init(false);
+            add = ibr::one;
+            add.numerator = ibi::one;
+            add.denominator = two * n + ibi::one;
+            add.isPositive = n.integer_data[0] % 2;
+            r = r + add;
+            fm->_tempPopLayer();
+        }
+
         fm->_tempPopLayer();
         return r;
     }
