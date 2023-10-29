@@ -575,6 +575,36 @@ class ibr{
     //fraction
     //약분
     void clean(){
+        fm->_tempPushLayer();
+        fmvecarr<unsigned int>* np = numerator.PrimeFactorization();
+        fmvecarr<unsigned int>* dp = denominator.PrimeFactorization();
+        size_t min = (np->up > dp->up) ? dp->up : np->up;
+        for(int i=0;i<min;++i){
+            if(np->at(i) > dp->at(i)){
+                *np[i] -= *dp[i];
+                *dp[i] = 0;
+            }
+            else{
+                *dp[i] -= *np[i];
+                *np[i] = 0;
+            }
+        }
 
+        numerator.integer_data.up = 0;
+        numerator.integer_data.push_back(1);
+        for(int i=0;i<np->up;++i){
+            for(int k=0;k<np->at(i);++k){
+                numerator = numerator * ibi::prime_numbers[i];
+            }
+        }
+
+        denominator.integer_data.up = 0;
+        denominator.integer_data.push_back(1);
+        for(int i=0;i<dp->up;++i){
+            for(int k=0;k<dp->at(i);++k){
+                denominator = denominator * ibi::prime_numbers[i];
+            }
+        }
+        fm->_tempPopLayer();
     }
 };
