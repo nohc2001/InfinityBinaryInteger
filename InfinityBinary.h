@@ -450,8 +450,58 @@ class ibi{
         }
     }
 
-    void make_new_prime(){
-        
+    static void make_new_prime(){
+        ibi* newprime = new ibi(*ibi::prime_numbers.last());
+        ibi one;
+        one.Init(false);
+        one.integer_data.push_back(1);
+        *newprime = *newprime + one;
+
+        while (true)
+        {
+            fm->_tempPushLayer();
+            ibi copy;
+            copy.Init(false);
+            copy = *newprime;
+            size_t prime_index = 0;
+            ibi *prime = ibi::prime_numbers[prime_index];
+            ibi result;
+            result.Init(false);
+            result = copy % *prime;
+
+            bool isprime = false;
+            int count = 0;
+            while (!(copy.isint(1)))
+            {
+                while ((result).isint(0))
+                {
+                    copy = copy / *prime;
+                    ++count;
+                    result = copy % *prime;
+                }
+                ++prime_index;
+                
+                if (prime_index >= ibi::prime_numbers.size())
+                {
+                    break;
+                }
+                else{
+                    prime = ibi::prime_numbers[prime_index];
+                }
+            }
+
+            if(count > 0){
+                *newprime = *newprime + one;
+                fm->_tempPopLayer();
+                continue;
+            }
+            else{
+                fm->_tempPopLayer();
+                break;
+            }
+        }
+
+        ibi::prime_numbers.push_back(newprime);
     }
 
     //소인수 분해
@@ -481,6 +531,7 @@ class ibi{
             ++prime_index;
             if(prime_index >= ibi::prime_numbers.size()){
                 //make new prime
+                ibi::make_new_prime();
             }
         }
 
