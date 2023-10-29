@@ -14,6 +14,8 @@ class ibi{
     bool islocal = true;
     fmvecarr<unsigned int> integer_data;
 
+    static vecarr<ibi*> prime_numbers;
+
     ibi() : isPositive(true)
     {
         integer_data.NULLState();
@@ -427,6 +429,62 @@ class ibi{
         }
         fm->_tempPopLayer();
         return r;
+    }
+
+    ibi operator%(ibi& A){
+        ibi r;
+        r.Init(false);
+        r = *this - (*this / A) * A;
+        return r;
+    }
+
+    bool isint(int a){
+        if(a >= 0){
+            return integer_data.size() == 1 && (integer_data[0] == a && isPositive);
+        }
+        else if(a <= 0){
+            return integer_data.size() == 1 && (integer_data[0] == a && !isPositive);
+        }
+        else{
+            return integer_data.size() == 1 && integer_data[0] == 0;
+        }
+    }
+
+    void make_new_prime(){
+        
+    }
+
+    //소인수 분해
+    fmvecarr<unsigned int>* PrimeFactorization(){
+        fmvecarr<unsigned int>* pfarr = fm->_tempNew(sizeof(fmvecarr<unsigned int>));
+        pfarr->NULLState();
+        pfarr->Init(8, false);
+
+        fm->_tempPushLayer();
+        ibi copy;
+        copy.Init(false);
+        copy = *this;
+        size_t prime_index = 0;
+        ibi* prime = ibi::prime_numbers[prime_index];
+        ibi result;
+        result.Init(false);
+        result = copy % *prime;
+        
+        while(!(copy.isint(1))){
+            int count = 0;
+            while((result).isint(0)){
+                copy = copy / *prime;
+                ++count;
+                result = copy % *prime;
+            }
+            pfarr[prime_index] = count;
+            ++prime_index;
+            if(prime_index >= ibi::prime_numbers.size()){
+                //make new prime
+            }
+        }
+
+        fm->_tempPopLayer();
     }
 };
 
