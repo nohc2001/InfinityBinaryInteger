@@ -3,6 +3,10 @@ InfinityBinaryInteger is Special Utility of express numbers correctly and no "er
 ibi is integer class
 ibr is rational number class
 ibc is complex number class
+expr is math expression.
+function is math function.
+Set is Set
+Axiom is Custom axiomatic system of Math. it can make Many Theorms in that axiom.
 
 they are developed for making correct math reserch program.
 
