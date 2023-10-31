@@ -659,6 +659,51 @@ class ibi{
         fm->_tempPopLayer();
         return r;
     }
+
+    ibr dimenplus(ibi& X, ibi& dim, ibi& ordermap){
+        if(dim == ibi(1)){
+            return *this + X;
+        }
+        else{
+            ibi r;
+            r.Init(false);
+            r = *this;
+
+            fm->_tempPushLayer();
+
+            ibi temp;
+            temp.Init(false);
+            temp = r;
+
+            ibi index;
+            index.Init(false);
+            index = ibi(0);
+            if(ordermap.integer_data[0] % 2 == 0){
+                //front
+                ordermap = ordermap >> 1;
+                for(;index < X;){
+                    fm->_tempPushLayer();
+                    r = r.dimenplus(temp, dim-ibi(1), ordermap);
+                    index = index + ibi(1);
+                    fm->_tempPopLayer();
+                }
+            }
+            else{
+                //back
+                ordermap = ordermap >> 1;
+                for(;index < X;){
+                    fm->_tempPushLayer();
+                    r = temp.dimenplus(r, dim - ibi(1), ordermap);
+                    index = index + ibi(1);
+                    fm->_tempPopLayer();
+                }
+            }
+
+            fm->_tempPopLayer();
+
+            return r;
+        }
+    }
 };
 
 class ibr{
