@@ -620,8 +620,32 @@ class ibi{
         ibi one;
         one.Init(false);
         one.integer_data.push_back(1);
-        for(; one < k; one = one + 1){
+        for(; one < A; ){
+            fm->_tempPushLayer();
             r = k.pow(r);
+            one = one + ibi::one;
+            fm->_tempPopLayer();
+        }
+
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    static ibi factorial(ibi& A){
+        ibi r;
+        r.Init(false);
+        r = ibi::one;
+
+        fm->_tempPushLayer();
+
+        ibi one;
+        one.Init(false);
+        one.integer_data.push_back(2);
+        for(; one < A; ){
+            fm->_tempPushLayer();
+            r = r * one;
+            one = one + ibi::one;
+            fm->_tempPopLayer();
         }
 
         fm->_tempPopLayer();
@@ -636,7 +660,13 @@ class ibr{
     ibi numerator;
     ibi denominator;
 
-    static ibr* one == nullptr;
+    static ibr* one = nullptr;
+
+    static ibr* bestPI = nullptr;
+    static ibi* pi_oper_time = nullptr;
+
+    static ibr* best_e = nullptr;
+    static ibi* e_oper_time = nullptr;
 
     ibr(){
         if(one == nullptr){
@@ -948,6 +978,7 @@ class ibr{
     }
 
     static ibr getPI_approximate(ibi& operation_times){
+        if(bestPI != nullptr && pi_oper_time >= operation_times) return bestPI;
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(0);
@@ -977,10 +1008,70 @@ class ibr{
         }
 
         fm->_tempPopLayer();
-        return r;
+        if(bestPI != nullptr){
+            *bestPI = r;
+            pi_oper_time = operation_times;
+        }
+        else{
+            bestPI = new ibr();
+            bestPI->Init(false);
+            bestPI = r;
+            pi_oper_time = new ibi();
+            pi_oper_time = operation_times;
+        }
+        
+        return *bestPI;
     }
 
-    static ibr sin_approximate(ibr& X, ibi& getPI_operation_times){
+    static ibr get_e_approximate(ibi& operation_times){
+        if(best_e != nullptr && e_oper_time >= operation_times) return best_e;
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(0);
+        r.denominator.integer_data.push_back(1);
+
+        fm->_tempPushLayer();
+
+        ibi n;
+        n.Init(false);
+        n = ibi::one - ibi::one;
+
+        ibi two;
+        two.Init(false);
+        two = ibi::one + ibi::one;
+
+        ibr add;
+        add.Init(false);
+        add = ibr::one;
+        
+        for (; n < operation_times; )
+        {
+            fm->_tempPushLayer();
+            add.numerator = ibi::one;
+            add.denominator = add.denominator * n;
+            add.isPositive = n.integer_data[0] % 2;
+            r = r + add;
+            n = n + ibi::one;
+            fm->_tempPopLayer();
+        }
+
+        fm->_tempPopLayer();
+        if(best_e != nullptr){
+            *best_e = r;
+            pi_oper_time = operation_times;
+        }
+        else{
+            best_e = new ibr();
+            best_e->Init(false);
+            best_e = r;
+            e_oper_time = new ibi();
+            e_oper_time = operation_times;
+        }
+        
+        return *best_e;
+    }
+
+    static ibr sin_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(0);
