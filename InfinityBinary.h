@@ -660,20 +660,22 @@ class ibr{
     ibi numerator;
     ibi denominator;
 
-    static ibr* one = nullptr;
+    static bool befirst = true;
+    static ibr one;
 
-    static ibr* bestPI = nullptr;
-    static ibi* pi_oper_time = nullptr;
+    static ibr bestPI;
+    static ibi pi_oper_time;
 
-    static ibr* best_e = nullptr;
-    static ibi* e_oper_time = nullptr;
+    static ibr best_e;
+    static ibi e_oper_time;
 
     ibr(){
-        if(one == nullptr){
-            one = (ibr*)fm->_New(sizeof(ibr), true);
-            one->Init(false);
+        if(befirst){
             one->numerator.integer_data.push_back(1);
             one->denominator.integer_data.push_back(1);
+            befirst = true;
+
+            bestPI.Init(false);
         }
     }
     ibr(ibr& ref){
@@ -837,6 +839,29 @@ class ibr{
         r.denominator = this->denominator * A.numerator;
         r.clean();
         fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr floor_function(){
+        ibr r;
+        r.Init(false);
+        r.numerator.integer_data.push_back(1);
+        r.denominator.integer_data.push_back(1);
+        fm->_tempPushLayer();
+        r.numerator = *this.numerator / *this.denominator;
+        r.denominator = ibi::one;
+        fm->_tempPopLayer();
+        return r;
+    }
+
+    ibr operator%(ibr& A){
+        ibr r;
+        r.Init(false);
+
+        fm->_tempPushLayer();
+        r = *this - ((*this / A).floor_function() * A);
+        fm->_tempPopLayer();
+
         return r;
     }
 
@@ -1009,7 +1034,7 @@ class ibr{
 
         fm->_tempPopLayer();
         if(bestPI != nullptr){
-            *bestPI = r;
+            bestPI = r;
             pi_oper_time = operation_times;
         }
         else{
@@ -1079,28 +1104,39 @@ class ibr{
 
         fm->_tempPushLayer();
 
-        ibi n;
-        n.Init(false);
-        n = ibi::one - ibi::one;
+        getPI_approximate(getPI_operation_times);
+        ibr loopLength;
+        loopLength.Init(false);
+        loopLength = *bestPI * (ibr::one + ibr::one);
 
-        ibi two;
-        two.Init(false);
-        two = ibi::one + ibi::one;
+        ibi index;
+        index.Init(false);
+        index = ibi::one - ibi::one;
 
-        for (; n < operation_times; n = n + ibi::one)
-        {
+        ibr add;
+        add.Init(false);
+        add = ibr::one;
+
+        ibr tempX;
+        tempX.Init(false);
+        tempX = ibr::one;
+        tempX = X % loopLength;
+        
+        add = tempX;
+        for(;index < tayler_operation_times;){
             fm->_tempPushLayer();
-            ibr add;
-            add.Init(false);
-            add = ibr::one;
-            add.numerator = ibi::one;
-            add.denominator = two * n + ibi::one;
-            add.isPositive = n.integer_data[0] % 2;
+            add = add * tempX * tempX;
+            add = add / ((two * n) * (two * n + ibr::one));
+            add.isPositive = !(n.integer_data[0] % 2);
             r = r + add;
             fm->_tempPopLayer();
         }
 
         fm->_tempPopLayer();
         return r;
+    }
+
+    static ibr cos_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
+        return sin_approximate(X - (*bestPI / (ibr::one + ibr::one)), getPI_approximate, ibi& tayler_operation_times);
     }
 };
