@@ -38,6 +38,14 @@ class ibi{
             integer_data[i] = ref.integer_data[i];
     }
 
+    ibi(int num){
+        ibi r;
+        r.Init(false);
+        r.push_back((unsigned int)num);
+        r.isPositive = (num >= 0);
+        return r;
+    }
+
     ~ibi(){
         if(islocal) integer_data.release();
     }
@@ -676,6 +684,9 @@ class ibr{
             befirst = true;
 
             bestPI.Init(false);
+            pi_oper_time.Init(false);
+            pi_oper_time = ibi::one;
+            getPI_approximate(ibi(10));
         }
     }
     ibr(ibr& ref){
@@ -688,6 +699,14 @@ class ibr{
             numerator.integer_data.release();
             denominator.integer_data.release();
         }
+    }
+
+    ibr(int num, int den){
+        ibr r;
+        r.Init(false);
+        r.numerator.push_back(num);
+        r.denominator.push_back(den);
+        r.isPositive = XOR((num > 0), (den > 0));
     }
 
     void Init(bool local){
@@ -1003,7 +1022,7 @@ class ibr{
     }
 
     static ibr getPI_approximate(ibi& operation_times){
-        if(bestPI != nullptr && pi_oper_time >= operation_times) return bestPI;
+        if(pi_oper_time >= operation_times) return bestPI;
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(0);
@@ -1033,19 +1052,11 @@ class ibr{
         }
 
         fm->_tempPopLayer();
-        if(bestPI != nullptr){
-            bestPI = r;
-            pi_oper_time = operation_times;
-        }
-        else{
-            bestPI = new ibr();
-            bestPI->Init(false);
-            bestPI = r;
-            pi_oper_time = new ibi();
-            pi_oper_time = operation_times;
-        }
         
-        return *bestPI;
+        bestPI = r;
+        pi_oper_time = operation_times;
+        
+        return bestPI;
     }
 
     static ibr get_e_approximate(ibi& operation_times){
