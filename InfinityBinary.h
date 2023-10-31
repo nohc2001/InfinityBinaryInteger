@@ -1195,4 +1195,8 @@ class ibr{
     static ibr cos_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
         return sin_approximate(X - (*bestPI / (ibr::one + ibr::one)), getPI_approximate, ibi& tayler_operation_times);
     }
+
+    static ibr tan_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
+        return sin_approximate(X, getPI_approximate, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
+    }
 };
