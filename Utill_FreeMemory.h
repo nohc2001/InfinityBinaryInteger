@@ -1855,7 +1855,7 @@ namespace freemem
 			Arr[i] = value;
 		}
 
-		size_t size()
+		inline size_t size()
 		{
 			return up;
 		}

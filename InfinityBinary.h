@@ -29,7 +29,7 @@ class ibi{
         else
             integer_data.up = ref_size;
         for(int i=0;i<ref_size;++i)
-            integer_data[i] = ref.integer_data[i];
+            integer_data[i] = ref.integer_data.Arr[i];
     }
 
     ibi(int num){
@@ -51,7 +51,7 @@ class ibi{
         integer_data.release();
     }
 
-    void operator=(const ibi& ref){
+    void operator=(ibi& ref){
         isPositive = ref.isPositive;
         size_t ref_size = ref.integer_data.size();
         if(ref_size > integer_data.size())
@@ -138,7 +138,7 @@ class ibi{
         num->integer_data[carryloc] -= 1;
     }
 
-    static ibi add_absolute(const ibi& A, const ibi& B){
+    static ibi add_absolute(ibi& A, ibi& B){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -159,18 +159,26 @@ class ibi{
         return r;
     }
 
-    static ibi sub_absolute(const ibi& A, const ibi& B){
+    static ibi sub_absolute(ibi& A, ibi& B){
         bool pos[2] = {A.isPositive, B.isPositive};
-        A.isPositive = true;
-        B.isPositive = true;
+        ibi At, Bt;
+        At.Init(false);
+        Bt.Init(false);
+
         ibi r;
         r.Init(false);
+
+        At = A;
+        Bt = B;
+        At.isPositive = true;
+        Bt.isPositive = true;
+
         fm->_tempPushLayer();
-        if(A > B){
-            r = A;
-            for(int i=0;i<A.integer_data.up;++i){
+        if(At > Bt){
+            r = At;
+            for(int i=0;i<At.integer_data.up;++i){
                 unsigned int Ax = (r.integer_data.up > i) ? r.integer_data[i] : 0;
-                unsigned int Bx = (B.integer_data.up > i) ? B.integer_data[i] : 0;
+                unsigned int Bx = (Bt.integer_data.up > i) ? Bt.integer_data[i] : 0;
                 if(Ax < Bx){
                     carry_under(&r, i+1);
                 }
@@ -180,10 +188,10 @@ class ibi{
             r.isPositive = pos[0];
         }
         else{
-            r = B;
-            for(int i=0;i<B.integer_data.up;++i){
+            r = Bt;
+            for(int i=0;i<Bt.integer_data.up;++i){
                 unsigned int Bx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
-                unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
+                unsigned int Ax = (At.integer_data.up > i) ? At.integer_data[i] : 0;
                 if(Bx < Ax){
                     carry_under(&r, i+1);
                 }
@@ -203,7 +211,6 @@ class ibi{
         else{
             return ibi::sub_absolute(*this, A);
         }
-        return r;
     }
 
     ibi operator-(ibi& A){
@@ -213,7 +220,6 @@ class ibi{
         else{
             return ibi::add_absolute(*this, A);
         }
-        return r;
     }
 
     ibi operator<<(int n){
@@ -267,8 +273,8 @@ class ibi{
         operand[0].integer_data[1] = R3;
         operand[1].integer_data[0] = R10;
         operand[1].integer_data[1] = R11;
-        operand[2].integer_data[0] = R12;
-        operand[2].integer_data[1] = R12;
+        operand[2].integer_data[0] = R20;
+        operand[2].integer_data[1] = R21;
 
         r = operand[0] + operand[1];
         r = r + operand[2];
