@@ -77,40 +77,40 @@ class ibr{
     static ibi e_oper_time;
 
     ibr();
-    ibr(ibr& ref);
+    ibr(const ibr& ref);
     ~ibr();
 
     ibr(int num, int den);
 
     void Init(bool local);
 
-    void operator=(ibi& ref);
+    void operator=(const ibi& ref);
 
     //fraction
     //약분
     void clean();
 
-    bool operator>(ibr& A);
-    bool operator<(ibr& A);
-    bool operator==(ibr& A);
-    bool operator!=(ibr& A);
-    bool operator>=(ibr& A);
-    bool operator<=(ibr& A);
-    ibr operator+(ibr& A);
-    ibr operator-(ibr& A);
-    ibr operator*(ibr& A);
-    ibr operator/(ibr& A);
+    bool operator>(const ibr& A) const;
+    bool operator<(const ibr& A) const;
+    bool operator==(const ibr& A) const;
+    bool operator!=(const ibr& A) const;
+    bool operator>=(const ibr& A) const;
+    bool operator<=(const ibr& A) const;
+    ibr operator+(const ibr& A);
+    ibr operator-(const ibr& A);
+    ibr operator*(const ibr& A);
+    ibr operator/(const ibr& A);
     ibr floor_function();
-    ibr operator%(ibr& A);
-    ibr exp_approximate(ibr& A, ibi& operation_times);
-    static ibr gamma_approximate(ibr& A, ibi& operation_times);
-    static ibr nCr(ibr& N, ibr& R, ibi& operation_times);
-    static ibr nHr(ibr& N, ibr& R, ibi& operation_times);
-    static ibr nPr(ibr& N, ibr& R, ibi& operation_times);
-    static ibr ln_approximate(ibr& X, ibi& operation_times);
-    static ibr getPI_approximate(ibi& operation_times);
-    static ibr get_e_approximate(ibi& operation_times);
-    static ibr sin_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times);
-    static ibr cos_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times);
-    static ibr tan_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times);
+    ibr operator%(const ibr& A);
+    ibr exp_approximate(const ibr& A, const ibi& operation_times);
+    static ibr gamma_approximate(const ibr& A, const ibi& operation_times);
+    static ibr nCr(const ibr& N, const ibr& R, const ibi& operation_times);
+    static ibr nHr(const ibr& N, const ibr& R, const ibi& operation_times);
+    static ibr nPr(const ibr& N, const ibr& R, const ibi& operation_times);
+    static ibr ln_approximate(const ibr& X, const ibi& operation_times);
+    static ibr getPI_approximate(const ibi& operation_times);
+    static ibr get_e_approximate(const ibi& operation_times);
+    static ibr sin_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
+    static ibr cos_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
+    static ibr tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
 };
