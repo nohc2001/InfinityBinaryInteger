@@ -1,5 +1,14 @@
 #include "InfinityBinary.h"
 
+vecarr<ibi*> ibi::prime_numbers;
+
+bool ibr::befirst = false;
+ibr ibr::ne;
+ibr ibr::bestPI;
+ibi ibr::pi_oper_time;
+ibr ibr::best_e;
+ibi ibr::e_oper_time;
+
 ibi::ibi() : isPositive(true)
 {
     integer_data.NULLState();
