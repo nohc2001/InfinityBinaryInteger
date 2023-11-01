@@ -704,6 +704,49 @@ class ibi{
             return r;
         }
     }
+
+    lcstr& ToString(int base_num = 10){
+        lcstr str;
+        str.Init(integer_data.size() * 32, false);
+        fm->_tempPushLayer();
+
+        if(isPositive){
+            str.push_back('+');
+        }
+        else{
+            str.push_back('-');
+        }
+
+        ibi base;
+        base.Init(false);
+        base = ibi(base_num);
+        ibi pastbase;
+        pastbase.Init(false);
+        pastbase = ibi(base_num);
+        ibi r;
+        r.Init(false);
+        r = *this;
+        while(base < *this){
+            unsigned int n = (*this / base).integer_data[0] % base_num;
+            lcstr nstr;
+            string temp = to_string(n);
+            nstr.Init(temp.size(), true);
+            nstr = temp.c_str();
+            if(base_num > 10){
+                str.insert(1, ']');
+                for(int i=temp.size()-1;i>=0;--i){
+                    str.insert(1, nstr[i]);
+                }
+                str.insert(1, '[');
+            }
+            else{
+                str.insert(1, nstr[0]);
+            }
+            base = base * pastbase;
+        }
+        fm->_tempPopLayer();
+        return str;
+    }
 };
 
 class ibr{
