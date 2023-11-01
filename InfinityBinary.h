@@ -15,7 +15,6 @@ class ibi{
     fmvecarr<unsigned int> integer_data;
 
     static vecarr<ibi*> prime_numbers;
-    static ibi* one = nullptr;
 
     ibi() : isPositive(true)
     {
@@ -41,7 +40,7 @@ class ibi{
     ibi(int num){
         ibi r;
         r.Init(false);
-        r.push_back((unsigned int)num);
+        r.integer_data.push_back((unsigned int)num);
         r.isPositive = (num >= 0);
         return r;
     }
@@ -660,7 +659,7 @@ class ibi{
         return r;
     }
 
-    ibr dimenplus(ibi& X, ibi& dim, ibi& ordermap){
+    ibi dimenplus(ibi& X, ibi& dim, ibi& ordermap){
         if(dim == ibi(1)){
             return *this + X;
         }
