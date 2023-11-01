@@ -19,11 +19,6 @@ class ibi{
     ibi() : isPositive(true)
     {
         integer_data.NULLState();
-        if(one == nullptr){
-            one = (ibi*)fm->_New(sizeof(ibi), true);
-            one->Init(false);
-            one->integer_data.push_back(1);
-        }
     }
 
     ibi(ibi& ref){
@@ -38,11 +33,9 @@ class ibi{
     }
 
     ibi(int num){
-        ibi r;
-        r.Init(false);
-        r.integer_data.push_back((unsigned int)num);
-        r.isPositive = (num >= 0);
-        return r;
+        Init(false);
+        integer_data.push_back((unsigned int)num);
+        isPositive = (num >= 0);
     }
 
     ~ibi(){
@@ -154,7 +147,7 @@ class ibi{
         int i;
         for(i=0;i<maxsiz;++i){
             unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
-            unsigned int Tx = (r.integer_data.up > i) / r.integer_data[i] : 0;
+            unsigned int Tx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
             unsigned int max = (Ax>Tx)?Ax:Tx;
             Tx += Ax;
             if(Tx < max){
@@ -177,7 +170,7 @@ class ibi{
             r = A;
             for(int i=0;i<A.integer_data.up;++i){
                 unsigned int Ax = (r.integer_data.up > i) ? r.integer_data[i] : 0;
-                unsigned int Bx = (B.integer_data.up > i) / B.integer_data[i] : 0;
+                unsigned int Bx = (B.integer_data.up > i) ? B.integer_data[i] : 0;
                 if(Ax < Bx){
                     carry_under(&r, i+1);
                 }
@@ -190,7 +183,7 @@ class ibi{
             r = B;
             for(int i=0;i<B.integer_data.up;++i){
                 unsigned int Bx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
-                unsigned int Ax = (A.integer_data.up > i) / A.integer_data[i] : 0;
+                unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
                 if(Bx < Ax){
                     carry_under(&r, i+1);
                 }
