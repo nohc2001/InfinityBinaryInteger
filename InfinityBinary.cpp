@@ -3,7 +3,7 @@
 vecarr<ibi*> ibi::prime_numbers;
 
 bool ibr::befirst = false;
-ibr ibr::ne;
+ibr ibr::one;
 ibr ibr::bestPI;
 ibi ibr::pi_oper_time;
 ibr ibr::best_e;
@@ -39,7 +39,7 @@ ibi::~ibi()
         integer_data.release();
 }
 
-ibi::void Init(bool plocal)
+void ibi::Init(bool plocal)
 {
     integer_data.Init(2, false);
     islocal = plocal;
@@ -50,7 +50,7 @@ void ibi::Release()
     integer_data.release();
 }
 
-ibi &ibi::operator=(const ibi &ref)
+void ibi::operator=(const ibi &ref)
 {
     isPositive = ref.isPositive;
     size_t ref_size = (int)ref.integer_data.up;
@@ -62,7 +62,7 @@ ibi &ibi::operator=(const ibi &ref)
         integer_data[i] = ref.integer_data[i];
 }
 
-bool ibi::cmp(ibi &A, bool left_big, bool include_same)
+bool ibi::cmp(const ibi &A, bool left_big, bool include_same)
 {
     if (isPositive && !A.isPositive)
         return left_big;
@@ -88,27 +88,27 @@ bool ibi::cmp(ibi &A, bool left_big, bool include_same)
         return left_big;
 }
 
-bool ibi::operator>(ibi &A)
+bool ibi::operator>(const ibi &A)
 {
     return cmp(A, true, false);
 }
 
-bool ibi::operator>=(ibi &A)
+bool ibi::operator>=(const ibi &A)
 {
     return cmp(A, true, true);
 }
 
-bool ibi::operator<(ibi &A)
+bool ibi::operator<(const ibi &A)
 {
     return cmp(A, false, false);
 }
 
-bool ibi::operator<=(ibi &A)
+bool ibi::operator<=(const ibi &A)
 {
     return cmp(A, false, true);
 }
 
-bool ibi::operator==(ibi &A)
+bool ibi::operator==(const ibi &A)
 {
     if (isPositive != A.isPositive)
         return false;
@@ -125,7 +125,7 @@ bool ibi::operator==(ibi &A)
     }
 }
 
-bool ibi::operator!=(ibi &A)
+bool ibi::operator!=(const ibi &A)
 {
     if (isPositive != A.isPositive)
         return true;
@@ -142,7 +142,7 @@ bool ibi::operator!=(ibi &A)
     }
 }
 
-static void ibi::carry(ibi *num, int carryloc)
+void ibi::carry(ibi *num, int carryloc)
 {
     if (num->integer_data.size() <= carryloc)
     {
@@ -159,7 +159,7 @@ static void ibi::carry(ibi *num, int carryloc)
     }
 }
 
-static void ibi::carry_under(ibi *num, int carryloc)
+void ibi::carry_under(ibi *num, int carryloc)
 {
     if (carryloc >= num->integer_data.size())
         return;
@@ -171,7 +171,7 @@ static void ibi::carry_under(ibi *num, int carryloc)
     num->integer_data[carryloc] -= 1;
 }
 
-static ibi ibi::add_absolute(const ibi &A, const ibi &B)
+ibi ibi::add_absolute(const ibi &A, const ibi &B)
 {
     ibi r;
     r.Init(false);
@@ -195,7 +195,7 @@ static ibi ibi::add_absolute(const ibi &A, const ibi &B)
     return r;
 }
 
-static ibi ibi::sub_absolute(ibi &A, ibi &B)
+ibi ibi::sub_absolute(const ibi &A, const ibi &B)
 {
     bool pos[2] = {A.isPositive, B.isPositive};
     ibi At, Bt;
@@ -259,7 +259,7 @@ ibi ibi::operator+(const ibi &A)
     }
 }
 
-ibi ibi::operator-(ibi &A)
+ibi ibi::operator-(const ibi &A)
 {
     if (isPositive == A.isPositive)
     {
@@ -337,7 +337,7 @@ ibi ibi::mul_32(unsigned int A, unsigned int B)
     return r;
 }
 
-ibi ibi::operator*(ibi &A)
+ibi ibi::operator*(const ibi &A)
 {
     ibi r;
     r.Init(false);
@@ -352,9 +352,9 @@ ibi ibi::operator*(ibi &A)
         ibi *mulibi = new ibi[A.integer_data.up];
         for (int k = 0; k < A.integer_data.up; ++k)
         {
-            ibi[k].Init(true);
-            ibi[k] = mul_32(uii, A.integer_data[k]);
-            thismulibi = thismulibi + ibi[k];
+            mulibi[k].Init(true);
+            mulibi[k] = mul_32(uii, A.integer_data[k]);
+            thismulibi[i] = thismulibi[i] + mulibi[k];
         }
         delete[] mulibi;
         r = r + thismulibi[i];
@@ -364,7 +364,7 @@ ibi ibi::operator*(ibi &A)
     return r;
 }
 
-ibi ibi::div_32(ibi &A, unsigned int divn)
+ibi ibi::div_32(const ibi &A, unsigned int divn)
 {
     ibi r;
     r.Init(false);
@@ -382,14 +382,14 @@ ibi ibi::div_32(ibi &A, unsigned int divn)
     fm->_tempPushLayer();
 
     ibi tempA;
-    tempA.Init(false)
-        tempA = A;
+    tempA.Init(false);
+    tempA = A;
 
     ibi tempDivn;
-    tempDivn.Init(false)
-        tempDivn = divn;
-
-    constexpr double max = pow(2, 32);
+    tempDivn.Init(false);
+    tempDivn = divn;
+    
+    double max = powf64(2.0, 32.0);
     double dv = (double)divn;
     bool updatefirst = true;
 
@@ -419,7 +419,7 @@ ibi ibi::div_32(ibi &A, unsigned int divn)
                 ibi temp;
                 temp.Init(false);
                 temp.integer_data.push_back(A.integer_data[i]);
-                temp.integer_data.push_back(tempA.integer_data[i + 1])
+                temp.integer_data.push_back(tempA.integer_data[i + 1]);
                     ibi dv = mul_32(divn, seekstart);
                 if (dv > temp)
                 {
@@ -454,7 +454,7 @@ ibi ibi::div_32(ibi &A, unsigned int divn)
     return r;
 }
 
-ibi ibi::operator/(ibi &A)
+ibi ibi::operator/(const ibi &A)
 {
     // this / a
     ibi r;
@@ -519,7 +519,7 @@ ibi ibi::operator/(ibi &A)
     return r;
 }
 
-ibi ibi::operator%(ibi &A)
+ibi ibi::operator%(const ibi &A)
 {
     ibi r;
     r.Init(false);
@@ -543,7 +543,7 @@ bool ibi::isint(int a)
     }
 }
 
-static void ibi::make_new_prime()
+void ibi::make_new_prime()
 {
     ibi *newprime = new ibi(*ibi::prime_numbers.last());
     ibi one;
@@ -648,7 +648,7 @@ ibi ibi::abs()
     r.isPositive = true;
 }
 
-ibi ibi::pow(ibi &A)
+ibi ibi::pow(const ibi &A)
 {
     ibi r;
     r.Init(false);
@@ -689,7 +689,7 @@ ibi ibi::pow(ibi &A)
     return r;
 }
 
-ibi ibi::sqrt_approximate(ibi &A, unsigned int operation_times)
+ibi ibi::sqrt_approximate(const ibi &A, unsigned int operation_times)
 {
     ibi r;
     r.Init(false);
@@ -710,7 +710,7 @@ ibi ibi::sqrt_approximate(ibi &A, unsigned int operation_times)
     return r;
 }
 
-ibi ibi::tetration(ibi &A)
+ibi ibi::tetration(const ibi &A)
 {
     ibi r;
     r.Init(false);
@@ -737,7 +737,7 @@ ibi ibi::tetration(ibi &A)
     return r;
 }
 
-static ibi ibi::factorial(ibi &A)
+ibi ibi::factorial(const ibi &A)
 {
     ibi r;
     r.Init(false);
@@ -760,7 +760,7 @@ static ibi ibi::factorial(ibi &A)
     return r;
 }
 
-ibi ibi::dimenplus(ibi &X, ibi &dim, ibi &ordermap)
+ibi ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap)
 {
     if (dim == ibi(1))
     {
@@ -876,7 +876,7 @@ ibr::ibr()
         getPI_approximate(ibi(10));
     }
 }
-ibr::ibr(ibr &ref)
+ibr::ibr(const ibr &ref)
 {
     isPositive = ref.isPositive;
     numerator = ref.numerator;
@@ -907,7 +907,7 @@ void ibr::Init(bool local)
     denominator.Init(local);
 }
 
-void ibr::operator=(ibi &ref)
+void ibr::operator=(const ibi &ref)
 {
     isPositive = ref.isPositive;
     numerator = ref.numerator;
@@ -958,7 +958,7 @@ void ibr::clean()
     fm->_tempPopLayer();
 }
 
-bool ibr::operator>(ibr &A)
+bool ibr::operator>(const ibr &A)
 {
     if (this->isPositive != A.isPositive)
     {
@@ -970,7 +970,7 @@ bool ibr::operator>(ibr &A)
     }
 }
 
-bool ibr::operator<(ibr &A)
+bool ibr::operator<(const ibr &A)
 {
     if (this->isPositive != A.isPositive)
     {
@@ -982,27 +982,27 @@ bool ibr::operator<(ibr &A)
     }
 }
 
-bool ibr::operator==(ibr &A)
+bool ibr::operator==(const ibr &A)
 {
     return (A.denominator * this->numerator == A.numerator * this->denominator) && isPositive == A.isPositive;
 }
 
-bool ibr::operator!=(ibr &A)
+bool ibr::operator!=(const ibr &A)
 {
     return !(*this == A);
 }
 
-bool ibr::operator>=(ibr &A)
+bool ibr::operator>=(const ibr &A)
 {
     return (*this > A) || (*this == A);
 }
 
-bool ibr::operator<=(ibr &A)
+bool ibr::operator<=(const ibr &A)
 {
     return (*this < A) || (*this == A);
 }
 
-ibr ibr::operator+(ibr &A)
+ibr ibr::operator+(const ibr &A)
 {
     ibr r;
     r.Init(false);
@@ -1031,7 +1031,7 @@ ibr ibr::operator+(ibr &A)
     return r;
 }
 
-ibr ibr::operator-(ibr &A)
+ibr ibr::operator-(const ibr &A)
 {
     ibr r;
     r.Init(false);
@@ -1060,7 +1060,7 @@ ibr ibr::operator-(ibr &A)
     return r;
 }
 
-ibr ibr::operator*(ibr &A)
+ibr ibr::operator*(const ibr &A)
 {
     ibr r;
     r.Init(false);
@@ -1072,7 +1072,7 @@ ibr ibr::operator*(ibr &A)
     return r;
 }
 
-ibr ibr::operator/(ibr &A)
+ibr ibr::operator/(const ibr &A)
 {
     ibr r;
     r.Init(false);
@@ -1097,7 +1097,7 @@ ibr ibr::floor_function()
     return r;
 }
 
-ibr ibr::operator%(ibr &A)
+ibr ibr::operator%(const ibr &A)
 {
     ibr r;
     r.Init(false);
@@ -1109,7 +1109,7 @@ ibr ibr::operator%(ibr &A)
     return r;
 }
 
-ibr ibr::exp_approximate(ibr &A, ibi &operation_times)
+ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
 {
     ibr r;
     r.Init(false);
@@ -1145,7 +1145,7 @@ ibr ibr::exp_approximate(ibr &A, ibi &operation_times)
     return r;
 }
 
-static ibr ibr::gamma_approximate(ibr &A, ibi &operation_times)
+ibr ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
 {
     ibr r;
     r.Init(false);
@@ -1167,22 +1167,22 @@ static ibr ibr::gamma_approximate(ibr &A, ibi &operation_times)
     return r;
 }
 
-static ibr ibr::nCr(ibr &N, ibr &R, ibi &operation_times)
+ibr ibr::nCr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N, operation_times) / (ibr::gamma_approximate(R, operation_times) * ibr::gamma_approximate(N - R, operation_times));
 }
 
-static ibr ibr::nHr(ibr &N, ibr &R, ibi &operation_times)
+ibr ibr::nHr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N + R - ibr::one, operation_times) / (ibr::gamma_approximate(N - ibr::one, operation_times) * ibr::gamma_approximate(R, operation_times));
 }
 
-static ibr ibr::nPr(ibr &N, ibr &R, ibi &operation_times)
+ibr ibr::nPr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N, operation_times) / ibr::gamma_approximate(R, operation_times);
 }
 
-static ibr ibr::ln_approximate(ibr &X, ibi &operation_times)
+ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
 {
     ibr r;
     r.Init(false);
@@ -1255,7 +1255,7 @@ static ibr ibr::ln_approximate(ibr &X, ibi &operation_times)
     return r;
 }
 
-static ibr ibr::getPI_approximate(ibi &operation_times)
+ibr ibr::getPI_approximate(const ibi &operation_times)
 {
     if (pi_oper_time >= operation_times)
         return bestPI;
@@ -1295,7 +1295,7 @@ static ibr ibr::getPI_approximate(ibi &operation_times)
     return bestPI;
 }
 
-static ibr ibr::get_e_approximate(ibi &operation_times)
+ibr ibr::get_e_approximate(const ibi &operation_times)
 {
     if (best_e != nullptr && e_oper_time >= operation_times)
         return best_e;
@@ -1347,7 +1347,7 @@ static ibr ibr::get_e_approximate(ibi &operation_times)
     return *best_e;
 }
 
-static ibr ibr::sin_approximate(ibr &X, ibi &getPI_operation_times, ibi &tayler_operation_times)
+ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     ibr r;
     r.Init(false);
@@ -1389,12 +1389,12 @@ static ibr ibr::sin_approximate(ibr &X, ibi &getPI_operation_times, ibi &tayler_
     return r;
 }
 
-static ibr ibr::cos_approximate(ibr &X, ibi &getPI_operation_times, ibi &tayler_operation_times)
+ibr ibr::cos_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     return sin_approximate(X - (*bestPI / (ibr::one + ibr::one)), getPI_approximate, ibi & tayler_operation_times);
 }
 
-static ibr ibr::tan_approximate(ibr &X, ibi &getPI_operation_times, ibi &tayler_operation_times)
+ibr ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     return sin_approximate(X, getPI_approximate, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
 }

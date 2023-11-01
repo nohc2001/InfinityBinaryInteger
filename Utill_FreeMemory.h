@@ -1807,7 +1807,7 @@ namespace freemem
 			return Arr[i];
 		}
 
-		T & operator[](size_t i)
+		T & operator[](size_t i) const
 		{
 			return Arr[i];
 		}
@@ -1855,7 +1855,7 @@ namespace freemem
 			Arr[i] = value;
 		}
 
-		inline size_t size()
+		inline size_t size() const
 		{
 			return up;
 		}

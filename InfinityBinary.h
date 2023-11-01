@@ -1,3 +1,4 @@
+#include <math.h>
 #include "arr_expend.h"
 #include "Utill_FreeMemory.h"
 using namespace freemem;
@@ -23,38 +24,38 @@ class ibi{
     ~ibi();
     void Init(bool plocal);
     void Release();
-    ibi& operator=(const ibi& ref);
-    inline bool cmp(ibi& A, bool left_big, bool include_same);
-    bool operator>(ibi& A);
-    bool operator>=(ibi& A);
-    bool operator<(ibi& A);
-    bool operator<=(ibi& A);
-    bool operator==(ibi& A);
-    bool operator!=(ibi& A);
+    void operator=(const ibi& ref);
+    inline bool cmp(const ibi& A, bool left_big, bool include_same) const;
+    bool operator>(const ibi& A) const;
+    bool operator>=(const ibi& A) const;
+    bool operator<(const ibi& A) const;
+    bool operator<=(const ibi& A) const;
+    bool operator==(const ibi& A) const;
+    bool operator!=(const ibi& A) const;
     static void carry(ibi* num, int carryloc);
     static void carry_under(ibi* num, int carryloc);
     static ibi add_absolute(const ibi& A, const ibi& B);
-    static ibi sub_absolute(ibi& A, ibi& B);
+    static ibi sub_absolute(const ibi& A, const ibi& B);
     ibi operator+(const ibi& A);
-    ibi operator-(ibi& A);
+    ibi operator-(const ibi& A);
     ibi operator<<(int n);
     ibi operator>>(int n);
     ibi mul_32(unsigned int A, unsigned int B);
-    ibi operator*(ibi& A);
-    ibi div_32(ibi& A, unsigned int divn);
-    ibi operator/(ibi& A);
-    ibi operator%(ibi& A);
+    ibi operator*(const ibi& A);
+    ibi div_32(const ibi& A, unsigned int divn);
+    ibi operator/(const ibi& A);
+    ibi operator%(const ibi& A);
     bool isint(int a);
     static void make_new_prime();
 
     //소인수 분해
     fmvecarr<unsigned int>* PrimeFactorization();
     ibi abs();
-    ibi pow(ibi& A);
-    ibi sqrt_approximate(ibi& A, unsigned int operation_times);
-    ibi tetration(ibi& A);
-    static ibi factorial(ibi& A);
-    ibi dimenplus(ibi& X, ibi& dim, ibi& ordermap);
+    ibi pow(const ibi& A);
+    ibi sqrt_approximate(const ibi& A, unsigned int operation_times);
+    ibi tetration(const ibi& A);
+    static ibi factorial(const ibi& A);
+    ibi dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap);
 
     lcstr& ToString(int base_num = 10);
 };
