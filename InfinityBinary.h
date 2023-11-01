@@ -2,6 +2,8 @@
 #include "Utill_FreeMemory.h"
 using namespace freemem;
 
+#define _noinline __attribute__((noinline))
+
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 
 inline bool XOR(bool a, bool b){
@@ -10,20 +12,21 @@ inline bool XOR(bool a, bool b){
 
 class ibi{
     public:
+
     bool isPositive = true;
     bool islocal = true;
     fmvecarr<unsigned int> integer_data;
 
     static vecarr<ibi*> prime_numbers;
 
-    ibi() : isPositive(true)
+    _noinline ibi() : isPositive(true)
     {
         integer_data.NULLState();
     }
 
-    ibi(const ibi& ref){
+    _noinline ibi(const ibi& ref){
         isPositive = ref.isPositive;
-        size_t ref_size = ref.integer_data.up;
+        size_t ref_size = ref.integer_data.size();
         if(ref_size > integer_data.size())
             integer_data.Init(ref_size, integer_data.islocal);
         else
@@ -32,28 +35,28 @@ class ibi{
             integer_data[i] = ref.integer_data.Arr[i];
     }
 
-    ibi(int num){
+    _noinline ibi(int num){
         Init(false);
         integer_data.push_back((unsigned int)num);
         isPositive = (num >= 0);
     }
 
-    ~ibi(){
+    _noinline ~ibi(){
         if(islocal) integer_data.release();
     }
 
-    void Init(bool plocal){
+    _noinline void Init(bool plocal){
         integer_data.Init(2, false);
         islocal = plocal;
     }
 
-    void Release(){
+    _noinline void Release(){
         integer_data.release();
     }
 
-    void operator=(ibi& ref){
+    _noinline ibi& operator=(const ibi& ref){
         isPositive = ref.isPositive;
-        size_t ref_size = ref.integer_data.size();
+        size_t ref_size = (int)ref.integer_data.up;
         if(ref_size > integer_data.size())
             integer_data.Init(ref_size, integer_data.islocal);
         else
@@ -62,7 +65,7 @@ class ibi{
             integer_data[i] = ref.integer_data[i];
     }
 
-    inline bool cmp(ibi& A, bool left_big, bool include_same){
+    _noinline inline bool cmp(ibi& A, bool left_big, bool include_same){
         if(isPositive && !A.isPositive) return left_big;
         if(isPositive == A.isPositive){
             if(integer_data.up > A.integer_data.up) return XOR(isPositive, left_big);
@@ -78,23 +81,23 @@ class ibi{
         else return left_big;
     }
 
-    bool operator>(ibi& A){
+    _noinline bool operator>(ibi& A){
         return cmp(A, true, false);
     }
 
-    bool operator>=(ibi& A){
+    _noinline bool operator>=(ibi& A){
         return cmp(A, true, true);
     }
 
-    bool operator<(ibi& A){
+    _noinline bool operator<(ibi& A){
         return cmp(A, false, false);
     }
 
-    bool operator<=(ibi& A){
+    _noinline bool operator<=(ibi& A){
         return cmp(A, false, true);
     }
 
-    bool operator==(ibi& A){
+    _noinline bool operator==(ibi& A){
         if(isPositive != A.isPositive) return false;
         else{
             if(integer_data.up != A.integer_data.up) return false;
@@ -105,7 +108,7 @@ class ibi{
         }
     }
 
-    bool operator!=(ibi& A){
+    _noinline bool operator!=(ibi& A){
         if(isPositive != A.isPositive) return true;
         else{
             if(integer_data.up != A.integer_data.up) return true;
@@ -116,7 +119,7 @@ class ibi{
         }
     }
 
-    static void carry(ibi* num, int carryloc){
+    _noinline static void carry(ibi* num, int carryloc){
         if(num->integer_data.size() <= carryloc){
             num->integer_data.push_back(1);
         }
@@ -129,7 +132,7 @@ class ibi{
         }
     }
 
-    static void carry_under(ibi* num, int carryloc){
+    _noinline static void carry_under(ibi* num, int carryloc){
         if(carryloc >= num->integer_data.size()) return;
         if(num->integer_data[carryloc] == 0){
             //carry
@@ -138,7 +141,7 @@ class ibi{
         num->integer_data[carryloc] -= 1;
     }
 
-    static ibi add_absolute(ibi& A, ibi& B){
+    _noinline static ibi add_absolute(const ibi& A, const ibi& B){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -159,7 +162,7 @@ class ibi{
         return r;
     }
 
-    static ibi sub_absolute(ibi& A, ibi& B){
+    _noinline static ibi sub_absolute(ibi& A, ibi& B){
         bool pos[2] = {A.isPositive, B.isPositive};
         ibi At, Bt;
         At.Init(false);
@@ -204,7 +207,7 @@ class ibi{
         return r;
     }
 
-    ibi operator+(ibi& A){
+    _noinline ibi operator+(const ibi& A){
         if(isPositive == A.isPositive){
             return ibi::add_absolute(*this, A);
         }
@@ -213,7 +216,7 @@ class ibi{
         }
     }
 
-    ibi operator-(ibi& A){
+    _noinline ibi operator-(ibi& A){
         if(isPositive == A.isPositive){
             return ibi::sub_absolute(*this, A);
         }
@@ -222,7 +225,7 @@ class ibi{
         }
     }
 
-    ibi operator<<(int n){
+    _noinline ibi operator<<(int n){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -234,7 +237,7 @@ class ibi{
         return r;
     }
 
-    ibi operator>>(int n){
+    _noinline ibi operator>>(int n){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -246,7 +249,7 @@ class ibi{
         return r;
     }
 
-    ibi mul_32(unsigned int A, unsigned int B){
+    _noinline ibi mul_32(unsigned int A, unsigned int B){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -276,14 +279,14 @@ class ibi{
         operand[2].integer_data[0] = R20;
         operand[2].integer_data[1] = R21;
 
-        r = operand[0] + operand[1];
+        r = operand[0].operator+(operand[1]);
         r = r + operand[2];
 
         fm->_tempPopLayer();
         return r;
     }
 
-    ibi operator*(ibi& A){
+    _noinline ibi operator*(ibi& A){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -307,7 +310,7 @@ class ibi{
         return r;
     }
 
-    ibi div_32(ibi& A, unsigned int divn){
+    _noinline ibi div_32(ibi& A, unsigned int divn){
         ibi r;
         r.Init(false);
         r.integer_data.push_back(0);
@@ -383,7 +386,7 @@ class ibi{
         return r;
     }
 
-    ibi operator/(ibi& A){
+    _noinline ibi operator/(ibi& A){
         //this / a
         ibi r;
         r.Init(false);
@@ -443,14 +446,14 @@ class ibi{
         return r;
     }
 
-    ibi operator%(ibi& A){
+    _noinline ibi operator%(ibi& A){
         ibi r;
         r.Init(false);
         r = *this - (*this / A) * A;
         return r;
     }
 
-    bool isint(int a){
+    _noinline bool isint(int a){
         if(a >= 0){
             return integer_data.size() == 1 && (integer_data[0] == a && isPositive);
         }
@@ -462,7 +465,7 @@ class ibi{
         }
     }
 
-    static void make_new_prime(){
+    _noinline static void make_new_prime(){
         ibi* newprime = new ibi(*ibi::prime_numbers.last());
         ibi one;
         one.Init(false);
@@ -517,7 +520,7 @@ class ibi{
     }
 
     //소인수 분해
-    fmvecarr<unsigned int>* PrimeFactorization(){
+    _noinline fmvecarr<unsigned int>* PrimeFactorization(){
         fmvecarr<unsigned int>* pfarr = fm->_tempNew(sizeof(fmvecarr<unsigned int>));
         pfarr->NULLState();
         pfarr->Init(8, false);
@@ -551,14 +554,14 @@ class ibi{
         fm->_tempPopLayer();
     }
 
-    ibi abs(){
+    _noinline ibi abs(){
         ibi r;
         r.Init(false);
         r = *this;
         r.isPositive = true;
     }
 
-    ibi pow(ibi& A){
+    _noinline ibi pow(ibi& A){
         ibi r;
         r.Init(false);
         r.integer_data.push_back(1);
@@ -593,7 +596,7 @@ class ibi{
         return r;
     }
 
-    ibi sqrt_approximate(ibi& A, unsigned int operation_times){
+    _noinline ibi sqrt_approximate(ibi& A, unsigned int operation_times){
         ibi r;
         r.Init(false);
         r.integer_data.push_back(1);
@@ -612,7 +615,7 @@ class ibi{
         return r;
     }
 
-    ibi tetration(ibi& A){
+    _noinline ibi tetration(ibi& A){
         ibi r;
         r.Init(false);
         r = *this;
@@ -637,7 +640,7 @@ class ibi{
         return r;
     }
 
-    static ibi factorial(ibi& A){
+    _noinline static ibi factorial(ibi& A){
         ibi r;
         r.Init(false);
         r = ibi::one;
@@ -658,7 +661,7 @@ class ibi{
         return r;
     }
 
-    ibi dimenplus(ibi& X, ibi& dim, ibi& ordermap){
+    _noinline ibi dimenplus(ibi& X, ibi& dim, ibi& ordermap){
         if(dim == ibi(1)){
             return *this + X;
         }
@@ -703,7 +706,7 @@ class ibi{
         }
     }
 
-    lcstr& ToString(int base_num = 10){
+    _noinline lcstr& ToString(int base_num = 10){
         lcstr str;
         str.Init(integer_data.size() * 32, false);
         fm->_tempPushLayer();
@@ -763,7 +766,7 @@ class ibr{
     static ibr best_e;
     static ibi e_oper_time;
 
-    ibr(){
+    _noinline ibr(){
         if(befirst){
             one->numerator.integer_data.push_back(1);
             one->denominator.integer_data.push_back(1);
@@ -775,19 +778,19 @@ class ibr{
             getPI_approximate(ibi(10));
         }
     }
-    ibr(ibr& ref){
+    _noinline ibr(ibr& ref){
         isPositive = ref.isPositive;
         numerator = ref.numerator;
         denominator = ref.denominator;
     }
-    ~ibr(){
+    _noinline ~ibr(){
         if(islocal){
             numerator.integer_data.release();
             denominator.integer_data.release();
         }
     }
 
-    ibr(int num, int den){
+    _noinline ibr(int num, int den){
         ibr r;
         r.Init(false);
         r.numerator.push_back(num);
@@ -795,13 +798,13 @@ class ibr{
         r.isPositive = XOR((num > 0), (den > 0));
     }
 
-    void Init(bool local){
+    _noinline void Init(bool local){
         islocal = local;
         numerator.Init(local);
         denominator.Init(local);
     }
 
-    void operator=(ibi& ref){
+    _noinline void operator=(ibi& ref){
         isPositive = ref.isPositive;
         numerator = ref.numerator;
         denominator = ref.denominator;
@@ -809,7 +812,7 @@ class ibr{
 
     //fraction
     //약분
-    void clean(){
+    _noinline void clean(){
         fm->_tempPushLayer();
         fmvecarr<unsigned int>* np = numerator.PrimeFactorization();
         fmvecarr<unsigned int>* dp = denominator.PrimeFactorization();
@@ -843,7 +846,7 @@ class ibr{
         fm->_tempPopLayer();
     }
 
-    bool operator>(ibr& A){
+    _noinline bool operator>(ibr& A){
         if(this->isPositive != A.isPositive){
             return isPositive;
         }
@@ -852,7 +855,7 @@ class ibr{
         }
     }
     
-    bool operator<(ibr& A){
+    _noinline bool operator<(ibr& A){
         if(this->isPositive != A.isPositive){
             return !isPositive;
         }
@@ -861,23 +864,23 @@ class ibr{
         }
     }
 
-    bool operator==(ibr& A){
+    _noinline bool operator==(ibr& A){
         return (A.denominator * this->numerator == A.numerator * this->denominator) && isPositive == A.isPositive;
     }
 
-    bool operator!=(ibr& A){
+    _noinline bool operator!=(ibr& A){
         return !(*this == A);
     }
 
-    bool operator>=(ibr& A){
+    _noinline bool operator>=(ibr& A){
         return (*this > A) || (*this == A);
     }
 
-    bool operator<=(ibr& A){
+    _noinline bool operator<=(ibr& A){
         return (*this < A) || (*this == A);
     }
 
-    ibr operator+(ibr& A){
+    _noinline ibr operator+(ibr& A){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -901,7 +904,7 @@ class ibr{
         return r;
     }
 
-    ibr operator-(ibr& A){
+    _noinline ibr operator-(ibr& A){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -925,7 +928,7 @@ class ibr{
         return r;
     }
 
-    ibr operator*(ibr& A){
+    _noinline ibr operator*(ibr& A){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -936,7 +939,7 @@ class ibr{
         return r;
     }
 
-    ibr operator/(ibr& A){
+    _noinline ibr operator/(ibr& A){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -947,7 +950,7 @@ class ibr{
         return r;
     }
 
-    ibr floor_function(){
+    _noinline ibr floor_function(){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(1);
@@ -959,7 +962,7 @@ class ibr{
         return r;
     }
 
-    ibr operator%(ibr& A){
+    _noinline ibr operator%(ibr& A){
         ibr r;
         r.Init(false);
 
@@ -970,7 +973,7 @@ class ibr{
         return r;
     }
 
-    ibr exp_approximate(ibr& A, ibi& operation_times){
+    _noinline ibr exp_approximate(ibr& A, ibi& operation_times){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(1);
@@ -1004,7 +1007,7 @@ class ibr{
         return r;
     }
 
-    static ibr gamma_approximate(ibr& A, ibi& operation_times){
+    _noinline static ibr gamma_approximate(ibr& A, ibi& operation_times){
         ibr r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -1024,19 +1027,19 @@ class ibr{
         return r;
     }
 
-    static ibr nCr(ibr& N, ibr& R, ibi& operation_times){
+    _noinline static ibr nCr(ibr& N, ibr& R, ibi& operation_times){
         return ibr::gamma_approximate(N, operation_times) / (ibr::gamma_approximate(R, operation_times) * ibr::gamma_approximate(N-R, operation_times));
     }
 
-    static ibr nHr(ibr& N, ibr& R, ibi& operation_times){
+    _noinline static ibr nHr(ibr& N, ibr& R, ibi& operation_times){
         return ibr::gamma_approximate(N+R-ibr::one, operation_times) / (ibr::gamma_approximate(N-ibr::one, operation_times) * ibr::gamma_approximate(R, operation_times));
     }
 
-    static ibr nPr(ibr& N, ibr& R, ibi& operation_times){
+    _noinline static ibr nPr(ibr& N, ibr& R, ibi& operation_times){
         return ibr::gamma_approximate(N, operation_times) / ibr::gamma_approximate(R, operation_times);
     }
 
-    static ibr ln_approximate(ibr& X, ibi& operation_times){
+    _noinline static ibr ln_approximate(ibr& X, ibi& operation_times){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(0);
@@ -1107,7 +1110,7 @@ class ibr{
         return r;
     }
 
-    static ibr getPI_approximate(ibi& operation_times){
+    _noinline static ibr getPI_approximate(ibi& operation_times){
         if(pi_oper_time >= operation_times) return bestPI;
         ibr r;
         r.Init(false);
@@ -1145,7 +1148,7 @@ class ibr{
         return bestPI;
     }
 
-    static ibr get_e_approximate(ibi& operation_times){
+    _noinline static ibr get_e_approximate(ibi& operation_times){
         if(best_e != nullptr && e_oper_time >= operation_times) return best_e;
         ibr r;
         r.Init(false);
@@ -1193,7 +1196,7 @@ class ibr{
         return *best_e;
     }
 
-    static ibr sin_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
+    _noinline static ibr sin_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
         ibr r;
         r.Init(false);
         r.numerator.integer_data.push_back(0);
@@ -1233,11 +1236,11 @@ class ibr{
         return r;
     }
 
-    static ibr cos_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
+    _noinline static ibr cos_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
         return sin_approximate(X - (*bestPI / (ibr::one + ibr::one)), getPI_approximate, ibi& tayler_operation_times);
     }
 
-    static ibr tan_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
+    _noinline static ibr tan_approximate(ibr& X, ibi& getPI_operation_times, ibi& tayler_operation_times){
         return sin_approximate(X, getPI_approximate, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
     }
 };

@@ -1,5 +1,9 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "cmake.sourceDirectory": "/workspaces/InfinityBinaryInteger",
-    "workbench.preferredHighContrastColorTheme": "Visual Studio 2017 Dark - C++"
+    "workbench.preferredHighContrastColorTheme": "Visual Studio 2017 Dark - C++",
+    "files.associations": {
+        "cmath": "cpp",
+        "ratio": "cpp"
+    }
 }
