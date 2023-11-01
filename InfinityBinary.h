@@ -21,9 +21,9 @@ class ibi{
         integer_data.NULLState();
     }
 
-    ibi(ibi& ref){
+    ibi(const ibi& ref){
         isPositive = ref.isPositive;
-        size_t ref_size = ref.integer_data.size();
+        size_t ref_size = ref.integer_data.up;
         if(ref_size > integer_data.size())
             integer_data.Init(ref_size, integer_data.islocal);
         else
@@ -51,7 +51,7 @@ class ibi{
         integer_data.release();
     }
 
-    void operator=(ibi& ref){
+    void operator=(const ibi& ref){
         isPositive = ref.isPositive;
         size_t ref_size = ref.integer_data.size();
         if(ref_size > integer_data.size())
@@ -138,7 +138,7 @@ class ibi{
         num->integer_data[carryloc] -= 1;
     }
 
-    static ibi add_absolute(ibi& A, ibi& B){
+    static ibi add_absolute(const ibi& A, const ibi& B){
         ibi r;
         r.Init(false);
         fm->_tempPushLayer();
@@ -159,7 +159,7 @@ class ibi{
         return r;
     }
 
-    static ibi sub_absolute(ibi& A, ibi& B){
+    static ibi sub_absolute(const ibi& A, const ibi& B){
         bool pos[2] = {A.isPositive, B.isPositive};
         A.isPositive = true;
         B.isPositive = true;
