@@ -636,14 +636,16 @@ fmvecarr<unsigned int> *ibi::PrimeFactorization()
     }
 
     fm->_tempPopLayer();
+	
+	return pfarr;
 }
 
 ibi& ibi::abs() const
 {
     CreateDataFM(ibi, r);
-    ;
     r = *this;
     r.isPositive = true;
+	return r;
 }
 
 ibi& ibi::pow(const ibi &A) const
@@ -889,11 +891,9 @@ ibr::~ibr()
 
 ibr::ibr(int num, int den)
 {
-    CreateDataFM(ibr, r);
-    ;
-    r.numerator.push_back(num);
-    r.denominator.push_back(den);
-    r.isPositive = XOR((num > 0), (den > 0));
+    numerator.push_back(num);
+    denominator.push_back(den);
+    isPositive = XOR((num > 0), (den > 0));
 }
 
 void ibr::Init(bool local)
@@ -954,7 +954,7 @@ void ibr::clean()
     fm->_tempPopLayer();
 }
 
-bool ibr::operator>(const ibr &A)
+bool ibr::operator>(const ibr &A) const
 {
     if (this->isPositive != A.isPositive)
     {
@@ -966,7 +966,7 @@ bool ibr::operator>(const ibr &A)
     }
 }
 
-bool ibr::operator<(const ibr &A)
+bool ibr::operator<(const ibr &A) const
 {
     if (this->isPositive != A.isPositive)
     {
@@ -978,27 +978,27 @@ bool ibr::operator<(const ibr &A)
     }
 }
 
-bool ibr::operator==(const ibr &A)
+bool ibr::operator==(const ibr &A) const
 {
     return (A.denominator * this->numerator == A.numerator * this->denominator) && isPositive == A.isPositive;
 }
 
-bool ibr::operator!=(const ibr &A)
+bool ibr::operator!=(const ibr &A) const
 {
     return !(*this == A);
 }
 
-bool ibr::operator>=(const ibr &A)
+bool ibr::operator>=(const ibr &A) const
 {
     return (*this > A) || (*this == A);
 }
 
-bool ibr::operator<=(const ibr &A)
+bool ibr::operator<=(const ibr &A) const
 {
     return (*this < A) || (*this == A);
 }
 
-ibr ibr::operator+(const ibr &A)
+ibr& ibr::operator+(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
@@ -1026,7 +1026,7 @@ ibr ibr::operator+(const ibr &A)
     return r;
 }
 
-ibr ibr::operator-(const ibr &A)
+ibr& ibr::operator-(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
@@ -1054,7 +1054,7 @@ ibr ibr::operator-(const ibr &A)
     return r;
 }
 
-ibr ibr::operator*(const ibr &A)
+ibr& ibr::operator*(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
@@ -1065,7 +1065,7 @@ ibr ibr::operator*(const ibr &A)
     return r;
 }
 
-ibr ibr::operator/(const ibr &A)
+ibr& ibr::operator/(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
@@ -1076,7 +1076,7 @@ ibr ibr::operator/(const ibr &A)
     return r;
 }
 
-ibr ibr::floor_function()
+ibr& ibr::floor_function() const
 {
     CreateDataFM(ibr, r);
     r.numerator.integer_data.push_back(1);
@@ -1088,7 +1088,7 @@ ibr ibr::floor_function()
     return r;
 }
 
-ibr ibr::operator%(const ibr &A)
+ibr& ibr::operator%(const ibr &A) const
 {
     CreateDataFM(ibr, r);
 
@@ -1099,7 +1099,7 @@ ibr ibr::operator%(const ibr &A)
     return r;
 }
 
-ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
+ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
 {
     CreateDataFM(ibr, r);
     r.numerator.integer_data.push_back(1);
@@ -1134,7 +1134,7 @@ ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
     return r;
 }
 
-ibr ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
+ibr& ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
 {
     CreateDataFM(ibr, r);
     ;
@@ -1156,22 +1156,22 @@ ibr ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
     return r;
 }
 
-ibr ibr::nCr(const ibr &N, const ibr &R, const ibi &operation_times)
+ibr& ibr::nCr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N, operation_times) / (ibr::gamma_approximate(R, operation_times) * ibr::gamma_approximate(N - R, operation_times));
 }
 
-ibr ibr::nHr(const ibr &N, const ibr &R, const ibi &operation_times)
+ibr& ibr::nHr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N + R - one, operation_times) / (ibr::gamma_approximate(N - one, operation_times) * ibr::gamma_approximate(R, operation_times));
 }
 
-ibr ibr::nPr(const ibr &N, const ibr &R, const ibi &operation_times)
+ibr& ibr::nPr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
     return ibr::gamma_approximate(N, operation_times) / ibr::gamma_approximate(R, operation_times);
 }
 
-ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
+ibr& ibr::ln_approximate(const ibr &X, const ibi &operation_times)
 {
     CreateDataFM(ibr, r);
     ;
@@ -1244,7 +1244,7 @@ ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
     return r;
 }
 
-ibr ibr::getPI_approximate(const ibi &operation_times)
+ibr& ibr::getPI_approximate(const ibi &operation_times)
 {
     if (pi_oper_time >= operation_times)
         return bestPI;
@@ -1284,7 +1284,7 @@ ibr ibr::getPI_approximate(const ibi &operation_times)
     return bestPI;
 }
 
-ibr ibr::get_e_approximate(const ibi &operation_times)
+ibr& ibr::get_e_approximate(const ibi &operation_times)
 {
     if (best_e != nullptr && e_oper_time >= operation_times)
         return best_e;
@@ -1336,10 +1336,9 @@ ibr ibr::get_e_approximate(const ibi &operation_times)
     return *best_e;
 }
 
-ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
+ibr& ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     CreateDataFM(ibr, r);
-    ;
     r.numerator.integer_data.push_back(0);
     r.denominator.integer_data.push_back(1);
 
@@ -1362,15 +1361,20 @@ ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const i
     tempX.Init(false);
     tempX = ibr(1, 1);
     tempX = X % loopLength;
+	
+	ibr two;
+    two.Init(false);
+    two = ibr(2, 1);
 
     add = tempX;
     for (; index < tayler_operation_times;)
     {
         fm->_tempPushLayer();
         add = add * tempX * tempX;
-        add = add / ((two * n) * (two * n + ibr(1, 1)));
-        add.isPositive = !(n.integer_data[0] % 2);
+        add = add / ((two * index) * (two * index + ibr(1, 1)));
+        add.isPositive = !(index.integer_data[0] % 2);
         r = r + add;
+		index = index + ibi(1);
         fm->_tempPopLayer();
     }
 
@@ -1378,12 +1382,12 @@ ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const i
     return r;
 }
 
-ibr ibr::cos_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
+ibr& ibr::cos_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
-    return sin_approximate(X - (*bestPI / (ibr(1, 1) + ibr(1, 1))), getPI_approximate, ibi & tayler_operation_times);
+    return sin_approximate(X - (bestPI / (ibr(1, 1) + ibr(1, 1))), getPI_operation_times, tayler_operation_times);
 }
 
-ibr ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
+ibr& ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
-    return sin_approximate(X, getPI_approximate, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
+    return sin_approximate(X, getPI_operation_times, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
 }
