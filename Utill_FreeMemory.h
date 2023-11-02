@@ -1765,7 +1765,7 @@ namespace freemem
 			}
 		}
 
-		void NULLState()
+		void NULLState() const
 		{
 			Arr = nullptr;
 			maxsize = 0;
@@ -1870,7 +1870,7 @@ namespace freemem
 			Init(2, islocal, isdebug);
 		}
 
-		T & last()
+		T & last() const
 		{
 			if (up > 0)
 			{

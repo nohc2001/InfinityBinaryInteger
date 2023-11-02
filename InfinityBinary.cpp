@@ -1,9 +1,10 @@
 #include "InfinityBinary.h"
 
+#define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
+#define ricast(type, value) reinterpret_cast<type>(value);
 vecarr<ibi*> ibi::prime_numbers;
 
 bool ibr::befirst = false;
-ibr ibr::one;
 ibr ibr::bestPI;
 ibi ibr::pi_oper_time;
 ibr ibr::best_e;
@@ -62,7 +63,7 @@ void ibi::operator=(const ibi &ref)
         integer_data[i] = ref.integer_data[i];
 }
 
-bool ibi::cmp(const ibi &A, bool left_big, bool include_same)
+bool ibi::cmp(const ibi &A, bool left_big, bool include_same) const
 {
     if (isPositive && !A.isPositive)
         return left_big;
@@ -88,27 +89,27 @@ bool ibi::cmp(const ibi &A, bool left_big, bool include_same)
         return left_big;
 }
 
-bool ibi::operator>(const ibi &A)
+bool ibi::operator>(const ibi &A) const
 {
     return cmp(A, true, false);
 }
 
-bool ibi::operator>=(const ibi &A)
+bool ibi::operator>=(const ibi &A) const
 {
     return cmp(A, true, true);
 }
 
-bool ibi::operator<(const ibi &A)
+bool ibi::operator<(const ibi &A) const
 {
     return cmp(A, false, false);
 }
 
-bool ibi::operator<=(const ibi &A)
+bool ibi::operator<=(const ibi &A) const
 {
     return cmp(A, false, true);
 }
 
-bool ibi::operator==(const ibi &A)
+bool ibi::operator==(const ibi &A) const
 {
     if (isPositive != A.isPositive)
         return false;
@@ -125,7 +126,7 @@ bool ibi::operator==(const ibi &A)
     }
 }
 
-bool ibi::operator!=(const ibi &A)
+bool ibi::operator!=(const ibi &A) const
 {
     if (isPositive != A.isPositive)
         return true;
@@ -171,10 +172,9 @@ void ibi::carry_under(ibi *num, int carryloc)
     num->integer_data[carryloc] -= 1;
 }
 
-ibi ibi::add_absolute(const ibi &A, const ibi &B)
+ibi& ibi::add_absolute(const ibi &A, const ibi &B)
 {
-    ibi r;
-    r.Init(false);
+	CreateDataFM(ibi, r);
     fm->_tempPushLayer();
     r = B;
     int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
@@ -195,16 +195,15 @@ ibi ibi::add_absolute(const ibi &A, const ibi &B)
     return r;
 }
 
-ibi ibi::sub_absolute(const ibi &A, const ibi &B)
+ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
 {
     bool pos[2] = {A.isPositive, B.isPositive};
-    ibi At, Bt;
+    CreateDataFM(ibi, r);
+	
+	ibi At, Bt;
     At.Init(false);
     Bt.Init(false);
-
-    ibi r;
-    r.Init(false);
-
+	
     At = A;
     Bt = B;
     At.isPositive = true;
@@ -247,7 +246,7 @@ ibi ibi::sub_absolute(const ibi &A, const ibi &B)
     return r;
 }
 
-ibi ibi::operator+(const ibi &A)
+ibi& ibi::operator+(const ibi &A) const
 {
     if (isPositive == A.isPositive)
     {
@@ -259,7 +258,7 @@ ibi ibi::operator+(const ibi &A)
     }
 }
 
-ibi ibi::operator-(const ibi &A)
+ibi& ibi::operator-(const ibi &A) const
 {
     if (isPositive == A.isPositive)
     {
@@ -271,10 +270,9 @@ ibi ibi::operator-(const ibi &A)
     }
 }
 
-ibi ibi::operator<<(int n)
+ibi& ibi::operator<<(int n) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
     fm->_tempPushLayer();
     r = *this;
     for (int i = 0; i < n; ++i)
@@ -285,10 +283,10 @@ ibi ibi::operator<<(int n)
     return r;
 }
 
-ibi ibi::operator>>(int n)
+ibi& ibi::operator>>(int n) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    
     fm->_tempPushLayer();
     r = *this;
     for (int i = 0; i < n; ++i)
@@ -299,10 +297,10 @@ ibi ibi::operator>>(int n)
     return r;
 }
 
-ibi ibi::mul_32(unsigned int A, unsigned int B)
+ibi& ibi::mul_32(unsigned int A, unsigned int B)
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    
     fm->_tempPushLayer();
 
     unsigned short A1 = A >> 16;
@@ -337,10 +335,10 @@ ibi ibi::mul_32(unsigned int A, unsigned int B)
     return r;
 }
 
-ibi ibi::operator*(const ibi &A)
+ibi& ibi::operator*(const ibi &A) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    
     fm->_tempPushLayer();
     r.integer_data.push_back(0);
     ibi *thismulibi = new ibi[A.integer_data.up];
@@ -364,10 +362,10 @@ ibi ibi::operator*(const ibi &A)
     return r;
 }
 
-ibi ibi::div_32(const ibi &A, unsigned int divn)
+ibi& ibi::div_32(const ibi &A, unsigned int divn)
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    
     r.integer_data.push_back(0);
     r.integer_data.Init(A.integer_data.up, false);
     for (int i = 0; i < r.integer_data.up; ++i)
@@ -454,11 +452,11 @@ ibi ibi::div_32(const ibi &A, unsigned int divn)
     return r;
 }
 
-ibi ibi::operator/(const ibi &A)
+ibi& ibi::operator/(const ibi &A) const
 {
     // this / a
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    
 
     fm->_tempPushLayer();
 
@@ -502,9 +500,9 @@ ibi ibi::operator/(const ibi &A)
         }
 
         tempV = tempV - (tempA * tR);
-        for (int k = tempV.up - 1; k >= 0; --k)
+        for (int k = tempV.integer_data.up - 1; k >= 0; --k)
         {
-            if (tempV[k] == 0)
+            if (tempV.integer_data[k] == 0)
                 tempA.integer_data.up -= 1;
             else
             {
@@ -519,15 +517,15 @@ ibi ibi::operator/(const ibi &A)
     return r;
 }
 
-ibi ibi::operator%(const ibi &A)
+ibi& ibi::operator%(const ibi &A) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    ;
     r = *this - (*this / A) * A;
     return r;
 }
 
-bool ibi::isint(int a)
+bool ibi::isint(int a) const
 {
     if (a >= 0)
     {
@@ -604,7 +602,7 @@ void ibi::make_new_prime()
 // 소인수 분해
 fmvecarr<unsigned int> *ibi::PrimeFactorization()
 {
-    fmvecarr<unsigned int> *pfarr = fm->_tempNew(sizeof(fmvecarr<unsigned int>));
+    fmvecarr<unsigned int> *pfarr = ricast(fmvecarr<unsigned int>*, fm->_tempNew(sizeof(fmvecarr<unsigned int>)));
     pfarr->NULLState();
     pfarr->Init(8, false);
 
@@ -627,7 +625,7 @@ fmvecarr<unsigned int> *ibi::PrimeFactorization()
             ++count;
             result = copy % *prime;
         }
-        pfarr[prime_index] = count;
+        (*pfarr)[prime_index] = count;
         ++prime_index;
         if (prime_index >= ibi::prime_numbers.size())
         {
@@ -640,24 +638,23 @@ fmvecarr<unsigned int> *ibi::PrimeFactorization()
     fm->_tempPopLayer();
 }
 
-ibi ibi::abs()
+ibi& ibi::abs() const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    ;
     r = *this;
     r.isPositive = true;
 }
 
-ibi ibi::pow(const ibi &A)
+ibi& ibi::pow(const ibi &A) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
     r.integer_data.push_back(1);
 
     fm->_tempPushLayer();
 
     unsigned int addsiz = 32 * (A.integer_data.up - 1);
-    unsigned int v = A.integer_data.last();
+    unsigned int v = (unsigned int)A.integer_data.last();
     for (int i = 0; i < 32; ++i)
     {
         v = v >> 1;
@@ -689,10 +686,10 @@ ibi ibi::pow(const ibi &A)
     return r;
 }
 
-ibi ibi::sqrt_approximate(const ibi &A, unsigned int operation_times)
+ibi& ibi::sqrt_approximate(const ibi &A, unsigned int operation_times) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    ;
     r.integer_data.push_back(1);
 
     fm->_tempPushLayer();
@@ -710,10 +707,10 @@ ibi ibi::sqrt_approximate(const ibi &A, unsigned int operation_times)
     return r;
 }
 
-ibi ibi::tetration(const ibi &A)
+ibi& ibi::tetration(const ibi &A) const
 {
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    ;
     r = *this;
 
     fm->_tempPushLayer();
@@ -729,7 +726,7 @@ ibi ibi::tetration(const ibi &A)
     {
         fm->_tempPushLayer();
         r = k.pow(r);
-        one = one + ibi::one;
+        one = one + ibi(1);
         fm->_tempPopLayer();
     }
 
@@ -737,11 +734,11 @@ ibi ibi::tetration(const ibi &A)
     return r;
 }
 
-ibi ibi::factorial(const ibi &A)
+ibi& ibi::factorial(const ibi &A)
 {
-    ibi r;
-    r.Init(false);
-    r = ibi::one;
+    CreateDataFM(ibi, r);
+    ;
+    r = ibi(1);
 
     fm->_tempPushLayer();
 
@@ -752,7 +749,7 @@ ibi ibi::factorial(const ibi &A)
     {
         fm->_tempPushLayer();
         r = r * one;
-        one = one + ibi::one;
+        one = one + ibi(1);
         fm->_tempPopLayer();
     }
 
@@ -760,7 +757,7 @@ ibi ibi::factorial(const ibi &A)
     return r;
 }
 
-ibi ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap)
+ibi& ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap) const
 {
     if (dim == ibi(1))
     {
@@ -768,8 +765,7 @@ ibi ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap)
     }
     else
     {
-        ibi r;
-        r.Init(false);
+        CreateDataFM(ibi, r);
         r = *this;
 
         fm->_tempPushLayer();
@@ -812,7 +808,7 @@ ibi ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap)
     }
 }
 
-lcstr &ibi::ToString(int base_num = 10)
+lcstr &ibi::ToString(int base_num = 10) const
 {
     lcstr str;
     str.Init(integer_data.size() * 32, false);
@@ -833,8 +829,8 @@ lcstr &ibi::ToString(int base_num = 10)
     ibi pastbase;
     pastbase.Init(false);
     pastbase = ibi(base_num);
-    ibi r;
-    r.Init(false);
+    CreateDataFM(ibi, r);
+    ;
     r = *this;
     while (base < *this)
     {
@@ -872,7 +868,7 @@ ibr::ibr()
 
         bestPI.Init(false);
         pi_oper_time.Init(false);
-        pi_oper_time = ibi::one;
+        pi_oper_time = ibi(1);
         getPI_approximate(ibi(10));
     }
 }
@@ -893,8 +889,8 @@ ibr::~ibr()
 
 ibr::ibr(int num, int den)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     r.numerator.push_back(num);
     r.denominator.push_back(den);
     r.isPositive = XOR((num > 0), (den > 0));
@@ -1004,8 +1000,7 @@ bool ibr::operator<=(const ibr &A)
 
 ibr ibr::operator+(const ibr &A)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     fm->_tempPushLayer();
 
     r.denominator = this->denominator * A.denominator;
@@ -1033,8 +1028,7 @@ ibr ibr::operator+(const ibr &A)
 
 ibr ibr::operator-(const ibr &A)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     fm->_tempPushLayer();
 
     r.denominator = this->denominator * A.denominator;
@@ -1062,8 +1056,7 @@ ibr ibr::operator-(const ibr &A)
 
 ibr ibr::operator*(const ibr &A)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     fm->_tempPushLayer();
     r.numerator = this->numerator * A.numerator;
     r.denominator = this->denominator * A.denominator;
@@ -1074,8 +1067,7 @@ ibr ibr::operator*(const ibr &A)
 
 ibr ibr::operator/(const ibr &A)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     fm->_tempPushLayer();
     r.numerator = this->numerator * A.denominator;
     r.denominator = this->denominator * A.numerator;
@@ -1086,21 +1078,19 @@ ibr ibr::operator/(const ibr &A)
 
 ibr ibr::floor_function()
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     r.numerator.integer_data.push_back(1);
     r.denominator.integer_data.push_back(1);
     fm->_tempPushLayer();
     r.numerator = *this.numerator / *this.denominator;
-    r.denominator = ibi::one;
+    r.denominator = ibi(1);
     fm->_tempPopLayer();
     return r;
 }
 
 ibr ibr::operator%(const ibr &A)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
 
     fm->_tempPushLayer();
     r = *this - ((*this / A).floor_function() * A);
@@ -1111,8 +1101,7 @@ ibr ibr::operator%(const ibr &A)
 
 ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
     r.numerator.integer_data.push_back(1);
     r.denominator.integer_data.push_back(1);
     fm->_tempPushLayer();
@@ -1121,7 +1110,7 @@ ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
     one.Init(false);
     one.integer_data.push_back(1);
 
-    for (; one < operation_times; one = one + ibi::one)
+    for (; one < operation_times; one = one + ibi(1))
     {
         fm->_tempPushLayer();
         ibr rn0;
@@ -1147,8 +1136,8 @@ ibr ibr::exp_approximate(const ibr &A, const ibi &operation_times)
 
 ibr ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     fm->_tempPushLayer();
 
     ibr n;
@@ -1156,11 +1145,11 @@ ibr ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
     n.numerator.integer_data.push_back(1);
     n.denominator.integer_data.push_back(1);
 
-    r = ibr::one / A;
-    for (; n.numerator < operation_times; n = n + ibr::one)
+    r = ibr(1, 1) / A;
+    for (; n.numerator < operation_times; n = n + ibr(1, 1))
     {
         fm->_tempPushLayer();
-        r = r * (ibr::one + (one / n)).exp_approximate(A, operation_times) / (ibr::one + A / n);
+        r = r * (ibr(1, 1) + (one / n)).exp_approximate(A, operation_times) / (ibr(1, 1) + A / n);
         fm->_tempPopLayer();
     }
     fm->_tempPopLayer();
@@ -1174,7 +1163,7 @@ ibr ibr::nCr(const ibr &N, const ibr &R, const ibi &operation_times)
 
 ibr ibr::nHr(const ibr &N, const ibr &R, const ibi &operation_times)
 {
-    return ibr::gamma_approximate(N + R - ibr::one, operation_times) / (ibr::gamma_approximate(N - ibr::one, operation_times) * ibr::gamma_approximate(R, operation_times));
+    return ibr::gamma_approximate(N + R - one, operation_times) / (ibr::gamma_approximate(N - one, operation_times) * ibr::gamma_approximate(R, operation_times));
 }
 
 ibr ibr::nPr(const ibr &N, const ibr &R, const ibi &operation_times)
@@ -1184,8 +1173,8 @@ ibr ibr::nPr(const ibr &N, const ibr &R, const ibi &operation_times)
 
 ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     r.numerator.integer_data.push_back(0);
     r.denominator.integer_data.push_back(1);
 
@@ -1194,18 +1183,18 @@ ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
         fm->_tempPushLayer();
         ibi n;
         n.Init(false);
-        n = ibi::one;
-        for (; n < operation_times; n = n + ibi::one)
+        n = ibi(1);
+        for (; n < operation_times; n = n + ibi(1))
         {
             fm->_tempPushLayer();
             ibr frontm;
             frontm.Init(false);
-            frontm = ibr::one;
+            frontm = ibr(1, 1);
             frontm.isPositive = n.integer_data[0] % 2;
 
             ibr tempX;
             tempX.Init(false);
-            tempX = X - ibr::one;
+            tempX = X.operator-(ibr(1, 1));
             tempX.numerator.pow(n);
             tempX.denominator.pow(n);
 
@@ -1225,18 +1214,18 @@ ibr ibr::ln_approximate(const ibr &X, const ibi &operation_times)
         fm->_tempPushLayer();
         ibi n;
         n.Init(false);
-        n = ibi::one;
-        for (; n < operation_times; n = n + ibi::one)
+        n = ibi(1);
+        for (; n < operation_times; n = n + ibi(1))
         {
             fm->_tempPushLayer();
             ibr frontm;
             frontm.Init(false);
-            frontm = ibr::one;
+            frontm = ibr(1, 1);
             frontm.isPositive = (int)(n.integer_data[0] % 2) - 1;
 
             ibr tempX;
             tempX.Init(false);
-            tempX = (ibr::one / X) - ibr::one;
+            tempX = (ibr(1, 1) / X) - ibr(1, 1);
             tempX.numerator.pow(n);
             tempX.denominator.pow(n);
 
@@ -1259,8 +1248,8 @@ ibr ibr::getPI_approximate(const ibi &operation_times)
 {
     if (pi_oper_time >= operation_times)
         return bestPI;
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     r.numerator.integer_data.push_back(0);
     r.denominator.integer_data.push_back(1);
 
@@ -1268,20 +1257,20 @@ ibr ibr::getPI_approximate(const ibi &operation_times)
 
     ibi n;
     n.Init(false);
-    n = ibi::one - ibi::one;
+    n = ibi(1) - ibi(1);
 
     ibi two;
     two.Init(false);
-    two = ibi::one + ibi::one;
+    two = ibi(1) + ibi(1);
 
-    for (; n < operation_times; n = n + ibi::one)
+    for (; n < operation_times; n = n + ibi(1))
     {
         fm->_tempPushLayer();
         ibr add;
         add.Init(false);
-        add = ibr::one;
-        add.numerator = ibi::one;
-        add.denominator = two * n + ibi::one;
+        add = ibr(1, 1);
+        add.numerator = ibi(1);
+        add.denominator = two * n + ibi(1);
         add.isPositive = n.integer_data[0] % 2;
         r = r + add;
         fm->_tempPopLayer();
@@ -1299,8 +1288,8 @@ ibr ibr::get_e_approximate(const ibi &operation_times)
 {
     if (best_e != nullptr && e_oper_time >= operation_times)
         return best_e;
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     r.numerator.integer_data.push_back(0);
     r.denominator.integer_data.push_back(1);
 
@@ -1308,24 +1297,24 @@ ibr ibr::get_e_approximate(const ibi &operation_times)
 
     ibi n;
     n.Init(false);
-    n = ibi::one - ibi::one;
+    n = ibi(1) - ibi(1);
 
     ibi two;
     two.Init(false);
-    two = ibi::one + ibi::one;
+    two = ibi(1) + ibi(1);
 
     ibr add;
     add.Init(false);
-    add = ibr::one;
+    add = ibr(1, 1);
 
     for (; n < operation_times;)
     {
         fm->_tempPushLayer();
-        add.numerator = ibi::one;
+        add.numerator = ibi(1);
         add.denominator = add.denominator * n;
         add.isPositive = n.integer_data[0] % 2;
         r = r + add;
-        n = n + ibi::one;
+        n = n + ibi(1);
         fm->_tempPopLayer();
     }
 
@@ -1349,8 +1338,8 @@ ibr ibr::get_e_approximate(const ibi &operation_times)
 
 ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
-    ibr r;
-    r.Init(false);
+    CreateDataFM(ibr, r);
+    ;
     r.numerator.integer_data.push_back(0);
     r.denominator.integer_data.push_back(1);
 
@@ -1359,19 +1348,19 @@ ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const i
     getPI_approximate(getPI_operation_times);
     ibr loopLength;
     loopLength.Init(false);
-    loopLength = *bestPI * (ibr::one + ibr::one);
+    loopLength = *bestPI * (ibr(1, 1) + ibr(1, 1));
 
     ibi index;
     index.Init(false);
-    index = ibi::one - ibi::one;
+    index = ibi(1) - ibi(1);
 
     ibr add;
     add.Init(false);
-    add = ibr::one;
+    add = ibr(1, 1);
 
     ibr tempX;
     tempX.Init(false);
-    tempX = ibr::one;
+    tempX = ibr(1, 1);
     tempX = X % loopLength;
 
     add = tempX;
@@ -1379,7 +1368,7 @@ ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const i
     {
         fm->_tempPushLayer();
         add = add * tempX * tempX;
-        add = add / ((two * n) * (two * n + ibr::one));
+        add = add / ((two * n) * (two * n + ibr(1, 1)));
         add.isPositive = !(n.integer_data[0] % 2);
         r = r + add;
         fm->_tempPopLayer();
@@ -1391,7 +1380,7 @@ ibr ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const i
 
 ibr ibr::cos_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
-    return sin_approximate(X - (*bestPI / (ibr::one + ibr::one)), getPI_approximate, ibi & tayler_operation_times);
+    return sin_approximate(X - (*bestPI / (ibr(1, 1) + ibr(1, 1))), getPI_approximate, ibi & tayler_operation_times);
 }
 
 ibr ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
