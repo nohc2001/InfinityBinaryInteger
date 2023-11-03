@@ -1765,7 +1765,7 @@ namespace freemem
 			}
 		}
 
-		void NULLState() const
+		void NULLState()
 		{
 			Arr = nullptr;
 			maxsize = 0;

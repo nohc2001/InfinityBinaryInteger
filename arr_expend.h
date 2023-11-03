@@ -54,7 +54,7 @@ class lcstr
 		maxsize = siz;
 	}
 
-	void operator=(char *str)
+	void operator=(const char *str)
 	{
 		int len = strlen(str) + 1;
 		if (Arr == nullptr)

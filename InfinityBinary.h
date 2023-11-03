@@ -38,8 +38,8 @@ class ibi{
     static ibi& sub_absolute(const ibi& A, const ibi& B);
     ibi& operator+(const ibi& A) const;
     ibi& operator-(const ibi& A) const;
-    ibi& operator<<(int n) const;
-    ibi& operator>>(int n) const;
+    ibi& operator<<(const int& n) const;
+    ibi& operator>>(const int& n) const;
     static ibi& mul_32(unsigned int A, unsigned int B);
     ibi& operator*(const ibi& A) const;
     static ibi& div_32(const ibi& A, unsigned int divn);
@@ -57,7 +57,7 @@ class ibi{
     static ibi& factorial(const ibi& A);
     ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;
 
-    lcstr& ToString(int base_num = 10);
+    lcstr& ToString(int base_num) const;
 };
 
 class ibr{
@@ -83,7 +83,7 @@ class ibr{
 
     void Init(bool local);
 
-    void operator=(const ibi& ref);
+    void operator=(const ibr& ref);
 
     //fraction
     //약분
