@@ -1731,9 +1731,11 @@ namespace freemem
 	};
 
 
+}
 
-	FM_System0 *fm;
+extern freemem::FM_System0 *fm;
 	
+namespace freemem{
 	template < typename T > class fmvecarr
 	{
 	  public:

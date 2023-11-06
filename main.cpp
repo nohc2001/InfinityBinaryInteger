@@ -4,7 +4,11 @@
 using namespace std;
 using namespace freemem;
 
+FM_System0 *fm;
+
 int main(){
+  fm = new FM_System0();
+  fm->SetHeapData(4096, 4096, 4096, 4096);
   cout << "Hello Math!!" << endl;
 
   fm->_tempPushLayer();
