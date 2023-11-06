@@ -135,10 +135,10 @@ ibi::ibi(const ibi &ref)
 {
     isPositive = ref.isPositive;
     size_t ref_size = ref.integer_data.size();
-    if (ref_size > integer_data.size())
+    if (ref_size > integer_data.maxsize)
         integer_data.Init(ref_size, integer_data.islocal);
-    else
-        integer_data.up = ref_size;
+    
+    integer_data.up = ref_size;
     for (int i = 0; i < ref_size; ++i)
         integer_data[i] = ref.integer_data.Arr[i];
 }
@@ -171,10 +171,9 @@ void ibi::operator=(const ibi &ref)
 {
     isPositive = ref.isPositive;
     size_t ref_size = (int)ref.integer_data.up;
-    if (ref_size > integer_data.size())
+    if (ref_size > integer_data.maxsize)
         integer_data.Init(ref_size, integer_data.islocal);
-    else
-        integer_data.up = ref_size;
+    integer_data.up = ref_size;
     for (int i = 0; i < ref_size; ++i)
         integer_data[i] = ref.integer_data[i];
 }
