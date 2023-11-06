@@ -1,3 +1,5 @@
+#ifndef INF_BIN_INT
+#define INF_BIN_INT
 #include <math.h>
 #include "arr_expend.h"
 #include "Utill_FreeMemory.h"
@@ -1504,3 +1506,4 @@ ibr& ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const 
 {
     return sin_approximate(X, getPI_operation_times, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
 }
+#endif
