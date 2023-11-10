@@ -180,28 +180,35 @@ void ibi::operator=(const ibi &ref)
 
 bool ibi::cmp(const ibi &A, bool left_big, bool include_same) const
 {
-    if (isPositive && !A.isPositive)
-        return left_big;
     if (isPositive == A.isPositive)
     {
+        bool k = true;
+        k = left_big ? k : !k;
+        k = isPositive ? k : !k;
+
         if (integer_data.up > A.integer_data.up)
-            return XOR(isPositive, left_big);
+            return k;
         else if (integer_data.up < A.integer_data.up)
-            return XOR(!isPositive, left_big);
+            return !k;
         else
         {
             for (int i = integer_data.up - 1; i >= 0; --i)
             {
                 if (integer_data[i] > A.integer_data[i])
-                    return XOR(isPositive, left_big);
+                    return k;
                 else if (integer_data[i] < A.integer_data[i])
-                    return XOR(!isPositive, left_big);
+                    return !k;
             }
             return include_same;
         }
     }
     else
-        return left_big;
+    {
+        if (isPositive && !A.isPositive)
+            return left_big;
+        if (!isPositive && A.isPositive)
+            return !left_big;
+    }
 }
 
 bool ibi::operator>(const ibi &A) const
