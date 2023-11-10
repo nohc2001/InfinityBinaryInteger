@@ -319,7 +319,7 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
 
 ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
 {
-    bool pos[2] = {A.isPositive, B.isPositive};
+    bool pos[2] = {A.isPositive, !B.isPositive};
     CreateDataFM(ibi, r);
 	
 	ibi At, Bt;
@@ -834,7 +834,6 @@ ibi& ibi::sqrt_approximate(const ibi &A, unsigned int operation_times) const
 ibi& ibi::tetration(const ibi &A) const
 {
     CreateDataFM(ibi, r);
-    ;
     r = *this;
 
     fm->_tempPushLayer();
@@ -861,7 +860,6 @@ ibi& ibi::tetration(const ibi &A) const
 ibi& ibi::factorial(const ibi &A)
 {
     CreateDataFM(ibi, r);
-    ;
     r = ibi(1);
 
     fm->_tempPushLayer();
