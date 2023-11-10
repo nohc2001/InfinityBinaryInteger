@@ -4,6 +4,7 @@
     "workbench.preferredHighContrastColorTheme": "Visual Studio 2017 Dark - C++",
     "files.associations": {
         "cmath": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "string": "cpp"
     }
 }

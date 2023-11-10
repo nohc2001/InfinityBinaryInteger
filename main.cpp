@@ -13,16 +13,16 @@ int main(){
 
   fm->_tempPushLayer();
 
+  unsigned int A_data[3] = {4294967295, 4294967295, 4294967295};
   ibi A;
   A.Init(false);
-  A = ibi(123);
+  A = ibi(true, A_data, 3);
   ibi B;
   B.Init(false);
-  B = ibi(382);
+  B = ibi(1);
 
-  A = A - B;
-  lcstr* str = A.dataString();
-  cout << str->c_str() << endl;
+  A = B - A;
+  cout << A.dataString()->c_str() << endl;
 
   fm->_tempPopLayer();
   return 0;
