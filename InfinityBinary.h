@@ -958,6 +958,8 @@ lcstr& ibi::ToString(int base_num = 10) const
     CreateDataFM(ibi, r);
 	
     r = *this;
+    r.isPositive = true;
+    
     while (base < *this)
     {
         unsigned int n = (*this / base).integer_data[0] % base_num;
