@@ -593,7 +593,7 @@ ibi& ibi::operator/(const ibi &A) const
 
     int shift = tempA.integer_data.up - 1;
     int vpos = 1;
-    while (vpos < 0)
+    while (vpos >= 0)
     {
         fm->_tempPushLayer();
         vpos = tempV.integer_data.up - 1 - (shift + 1);
@@ -951,7 +951,7 @@ lcstr& ibi::ToString(int base_num = 10) const
 
     ibi base;
     base.Init(false);
-    base = ibi(base_num);
+    base = ibi(1);
     ibi pastbase;
     pastbase.Init(false);
     pastbase = ibi(base_num);
@@ -959,10 +959,10 @@ lcstr& ibi::ToString(int base_num = 10) const
 	
     r = *this;
     r.isPositive = true;
-    
-    while (base < *this)
+
+    while (base < r)
     {
-        unsigned int n = (*this / base).integer_data[0] % base_num;
+        unsigned int n = (r / base).integer_data[0] % base_num;
         lcstr nstr;
         string temp = to_string(n);
         nstr.Init(temp.size(), true);
