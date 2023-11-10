@@ -21,7 +21,8 @@ int main(){
   B = ibi(382);
 
   A = A - B;
-  cout << A.ToString(10).c_str() << endl;
+  lcstr* str = A.dataString();
+  cout << str->c_str() << endl;
 
   fm->_tempPopLayer();
   return 0;

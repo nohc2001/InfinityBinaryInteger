@@ -23,7 +23,7 @@ class ibi{
     ibi();
     ibi(const ibi& ref);
     ibi(int num);
-    ibi(bool isp, fmvecarr<unsigned int> data);
+    ibi(bool isp, unsigned int* data, unsigned int size);
     ~ibi();
     void Init(bool plocal);
     void Release();
@@ -61,7 +61,7 @@ class ibi{
     ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;
 
     lcstr& ToString(int base_num) const;
-    lcstr& ToString() const; // data origin(pow(2, 32) based expression of number)
+    lcstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
 class ibr{
@@ -996,29 +996,32 @@ lcstr& ibi::ToString(int base_num = 10) const
     return str;
 }
 
-lcstr& ibi::ToString() const
+lcstr* ibi::dataString() const
 {
-    lcstr str;
-    str.Init(integer_data.size() * 32, false);
+    lcstr* str = (lcstr*)fm->_tempNew(sizeof(lcstr));
+    str->Init(integer_data.size() * 32, false);
     fm->_tempPushLayer();
+
+    str->push_back('[');
 
     if (isPositive)
     {
-        str.push_back('+');
+        str->push_back('+');
     }
     else
     {
-        str.push_back('-');
+        str->push_back('-');
     }
 
     for(int i=this->integer_data.size() - 1;i>=0;--i){
-        str.push_back(':');
+        str->push_back(':');
         string temp = to_string(this->integer_data[i]);
         for(int k=0;k<temp.size();++k){
-            str.push_back(temp[k]);
+            str->push_back(temp[k]);
         }
     }
 
+    str->push_back(']');
     fm->_tempPopLayer();
     return str;
 }
