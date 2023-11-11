@@ -97,7 +97,7 @@ class ibi{
     ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;
 
     lcstr& ToString(int base_num) const;
-    lcstr* dataString() const; // data origin(pow(2, 32) based expression of number)
+    lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
 class ibr{
@@ -1032,32 +1032,32 @@ lcstr& ibi::ToString(int base_num = 10) const
     return str;
 }
 
-lcstr* ibi::dataString() const
+lwstr* ibi::dataString() const
 {
-    lcstr* str = (lcstr*)fm->_tempNew(sizeof(lcstr));
+    lwstr* str = (lcstr*)fm->_tempNew(sizeof(lwstr));
     str->Init(integer_data.size() * 32, false);
     fm->_tempPushLayer();
 
-    str->push_back('[');
+    str->push_back(L'[');
 
     if (isPositive)
     {
-        str->push_back('+');
+        str->push_back(L'+');
     }
     else
     {
-        str->push_back('-');
+        str->push_back(L'-');
     }
 
     for(int i=this->integer_data.size() - 1;i>=0;--i){
-        str->push_back(':');
+        str->push_back(L':');
         uint_wstr uintstr = Get256BasedExpr(integer_data[i]);
         for(int k=0;k<4;++k){
             str->push_back(uintstr[k]);
         }
     }
 
-    str->push_back(']');
+    str->push_back(L']');
     fm->_tempPopLayer();
     return str;
 }
