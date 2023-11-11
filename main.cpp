@@ -17,13 +17,13 @@ int main(){
   fm->_tempPushLayer();
   ibi A;
   A.Init(false);
-  A = ibi(1);
+  A = ibi(2);
 
   while(true){
     fm->_tempPushLayer();
-    int a = rand()%100000000;
+    int a = rand()%10;
     a = a > 0 ? a : -a;
-    A = A + ibi(a);
+    A = A + A - ibi(a);
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
