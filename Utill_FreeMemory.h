@@ -1783,6 +1783,9 @@ namespace freemem{
 				if(fmlayer < 0){
 					fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size();
 				}
+				else{
+					cout << "reuse" << endl;
+				}
 			}
 			if (Arr != nullptr)
 			{
