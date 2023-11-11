@@ -209,6 +209,7 @@ ibi::~ibi()
 
 void ibi::Init(bool plocal)
 {
+    integer_data.NULLState();
     integer_data.Init(2, false);
     islocal = plocal;
 }
@@ -536,21 +537,28 @@ ibi& ibi::operator*(const ibi &A) const
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
     r = ibi(0);
-    ibi *thismulibi = new ibi[A.integer_data.up];
+    ibi *thismulibi = new ibi[integer_data.up];
     for (int i = 0; i < integer_data.up; ++i)
     {
+        fm->_tempPushLayer();
         thismulibi[i].Init(true);
         thismulibi[i].integer_data.push_back(0);
         unsigned int uii = integer_data[i];
         ibi *mulibi = new ibi[A.integer_data.up];
         for (int k = 0; k < A.integer_data.up; ++k)
         {
+            fm->_tempPushLayer();
             mulibi[k].Init(true);
             mulibi[k] = mul_32(uii, A.integer_data[k]);
+            wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
             thismulibi[i] = thismulibi[i] + mulibi[k];
+            fm->_tempPopLayer();
         }
         delete[] mulibi;
+        thismulibi[i] = thismulibi[i] << i;
         r = r + thismulibi[i];
+        wcout << "TM["<< i <<"] : " << thismulibi[i].dataString()->c_str() << endl;
+        fm->_tempPopLayer();
     }
     delete[] thismulibi;
     fm->_tempPopLayer();
