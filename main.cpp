@@ -15,18 +15,16 @@ int main(){
   cout << "Hello Math!!" << endl;
 
   fm->_tempPushLayer();
-
-  unsigned int A_data[3] = {4294967295, 4294967295, 4294967295};
-  unsigned int B_data[3] = {20000, 4294964295, 4224967295};
   ibi A;
   A.Init(false);
-  A = ibi(true, A_data, 3);
-  ibi B;
-  B.Init(false);
-  B = ibi(true, B_data, 3);
+  A = ibi(1);
 
-  A = B - A;
-  wcout << A.dataString()->c_str() << endl;
+  while(true){
+    fm->_tempPushLayer();
+    A = A + ibi(1);
+    wcout << A.dataString()->c_str() << endl;
+    fm->_tempPopLayer();
+  }
 
   fm->_tempPopLayer();
   return 0;

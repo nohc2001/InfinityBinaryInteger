@@ -11,11 +11,11 @@ constexpr wchar_t bytebased[16][17] = {
     {L'○', L'①' ,L'②' ,L'③' ,L'④' ,L'⑤' ,L'⑥' ,L'⑦' ,L'⑧' ,L'⑨' ,L'⑩' ,L'⑪' ,L'⑫' ,L'⑬' ,L'⑭' ,L'⑮'},
     {L'⑯', L'⑰', L'⑱', L'⑲', L'⑳', L'㉑', L'㉒', L'㉓', L'㉔', L'㉕', L'㉖', L'㉗', L'㉘', L'㉙', L'㉚', L'㉛'},
     {L'㉜', L'㉝', L'㉞', L'㉟', L'㊱', L'㊲', L'㊳', L'㊴', L'㊵', L'㊶', L'㊷', L'㊸', L'㊹', L'㊺', L'㊻', L'㊼'},
-    {L'◎', L'⑴', L'⑵', L'⑶', L'⑷', L'⑸', L'⑹', L'⑺', L'⑻', L'⑼', L'⑽', L'⑾', L'⑿', L'⒀', L'⒁', L'⒂'},
+    {L'⒪', L'⑴', L'⑵', L'⑶', L'⑷', L'⑸', L'⑹', L'⑺', L'⑻', L'⑼', L'⑽', L'⑾', L'⑿', L'⒀', L'⒁', L'⒂'},
     {L'日', L'㏠', L'㏡', L'㏢', L'㏣', L'㏤', L'㏥', L'㏦', L'㏧', L'㏨', L'㏩', L'㏪', L'㏫', L'㏬', L'㏭', L'㏮'},
     {L'㏯', L'㏰', L'㏱', L'㏲', L'㏳', L'㏴', L'㏵', L'㏶', L'㏷', L'㏸', L'㏹', L'㏺', L'㏻', L'㏼', L'㏽', L'㏾'},
     {L'㍘', L'㍙', L'㍚', L'㍛', L'㍜', L'㍝', L'㍞', L'㍟', L'㍠', L'㍡', L'㍢', L'㍣', L'㍤', L'㍥', L'㍦', L'㍧'},
-    {L'口', L'一', L'二', L'三', L'四', L'五', L'六', L'七', L'八', L'九', L'十', L'土', L'王', L'玉', L'罕', L'丑'},
+    {L'零', L'一', L'二', L'三', L'四', L'五', L'六', L'七', L'八', L'九', L'十', L'土', L'王', L'玉', L'罕', L'丑'},
     {L'䷀', L'䷪', L'䷍', L'䷡', L'䷈', L'䷄', L'䷙', L'䷊', L'䷉', L'䷹', L'䷥', L'䷵', L'䷼', L'䷻', L'䷨', L'䷒'},
     {L'䷌', L'䷰', L'䷝', L'䷶', L'䷤', L'䷾', L'䷕', L'䷣', L'䷘', L'䷐', L'䷔', L'䷲', L'䷩', L'䷂', L'䷚', L'䷗'},
     {L'䷫', L'䷛', L'䷱', L'䷟', L'䷸', L'䷯', L'䷑', L'䷭', L'䷅', L'䷮', L'䷿', L'䷧', L'䷺', L'䷜', L'䷃', L'䷆'},
@@ -357,6 +357,9 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
         unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
         unsigned int Tx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
         unsigned int max = (Ax > Tx) ? Ax : Tx;
+        if(Ax == 256){
+            wcout << L"er" << endl;
+        }
         Tx += Ax;
         if (Tx < max)
         {
@@ -864,7 +867,6 @@ ibi& ibi::pow(const ibi &A) const
 ibi& ibi::sqrt_approximate(const ibi &A, unsigned int operation_times) const
 {
     CreateDataFM(ibi, r);
-    ;
     r.integer_data.push_back(1);
 
     fm->_tempPushLayer();
@@ -1040,6 +1042,7 @@ lcstr& ibi::ToString(int base_num = 10) const
 lwstr* ibi::dataString() const
 {
     lwstr* str = (lwstr*)fm->_tempNew(sizeof(lwstr));
+    str->NULLState();
     str->Init(integer_data.size() * 32, false);
     fm->_tempPushLayer();
 
