@@ -362,9 +362,14 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
         {
             carry(&r, i + 1);
         }
-        r.integer_data[i] = Tx;
+        
+        if(r.integer_data.up <= i){
+            r.integer_data.push_back(Tx);
+        }
+        else{
+            r.integer_data[i] = Tx;
+        }
     }
-    r.integer_data.up = maxsiz;
     fm->_tempPopLayer();
     return r;
 }
