@@ -7,6 +7,42 @@ using namespace freemem;
 
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 
+constexpr wchar_t bytebased[257] = 
+"○①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮
+⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚㉛
+㉜㉝㉞㉟㊱㊲㊳㊴㊵㊶㊷㊸㊹㊺㊻㊼
+◎⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂
+日㏠㏡㏢㏣㏤㏥㏦㏧㏨㏩㏪㏫㏬㏭㏮
+㏯㏰㏱㏲㏳㏴㏵㏶㏷㏸㏹㏺㏻㏼㏽㏾
+㍘㍙㍚㍛㍜㍝㍞㍟㍠㍡㍢㍣㍤㍥㍦㍧
+口一二三四五六七八九十土王玉罕丑
+䷀䷪䷍䷡䷈䷄䷙䷊䷉䷹䷥䷵䷼䷻䷨䷒
+䷌䷰䷝䷶䷤䷾䷕䷣䷘䷐䷔䷲䷩䷂䷚䷗
+䷫䷛䷱䷟䷸䷯䷑䷭䷅䷮䷿䷧䷺䷜䷃䷆
+䷠䷞䷷䷽䷴䷦䷳䷎䷋䷬䷢䷏䷓䷇䷖䷁
+※⒈⒉⒊⒋⒌⒍⒎⒏⒐⒑⒒⒓⒔⒕⒖
+🄁🄂🄃🄄🄅🄆🄇🄈𝍠𝍡𝍢𝍣𝍤𝍥𝍦𝍧𝍨
+□▒▥▨▦▩▣■◇◈◆◎◔◐◑◕
+●❶❷❸❹❺❻❼❽❾❿⓫⓬⓭⓮⓯";
+
+struct uint_wstr{
+    wchar_t str[5] = {};
+};
+
+uint_wstr Get256BasedExpr(unsigned int num) const {
+    unsigned int n = num;
+    uint_wstr r;
+    r.str[0] = bytebased[n % 256];
+    n = n >> 8;
+    r.str[1] = bytebased[n % 256];
+    n = n >> 8;
+    r.str[2] = bytebased[n % 256];
+    n = n >> 8;
+    r.str[3] = bytebased[n % 256];
+    r.str[4] = 0;
+    return r;
+}
+
 inline bool XOR(bool a, bool b){
     return a ? !b : b;
 }
@@ -1015,9 +1051,9 @@ lcstr* ibi::dataString() const
 
     for(int i=this->integer_data.size() - 1;i>=0;--i){
         str->push_back(':');
-        string temp = to_string(this->integer_data[i]);
-        for(int k=0;k<temp.size();++k){
-            str->push_back(temp[k]);
+        uint_wstr uintstr = Get256BasedExpr(integer_data[i]);
+        for(int k=0;k<4;++k){
+            str->push_back(uintstr[k]);
         }
     }
 
