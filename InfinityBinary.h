@@ -8,8 +8,8 @@ using namespace freemem;
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 
 constexpr wchar_t bytebased[16][17] = {
-    {L'○',L'①',L'②',L'③',L'④',L'⑤',L'⑥',L'⑦',L'⑧',L'⑨',L'⑩',L'⑪',L'⑫',L'⑬',L'⑭',L'⑮'},
-    {L'⑯',L'⑰',L'⑱', L'⑲', L'⑳', L'㉑', L'㉒', L'㉓', L'㉔', L'㉕', L'㉖', L'㉗', L'㉘', L'㉙', L'㉚', L'㉛'},
+    {L'○', L'①' ,L'②' ,L'③' ,L'④' ,L'⑤' ,L'⑥' ,L'⑦' ,L'⑧' ,L'⑨' ,L'⑩' ,L'⑪' ,L'⑫' ,L'⑬' ,L'⑭' ,L'⑮'},
+    {L'⑯', L'⑰', L'⑱', L'⑲', L'⑳', L'㉑', L'㉒', L'㉓', L'㉔', L'㉕', L'㉖', L'㉗', L'㉘', L'㉙', L'㉚', L'㉛'},
     {L'㉜', L'㉝', L'㉞', L'㉟', L'㊱', L'㊲', L'㊳', L'㊴', L'㊵', L'㊶', L'㊷', L'㊸', L'㊹', L'㊺', L'㊻', L'㊼'},
     {L'◎', L'⑴', L'⑵', L'⑶', L'⑷', L'⑸', L'⑹', L'⑺', L'⑻', L'⑼', L'⑽', L'⑾', L'⑿', L'⒀', L'⒁', L'⒂'},
     {L'日', L'㏠', L'㏡', L'㏢', L'㏣', L'㏤', L'㏥', L'㏦', L'㏧', L'㏨', L'㏩', L'㏪', L'㏫', L'㏬', L'㏭', L'㏮'},
@@ -34,16 +34,16 @@ uint_wstr Get256BasedExpr(unsigned int num) {
     unsigned int n = num;
     uint_wstr r;
     int i = n % 256;
-    r.str[0] = bytebased[i/16][i%16];
-    n = n >> 8;
-    i = n % 256;
-    r.str[1] = bytebased[i/16][i%16];
+    r.str[3] = bytebased[i/16][i%16];
     n = n >> 8;
     i = n % 256;
     r.str[2] = bytebased[i/16][i%16];
     n = n >> 8;
     i = n % 256;
-    r.str[3] = bytebased[i/16][i%16];
+    r.str[1] = bytebased[i/16][i%16];
+    n = n >> 8;
+    i = n % 256;
+    r.str[0] = bytebased[i/16][i%16];
     r.str[4] = 0;
     return r;
 }
