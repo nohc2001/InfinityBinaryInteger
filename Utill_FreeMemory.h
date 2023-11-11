@@ -1106,18 +1106,15 @@ namespace freemem
 
 		byte8 *_New(unsigned int size, int fmlayer = -1)
 		{
-			vecarr<FM_Model0*>* fm0 = tempFM.at(tempFM.up-1);
-			//watch("fm0up", fm0->up);
-			//watch("lsize", tempFM.up);
-			unsigned int lsize = fm0->size();
 			vecarr<FM_Model0*>* tm;
 			if(fmlayer < 0 || fmlayer >= tempFM.up) tm = tempFM.last();
 			else tm = tempFM.at(fmlayer);
-			
-			for (int i = 0; i < lsize; ++i)
+			unsigned int tsize = tm->size();
+
+			for (int i = 0; i < tsize; ++i)
 			{
 				//watch("i", i);
-				int remain = 4096 - tm->at(i)->Fup;
+				int remain = 4096 - tm->at(i)->Fup + 1;
 				if (remain >= size)
 				{
 					return tm->at(i)->_New(size);

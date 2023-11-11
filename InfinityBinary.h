@@ -357,9 +357,6 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
         unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
         unsigned int Tx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
         unsigned int max = (Ax > Tx) ? Ax : Tx;
-        if(Ax == 256){
-            wcout << L"er" << endl;
-        }
         Tx += Ax;
         if (Tx < max)
         {
@@ -367,6 +364,7 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
         }
         r.integer_data[i] = Tx;
     }
+    r.integer_data.up = maxsiz;
     fm->_tempPopLayer();
     return r;
 }

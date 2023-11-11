@@ -21,7 +21,9 @@ int main(){
 
   while(true){
     fm->_tempPushLayer();
-    A = A + ibi(1);
+    int a = rand()%100000;
+    a = a > 0 ? a : -a;
+    A = A + ibi(a);
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
