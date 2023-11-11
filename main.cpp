@@ -26,6 +26,9 @@ int main(){
 
   while(true){
     ++count;
+    if(count == 42){
+      wcout << "stop" << endl;
+    }
     fm->_tempPushLayer();
     A = A * B;
     wcout << A.dataString()->c_str() << endl;

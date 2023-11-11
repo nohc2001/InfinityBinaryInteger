@@ -223,8 +223,8 @@ void ibi::operator=(const ibi &ref)
 {
     isPositive = ref.isPositive;
     size_t ref_size = (int)ref.integer_data.up;
-    if (ref_size > integer_data.maxsize)
-        integer_data.Init(ref_size, integer_data.islocal);
+    while (ref_size > integer_data.maxsize)
+        integer_data.Init(ref_size+2, integer_data.islocal);
     integer_data.up = ref_size;
     for (int i = 0; i < ref_size; ++i)
         integer_data[i] = ref.integer_data[i];
@@ -558,6 +558,7 @@ ibi& ibi::operator*(const ibi &A) const
         thismulibi[i] = thismulibi[i] << i;
         r = r + thismulibi[i];
         wcout << "TM["<< i <<"] : " << thismulibi[i].dataString()->c_str() << endl;
+        wcout << "r : " << r.dataString()->c_str() << endl;
         fm->_tempPopLayer();
     }
     delete[] thismulibi;
