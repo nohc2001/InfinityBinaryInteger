@@ -117,7 +117,7 @@ namespace freemem
 
 		byte8 *_New(unsigned int byteSiz)
 		{
-			if (Fup + byteSiz < siz)
+			if (Fup + byteSiz <= siz)
 			{
 				unsigned int fup = Fup;
 				Fup += byteSiz;
