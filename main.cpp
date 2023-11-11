@@ -20,16 +20,17 @@ int main(){
   A.Init(false);
   A = ibi(2);
 
+  ibi B;
+  B.Init(false);
+  B = ibi(3);
+
   
   while(true){
     ++count;
-    if(count == 514){
-      wcout << "err" << endl;
-    }
     fm->_tempPushLayer();
     int a = rand()%10;
     a = a > 0 ? a : -a;
-    A = A + A - ibi(a);
+    A = A * B;
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }

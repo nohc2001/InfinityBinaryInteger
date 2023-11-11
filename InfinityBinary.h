@@ -284,8 +284,12 @@ bool ibi::operator<=(const ibi &A) const
 
 bool ibi::operator==(const ibi &A) const
 {
-    if (isPositive != A.isPositive)
+    if (isPositive != A.isPositive){
+        if((A.integer_data.size() == 1 && A.integer_data[0] == 0) && (this->integer_data.size() == 1 && this->integer_data[0] == 0)){
+            return true;
+        }
         return false;
+    }
     else
     {
         if (integer_data.up != A.integer_data.up)
@@ -427,6 +431,10 @@ ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
 
 ibi& ibi::operator+(const ibi &A) const
 {
+    if(*this == ibi(0) && A == ibi(0)){
+        return ibi::add_absolute(*this, A);
+    }
+
     if (isPositive == A.isPositive)
     {
         return ibi::add_absolute(*this, A);
@@ -500,12 +508,21 @@ ibi& ibi::mul_32(unsigned int A, unsigned int B)
     operand[0].Init(true);
     operand[1].Init(true);
     operand[2].Init(true);
+    operand[0] = ibi(0);
+    operand[1] = ibi(0);
+    operand[2] = ibi(0);
     operand[0].integer_data[0] = R0;
-    operand[0].integer_data[1] = R3;
+    if(R3 != 0){
+        operand[0].integer_data.push_back(R3);
+    }
     operand[1].integer_data[0] = R10;
-    operand[1].integer_data[1] = R11;
+    if(R11 != 0){
+        operand[1].integer_data.push_back(R11);
+    }
     operand[2].integer_data[0] = R20;
-    operand[2].integer_data[1] = R21;
+    if(R21 != 0){
+        operand[2].integer_data.push_back(R21);
+    }
 
     r = operand[0].operator+(operand[1]);
     r = r + operand[2];
@@ -517,9 +534,8 @@ ibi& ibi::mul_32(unsigned int A, unsigned int B)
 ibi& ibi::operator*(const ibi &A) const
 {
     CreateDataFM(ibi, r);
-    
     fm->_tempPushLayer();
-    r.integer_data.push_back(0);
+    r = ibi(0);
     ibi *thismulibi = new ibi[A.integer_data.up];
     for (int i = 0; i < integer_data.up; ++i)
     {
