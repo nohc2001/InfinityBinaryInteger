@@ -1739,7 +1739,7 @@ namespace freemem{
 		int up = 0;
 		bool islocal = true;
 		bool isdebug = false;
-		int fmlayer = 0;
+		int fmlayer = -1;
 
 		fmvecarr()
 		{
@@ -1747,7 +1747,7 @@ namespace freemem{
 			maxsize = 0;
 			up = 0;
 			islocal = true;
-			fmlayer = 0;
+			fmlayer = -1;
 		}
 
 		virtual ~ fmvecarr()
