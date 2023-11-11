@@ -6,6 +6,7 @@ using namespace std;
 using namespace freemem;
 
 FM_System0 *fm;
+unsigned int count = 0;
 int main(){
   std::wcout.sync_with_stdio(false);
   std::wcout.imbue(std::locale("en_US.utf8"));
@@ -19,7 +20,12 @@ int main(){
   A.Init(false);
   A = ibi(2);
 
+  
   while(true){
+    ++count;
+    if(count == 514){
+      wcout << "err" << endl;
+    }
     fm->_tempPushLayer();
     int a = rand()%10;
     a = a > 0 ? a : -a;
