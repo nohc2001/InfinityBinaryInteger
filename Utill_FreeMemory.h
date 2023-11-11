@@ -1767,6 +1767,7 @@ namespace freemem{
 			Arr = nullptr;
 			maxsize = 0;
 			up = 0;
+			fmlayer = -1;
 		}
 
 		void Init(size_t siz, bool local, bool isdebug = false)
@@ -1779,6 +1780,9 @@ namespace freemem{
 			else
 			{
 				newArr = (T *) fm->_tempNew(sizeof(T) * siz, fmlayer);
+				if(fmlayer < 0){
+					fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size();
+				}
 			}
 			if (Arr != nullptr)
 			{
