@@ -1039,7 +1039,7 @@ lcstr& ibi::ToString(int base_num = 10) const
 
 lwstr* ibi::dataString() const
 {
-    lwstr* str = (lcstr*)fm->_tempNew(sizeof(lwstr));
+    lwstr* str = (lwstr*)fm->_tempNew(sizeof(lwstr));
     str->Init(integer_data.size() * 32, false);
     fm->_tempPushLayer();
 
@@ -1058,7 +1058,8 @@ lwstr* ibi::dataString() const
         str->push_back(L':');
         uint_wstr uintstr = Get256BasedExpr(integer_data[i]);
         for(int k=0;k<4;++k){
-            str->push_back(uintstr[k]);
+            str->push_back(uintstr.str[k]);
+            str->push_back(L' ');
         }
     }
 

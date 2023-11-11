@@ -1,4 +1,5 @@
 #include <iostream>
+#include <locale>
 #include "InfinityBinary.h"
 
 using namespace std;
@@ -6,6 +7,9 @@ using namespace freemem;
 
 FM_System0 *fm;
 int main(){
+  std::wcout.sync_with_stdio(false);
+  std::wcout.imbue(std::locale("en_US.utf8"));
+
   fm = new FM_System0();
   fm->SetHeapData(4096, 4096, 4096, 4096);
   cout << "Hello Math!!" << endl;
@@ -19,10 +23,10 @@ int main(){
   A = ibi(true, A_data, 3);
   ibi B;
   B.Init(false);
-  B = ibi(1);
+  B = ibi(2);
 
   A = B - A;
-  cout << A.dataString()->c_str() << endl;
+  wcout << A.dataString()->c_str() << endl;
 
   fm->_tempPopLayer();
   return 0;
