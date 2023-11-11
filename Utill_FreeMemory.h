@@ -1726,8 +1726,6 @@ namespace freemem
 			}
 		}
 	};
-
-
 }
 
 extern freemem::FM_System0 *fm;
