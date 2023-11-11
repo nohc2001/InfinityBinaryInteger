@@ -23,7 +23,7 @@ int main(){
   A = ibi(true, A_data, 3);
   ibi B;
   B.Init(false);
-  B = ibi(2);
+  B = ibi(true, B_data, 3);
 
   A = B - A;
   wcout << A.dataString()->c_str() << endl;
