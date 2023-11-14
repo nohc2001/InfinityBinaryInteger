@@ -1781,10 +1781,10 @@ namespace freemem{
 			{
 				newArr = (T *) fm->_tempNew(sizeof(T) * siz, fmlayer);
 				if(fmlayer < 0){
-					fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size();
+					fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size()-1;
 				}
 				else{
-					cout << "reuse" << endl;
+					//cout << "reuse" << endl;
 				}
 			}
 			if (Arr != nullptr)

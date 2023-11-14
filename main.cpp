@@ -26,7 +26,7 @@ int main(){
 
   while(true){
     ++count;
-    if(count == 42){
+    if(count == 41){
       wcout << "stop" << endl;
     }
     fm->_tempPushLayer();

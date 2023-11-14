@@ -54,7 +54,6 @@ inline bool XOR(bool a, bool b){
 
 class ibi{
     public:
-
     bool isPositive = true;
     bool islocal = true;
     fmvecarr<unsigned int> integer_data;
@@ -550,15 +549,15 @@ ibi& ibi::operator*(const ibi &A) const
             fm->_tempPushLayer();
             mulibi[k].Init(true);
             mulibi[k] = mul_32(uii, A.integer_data[k]);
-            wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
+            //wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
             thismulibi[i] = thismulibi[i] + mulibi[k];
             fm->_tempPopLayer();
         }
         delete[] mulibi;
         thismulibi[i] = thismulibi[i] << i;
         r = r + thismulibi[i];
-        wcout << "TM["<< i <<"] : " << thismulibi[i].dataString()->c_str() << endl;
-        wcout << "r : " << r.dataString()->c_str() << endl;
+        //wcout << "TM["<< i <<"] : " << thismulibi[i].dataString()->c_str() << endl;
+        //wcout << "r : " << r.dataString()->c_str() << endl;
         fm->_tempPopLayer();
     }
     delete[] thismulibi;
