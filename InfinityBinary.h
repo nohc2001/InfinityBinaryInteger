@@ -549,6 +549,7 @@ ibi& ibi::operator*(const ibi &A) const
             fm->_tempPushLayer();
             mulibi[k].Init(true);
             mulibi[k] = mul_32(uii, A.integer_data[k]);
+            mulibi[k] = mulibi[k] << k;
             //wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
             thismulibi[i] = thismulibi[i] + mulibi[k];
             fm->_tempPopLayer();

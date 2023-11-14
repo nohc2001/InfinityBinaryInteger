@@ -26,10 +26,8 @@ int main(){
 
   while(true){
     ++count;
-    if(count == 41){
-      wcout << "stop" << endl;
-    }
     fm->_tempPushLayer();
+    B = A + 1;
     A = A * B;
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
