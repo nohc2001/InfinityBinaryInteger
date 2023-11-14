@@ -660,7 +660,6 @@ ibi& ibi::operator/(const ibi &A) const
 {
     // this / a
     CreateDataFM(ibi, r);
-    
 
     fm->_tempPushLayer();
 

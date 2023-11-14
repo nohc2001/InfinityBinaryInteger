@@ -18,7 +18,7 @@ int main(){
   fm->_tempPushLayer();
   ibi A;
   A.Init(false);
-  A = ibi(2);
+  A = ibi(43046721);
 
   ibi B;
   B.Init(false);
@@ -27,8 +27,7 @@ int main(){
   while(true){
     ++count;
     fm->_tempPushLayer();
-    B = A + 1;
-    A = A * B;
+    A = A / B;
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
