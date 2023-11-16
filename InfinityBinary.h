@@ -672,37 +672,62 @@ ibi& ibi::operator/(const ibi &A) const
     tempA.Init(false);
     tempA = A;
 
-    int shift = tempA.integer_data.up - 1;
+    int shift = tempA.integer_data.up;
     int vpos = 1;
+    vpos = tempV.integer_data.up - shift;
     while (vpos >= 0)
     {
         fm->_tempPushLayer();
-        vpos = tempV.integer_data.up - 1 - (shift + 1);
-        ibi tV;
-        tV.Init(false);
-        tV = tempV >> shift;
+        ibi teV;
+        teV.Init(false);
+        teV = tempV >> vpos;
 
         ibi tR;
-        unsigned int tA = tempA.integer_data.last();
+
+        unsigned int divva = 0;
+        if(teV.integer_data.size() == tempA.integer_data.size()){
+            unsigned int tA = tempA.integer_data.last();
+            unsigned int tV = teV.integer_data.last();
+            divva = tV / tA;
+        }
+        else{
+            unsigned int delta = 4294967295 >> 2;
+            unsigned int divp = 4294967295 >> 1;
+
+            //humm need testing
+            while(delta > 0){
+                ibi seekI;
+                seekI.Init(false);
+                seekI = tempA * ibi(true, &divp, 1);
+                bool saturate = true;
+                if(seekI > teV){
+                    delta = delta >> 1;
+                    divp -= delta;
+                }
+                else{
+                    delta = delta >> 1;
+                    divp += delta;
+                }
+            }
+            
+        }
+        
+        
+        tR.Init(false);
+        tR = ibi(true, &divva, 1);
+
         bool saturate = true;
         while (saturate)
         {
-            tR.Init(false);
-            tR = div_32(tV, tA);
-            tR = tR << vpos;
-
-            if (tempV < (tempA * tR))
-            {
-                saturate = true;
-                tA -= 1;
-            }
-            else
-            {
+            if(teV < tempA * tR){
                 saturate = false;
+            }
+            else{
+                tR = tR - 1;
             }
         }
 
-        tempV = tempV - (tempA * tR);
+        tempV = tempV - ((tempA * tR) << vpos);
         for (int k = tempV.integer_data.up - 1; k >= 0; --k)
         {
             if (tempV.integer_data[k] == 0)
@@ -712,8 +737,8 @@ ibi& ibi::operator/(const ibi &A) const
                 break;
             }
         }
-        r = r + tR;
-
+        r = r + (tR << vpos);
+        --vpos;
         fm->_tempPopLayer();
     }
     fm->_tempPopLayer();
