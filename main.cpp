@@ -16,13 +16,15 @@ int main(){
   cout << "Hello Math!!" << endl;
 
   fm->_tempPushLayer();
+  unsigned int AData[10] = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+  unsigned int BData[2] = { 123456, 7890 };
   ibi A;
   A.Init(false);
-  A = ibi(43046721);
+  A = ibi(true, AData, 10);
 
   ibi B;
   B.Init(false);
-  B = ibi(3);
+  B = ibi(true, BData, 2);
 
   while(true){
     ++count;

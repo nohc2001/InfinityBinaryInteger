@@ -694,10 +694,14 @@ ibi& ibi::operator/(const ibi &A) const
             unsigned int delta = 4294967295 >> 2;
             unsigned int divp = 4294967295 >> 1;
 
+            ibi seekI;
+            seekI.Init(false);
+            ibi seekK;
+            seekK.Init(false);
+
             //humm need testing
-            while(delta > 0){
-                ibi seekI;
-                seekI.Init(false);
+            while(delta > 4){
+                fm->_tempPushLayer();
                 seekI = tempA * ibi(true, &divp, 1);
                 bool saturate = true;
                 if(seekI > teV){
@@ -708,8 +712,27 @@ ibi& ibi::operator/(const ibi &A) const
                     delta = delta >> 1;
                     divp += delta;
                 }
+                fm->_tempPopLayer();
             }
-            
+
+            while(true){
+                fm->_tempPushLayer();
+                unsigned int divp1 = divp + 1;
+                seekI = tempA * ibi(true, &divp, 1);
+                seekK = tempA * ibi(true, &divp1, 1);
+                if(seekI <= teV && seekK > teV){
+                    //ret
+                    divva = divp;
+                    break;
+                }
+                else if(teV < seekI){
+                    divp -= 1;
+                }
+                else if(seekK <= teV){
+                    divp += 1;
+                }
+                fm->_tempPopLayer();
+            }
         }
         
         
@@ -719,12 +742,14 @@ ibi& ibi::operator/(const ibi &A) const
         bool saturate = true;
         while (saturate)
         {
-            if(teV < tempA * tR){
+            fm->_tempPushLayer();
+            if(teV >= tempA * tR){
                 saturate = false;
             }
             else{
                 tR = tR - 1;
             }
+            fm->_tempPopLayer();
         }
 
         tempV = tempV - ((tempA * tR) << vpos);
