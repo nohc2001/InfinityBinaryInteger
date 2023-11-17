@@ -725,6 +725,7 @@ ibi& ibi::operator/(const ibi &A) const
                 if(seekI <= teV && seekK > teV){
                     //ret
                     divva = divp;
+                    fm->_tempPopLayer();
                     break;
                 }
                 else if(teV < seekI){
