@@ -705,13 +705,14 @@ ibi& ibi::operator/(const ibi &A) const
                 seekI = tempA * ibi(true, &divp, 1);
                 bool saturate = true;
                 if(seekI > teV){
-                    delta = delta >> 1;
                     divp -= delta;
+                    wcout << seekI.dataString()->c_str() << L" > " << teV.dataString()->c_str() << endl;
                 }
                 else{
-                    delta = delta >> 1;
                     divp += delta;
+                    wcout << seekI.dataString()->c_str() << L" < " << teV.dataString()->c_str() << endl;
                 }
+                delta = 1 + delta >> 1;
                 fm->_tempPopLayer();
             }
 
@@ -752,17 +753,25 @@ ibi& ibi::operator/(const ibi &A) const
             fm->_tempPopLayer();
         }
 
-        tempV = tempV - ((tempA * tR) << vpos);
+        wcout << L"tR : \t" << tR.dataString()->c_str() << endl;
+        wcout << L"tempV : \t" << tempV.dataString()->c_str() << endl;
+        ibi temparv;
+        temparv.Init(false);
+        temparv = ((tempA * tR) << vpos);
+        tempV = tempV - temparv;
+        wcout << L"tR*tempA : \t" << temparv.dataString()->c_str() << endl;
         for (int k = tempV.integer_data.up - 1; k >= 0; --k)
         {
             if (tempV.integer_data[k] == 0)
-                tempA.integer_data.up -= 1;
+                tempV.integer_data.up -= 1;
             else
             {
                 break;
             }
         }
+        wcout << L"post-tempV : \t" << tempV.dataString()->c_str() << endl;
         r = r + (tR << vpos);
+        wcout << L"stacking-R : \t" << r.dataString()->c_str() << endl;
         --vpos;
         fm->_tempPopLayer();
     }
