@@ -662,6 +662,7 @@ ibi& ibi::operator/(const ibi &A) const
     CreateDataFM(ibi, r);
 
     fm->_tempPushLayer();
+    r = ibi(0);
 
     // tempV / A
     ibi tempV;
@@ -706,11 +707,11 @@ ibi& ibi::operator/(const ibi &A) const
                 bool saturate = true;
                 if(seekI > teV){
                     divp -= delta;
-                    wcout << seekI.dataString()->c_str() << L" > " << teV.dataString()->c_str() << endl;
+                    //wcout << seekI.dataString()->c_str() << L" > " << teV.dataString()->c_str() << endl;
                 }
                 else{
                     divp += delta;
-                    wcout << seekI.dataString()->c_str() << L" < " << teV.dataString()->c_str() << endl;
+                    //wcout << seekI.dataString()->c_str() << L" < " << teV.dataString()->c_str() << endl;
                 }
                 delta = 1 + delta >> 1;
                 fm->_tempPopLayer();
@@ -753,13 +754,13 @@ ibi& ibi::operator/(const ibi &A) const
             fm->_tempPopLayer();
         }
 
-        wcout << L"tR : \t" << tR.dataString()->c_str() << endl;
-        wcout << L"tempV : \t" << tempV.dataString()->c_str() << endl;
+        //wcout << L"tR : \t" << tR.dataString()->c_str() << endl;
+        //wcout << L"tempV : \t" << tempV.dataString()->c_str() << endl;
         ibi temparv;
         temparv.Init(false);
         temparv = ((tempA * tR) << vpos);
         tempV = tempV - temparv;
-        wcout << L"tR*tempA : \t" << temparv.dataString()->c_str() << endl;
+        //wcout << L"tR*tempA : \t" << temparv.dataString()->c_str() << endl;
         for (int k = tempV.integer_data.up - 1; k >= 0; --k)
         {
             if (tempV.integer_data[k] == 0)
@@ -769,9 +770,9 @@ ibi& ibi::operator/(const ibi &A) const
                 break;
             }
         }
-        wcout << L"post-tempV : \t" << tempV.dataString()->c_str() << endl;
+        //wcout << L"post-tempV : \t" << tempV.dataString()->c_str() << endl;
         r = r + (tR << vpos);
-        wcout << L"stacking-R : \t" << r.dataString()->c_str() << endl;
+        //wcout << L"stacking-R : \t" << r.dataString()->c_str() << endl;
         --vpos;
         fm->_tempPopLayer();
     }
