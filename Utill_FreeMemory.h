@@ -1157,7 +1157,7 @@ namespace freemem
 				tempFM.up += 1;
 			}
 
-			if(large[large.up] == nullptr && large.up == large.maxsize){
+			if(large[large.up] == nullptr || large.up == large.maxsize){
 				large.push_back(new vecarr < large_alloc > ());
 				large.last()->NULLState();
 				large.last()->Init(8, false);
@@ -1174,7 +1174,7 @@ namespace freemem
 				tempFM.last()->at(i)->Fup = 0;
 			}
 			tempFM.up -= 1;
-			
+
 			if (large.last()->size() > 0)
 			{
 				for (int i = 0; i < large.last()->size(); ++i)
