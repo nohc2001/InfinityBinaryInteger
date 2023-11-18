@@ -778,6 +778,16 @@ ibi& ibi::operator/(const ibi &A) const
         fm->_tempPopLayer();
     }
     fm->_tempPopLayer();
+
+    for (int k = r.integer_data.up - 1; k >= 0; --k)
+    {
+        if (r.integer_data[k] == 0)
+            r.integer_data.up -= 1;
+        else
+        {
+            break;
+        }
+    }
     return r;
 }
 
