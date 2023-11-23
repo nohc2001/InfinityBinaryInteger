@@ -59,9 +59,11 @@ typedef enum class deltakind{
 
 struct DeltaObj{
     deltakind mod;
+    int* Size; // sum of all arr delta
     int* data;
 
-    DeltaObj(ibi delta);
+    push(const DeltaObj& obj);
+    DeltaObj(void* delta);
     DeltaObj(unsigned int size);
     inline fmvecarr<DeltaObj>* getArr() {
         return reinterpret_cast<fmvecarr<DeltaObj>*>(data);
@@ -125,12 +127,16 @@ class ibi{
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
-DeltaObj::DeltaObj(ibi delta){
+DeltaObj::DeltaObj(void* delta){
     mod = deltakind::delta;
     data = (int*)fm->_New(sizeof(ibi), true);
     ibi* n = reinterpret_cast<ibi*>(data);
     n->Init(false);
-    *n = delta;
+    *n = *reinterpret_cast<ibi*>(delta);
+    Size = (int*)fm->_New(sizeof(ibi), true);
+    ibi* s = reinterpret_cast<ibi>(Size);
+    s->Init(false);
+    *s = ibi(0);
 }
 
 DeltaObj::DeltaObj(unsigned int size){
@@ -138,6 +144,20 @@ DeltaObj::DeltaObj(unsigned int size){
     data = (int*)fm->_New(sizeof(fmvecarr<DeltaObj>), true);
     fmvecarr<DeltaObj>* arr = reinterpret_cast<fmvecarr<DeltaObj>*>(data);
     arr->Init(size, false, true);
+    Size = (int*)fm->_New(sizeof(ibi), true);
+    ibi* s = reinterpret_cast<ibi>(Size);
+    s->Init(false);
+    *s = ibi(0);
+}
+
+DeltaObj::push(const DeltaObj& obj){
+    getArr()->push_back(obj);
+    if(obj.mod == deltakind::arr){
+        *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj.Size);
+    }
+    else{
+        *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj.data);
+    }
 }
 
 class ibr{
@@ -857,18 +877,106 @@ bool ibi::isint(int a) const
     max_primecount.Init(false);
     max_primecount = ibi(2);
     prime_all = DeltaObj(2);
-    prime_all.getArr()->push_back(DeltaObj(ibi(4)));
-    prime_all.getArr()->push_back(DeltaObj(ibi(2)));
+    prime_all.push(DeltaObj(ibi(4)));
+    prime_all.push(DeltaObj(ibi(2)));
  }
 
 void ibi::make_new_prime()
 {
+    ibi precount = max_primecount;
+    max_primecount = max_primecount + ibi(1);
+    ibi newprime = prime(max_primecount);
+    ibi len = (newprime / ibi(2)) + ibi(1);
+    DeltaObj new_all = DeltaObj(len.integer_data[0]);
+    ibi index = ibi(0);
+    for(;index < len;index = index + ibi(1)){
+        
+    }
+
     // find new level of primes;
 
 }
 
-ibi& ibi::prime(const ibi& count){
+ibi& ibi::getindex_prime_inner(const ibi& count, DeltaObj obj){
+    CreateDataFM(ibi, r);
+    r = ibi(0);
 
+    fm->_tempPushLayer();
+    ibi c;
+    c.Init(false);
+    c = ibi(0);
+
+    for(int i=0;i<obj.getArr()->size();++i){
+        fm->_tempPushLayer();
+        if(obj.getArr()->at(i).mod == deltakind::arr){
+            if(count < c+ibi(obj.getArr()->at(i).getArr()->size()))
+            {
+                c = c + ibi(obj.getArr()->at(i).getArr()->size());
+                r = r + *prime_all.Size;
+            }
+            else{
+                r = r + getindex_prime_inner(c, obj.getArr()->at(i));
+                fm->_tempPopLayer();
+                break;
+            }
+        }
+        else{
+            if(c == count){
+                r = *(ibi*)obj.getArr()->at(i).data;
+                fm->_tempPopLayer();
+                break;
+            }
+            else{
+                c = c + ibi(1);
+                r = *(ibi*)obj.getArr()->at(i).data;
+            }
+        }
+        fm->_tempPopLayer();
+    }
+    fm->_tempPopLayer();
+
+    return r;
+}
+
+ibi& ibi::prime(const ibi& count){
+    CreateDataFM(ibi, r);
+    r = ibi(1);
+
+    fm->_tempPushLayer();
+    ibi c;
+    c.Init(false);
+    c = ibi(0);
+
+    for(int i=0;i<prime_all.getArr()->size();++i){
+        fm->_tempPushLayer();
+        if(prime_all.getArr()->at(i).mod == deltakind::arr){
+            if(count < c+ibi(prime_all.getArr()->at(i).getArr()->size()))
+            {
+                c = c + ibi(prime_all.getArr()->at(i).getArr()->size());
+                r = r + *prime_all.Size;
+            }
+            else{
+                r = r + getindex_prime_inner(c, obj.getArr()->at(i));
+                fm->_tempPopLayer();
+                break;
+            }
+        }
+        else{
+            if(c == count){
+                r = r + *(ibi*)prime_all.getArr()->at(i).data;
+                fm->_tempPopLayer();
+                break;
+            }
+            else{
+                c = c + ibi(1);
+                r = r + *(ibi*)prime_all.getArr()->at(i).data;
+            }
+        }
+        fm->_tempPopLayer();
+    }
+    fm->_tempPopLayer();
+
+    return r;
 }
 
 // 소인수 분해
