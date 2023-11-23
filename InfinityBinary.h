@@ -52,13 +52,32 @@ inline bool XOR(bool a, bool b){
     return a ? !b : b;
 }
 
+typedef enum class deltakind{
+    delta = 0,
+    arr = 1
+};
+
+struct DeltaObj{
+    deltakind mod;
+    int* data;
+
+    DeltaObj(ibi delta);
+    DeltaObj(unsigned int size);
+    inline fmvecarr<DeltaObj>* getArr() {
+        return reinterpret_cast<fmvecarr<DeltaObj>*>(data);
+    }
+};
+
 class ibi{
     public:
     bool isPositive = true;
     bool islocal = true;
     fmvecarr<unsigned int> integer_data;
 
-    static vecarr<ibi*> prime_numbers;
+    //static vecarr<ibi*> prime_numbers;
+    //계획은 fmvecarr이 아닌 ArrGraph긴함.
+    static DeltaObj prime_all;
+    static ibi max_primecount; // 가용할 수 있는 가장 큰 소수의 번호
 
     ibi();
     ibi(const ibi& ref);
@@ -89,7 +108,9 @@ class ibi{
     ibi& operator/(const ibi& A) const;
     ibi& operator%(const ibi& A) const; 
     bool isint(int a) const;
-    static void make_new_prime();
+    static void prime_data_init();
+    static void make_new_prime(); // 소수층 업데이트(소수확장)
+    static ibi& prime(const ibi& count); // count 번째 소수를 반환
 
     //소인수 분해
     fmvecarr<unsigned int>* PrimeFactorization();
@@ -103,6 +124,21 @@ class ibi{
     lcstr& ToString(int base_num) const;
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
+
+DeltaObj::DeltaObj(ibi delta){
+    mod = deltakind::delta;
+    data = (int*)fm->_New(sizeof(ibi), true);
+    ibi* n = reinterpret_cast<ibi*>(data);
+    n->Init(false);
+    *n = delta;
+}
+
+DeltaObj::DeltaObj(unsigned int size){
+    mod = deltakind::arr;
+    data = (int*)fm->_New(sizeof(fmvecarr<DeltaObj>), true);
+    fmvecarr<DeltaObj>* arr = reinterpret_cast<fmvecarr<DeltaObj>*>(data);
+    arr->Init(size, false, true);
+}
 
 class ibr{
     public:
@@ -817,62 +853,22 @@ bool ibi::isint(int a) const
     }
 }
 
+ void ibi::prime_data_init(){
+    max_primecount.Init(false);
+    max_primecount = ibi(2);
+    prime_all = DeltaObj(2);
+    prime_all.getArr()->push_back(DeltaObj(ibi(4)));
+    prime_all.getArr()->push_back(DeltaObj(ibi(2)));
+ }
+
 void ibi::make_new_prime()
 {
-    ibi *newprime = new ibi(*ibi::prime_numbers.last());
-    ibi one;
-    one.Init(false);
-    one.integer_data.push_back(1);
-    *newprime = *newprime + one;
+    // find new level of primes;
 
-    while (true)
-    {
-        fm->_tempPushLayer();
-        ibi copy;
-        copy.Init(false);
-        copy = *newprime;
-        size_t prime_index = 0;
-        ibi *prime = ibi::prime_numbers[prime_index];
-        ibi result;
-        result.Init(false);
-        result = copy % *prime;
+}
 
-        bool isprime = false;
-        int count = 0;
-        while (!(copy.isint(1)))
-        {
-            while ((result).isint(0))
-            {
-                copy = copy / *prime;
-                ++count;
-                result = copy % *prime;
-            }
-            ++prime_index;
+ibi& ibi::prime(const ibi& count){
 
-            if (prime_index >= ibi::prime_numbers.size())
-            {
-                break;
-            }
-            else
-            {
-                prime = ibi::prime_numbers[prime_index];
-            }
-        }
-
-        if (count > 0)
-        {
-            *newprime = *newprime + one;
-            fm->_tempPopLayer();
-            continue;
-        }
-        else
-        {
-            fm->_tempPopLayer();
-            break;
-        }
-    }
-
-    ibi::prime_numbers.push_back(newprime);
 }
 
 // 소인수 분해
