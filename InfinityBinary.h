@@ -61,12 +61,17 @@ struct DeltaObj{
     deltakind mod;
     int* Size; // sum of all arr delta
     int* data;
+    // mod == delta -> data = ibi
+    // mod == arr -> data = ArrGraph<ibi, DeltaObj>
 
-    push(const DeltaObj& obj);
+    void push(const DeltaObj& obj);
+    void Compile();
+    DeltaObj* fx(const ibi& index);
+
     DeltaObj(void* delta);
     DeltaObj(unsigned int size);
-    inline fmvecarr<DeltaObj>* getArr() {
-        return reinterpret_cast<fmvecarr<DeltaObj>*>(data);
+    inline ArrGraph<ibi, DeltaObj*>* getArr() {
+        return reinterpret_cast<ArrGraph<ibi, DeltaObj*>*>(data);
     }
 };
 
@@ -127,6 +132,246 @@ class ibi{
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
+struct range_prime
+{
+    ibi end;
+    DeltaObj* value;
+};
+
+class ArrGraph_prime
+{
+public:
+    fmvecarr<range_prime> *ranges;
+    ibi* minx = nullptr;
+    ibi* maxx = nullptr;
+    ibi* margin = nullptr;
+    bool islocal = false;
+    bool isdebug = true;
+    fmvecarr<VP> graph;
+
+    ArrGraph_prime()
+    {
+    }
+    virtual ~ArrGraph_prime()
+    {
+        if (islocal)
+        {
+            if (fm->bAlloc(reinterpret_cast<byte8 *>(ranges),
+                           sizeof(fmvecarr<range_prime>)))
+            {
+                ranges->release();
+                fm->_Delete((byte8 *)ranges, sizeof(fmvecarr<range_prime>));
+                ranges = nullptr;
+            }
+
+            graph.release();
+            graph.NULLState();
+        }
+    }
+
+    ArrGraph_prime *Init(const ibi& min, const ibi& max)
+    {
+        minx = (ibi*)fm->_New(sizeof(ibi), true);
+        minx->Init(false);
+        *minx = min;
+        maxx = (ibi*)fm->_New(sizeof(ibi), true);
+        maxx->Init(false);
+        maxx = max;
+        margin = (ibi*)fm->_New(sizeof(ibi), true);
+        margin->Init(false);
+        *margin = ibi(0);
+        ranges = (fmvecarr<range_prime> *)fm->_New(sizeof(fmvecarr<range_prime>), true);
+        ranges->NULLState();
+        ranges->Init(2, false, true);
+        islocal = false;
+    }
+
+    range_prime Range(const ibi& end, DeltaObj* value)
+    {
+        range_prime r;
+        r.end.Init(false);
+        r.end = end;
+        r.value = value;
+        return r;
+    }
+
+    void push_range(range_prime r)
+    {
+        if (minx <= r.end && r.end <= maxx)
+        {
+            ranges->push_back(r);
+        }
+    }
+
+    void Compile()
+    {
+        fm->_tempPushLayer();
+        if (ranges->size() > 2)
+        {
+            ibi d;
+            d.Init(false);
+            d = *maxx - *minx;
+
+            ibi div;
+            div.Init(false);
+            div = ibi(ranges->size());
+
+            ibi f;
+            f.Init(false);
+            f = d / div + ibi(1);
+
+            ibi average_length;
+            average_length.Init(false);
+            average_length = f;
+
+            *margin = average_length;
+            graph.NULLState();
+            graph.Init(ranges->size(), false, true);
+            graph.up = ranges->size();
+            
+            ibi start;
+            start.Init(false);
+            start = minx;
+
+            ibi end;
+            end.Init(false);
+            end = start;
+
+            for (int i = 0; i < graph.up; ++i)
+            {
+                fm->_tempPushLayer();
+                end = start + average_length;
+                if (end > *maxx)
+                    end = *maxx;
+                
+                ibi rstart;
+                rstart.Init(false);
+                rstart = *minx;
+
+                for (int k = 0; k < ranges->up; ++k)
+                {
+                    fm->_tempPushLayer();
+
+                    ibi rend;
+                    rend.Init(false);
+                    rend = ranges->at(k).end;
+
+                    if (rstart <= start && end <= rend)
+                    {
+                        // num
+                        graph[i].mod = 0;
+                        graph[i].ptr = reinterpret_cast<int *>(&ranges->at(k).value);
+                        break;
+                    }
+                    else if (start <= rend && rend <= end)
+                    {
+                        // graph
+                        ArrGraph_prime *newgraph =
+                            (ArrGraph_prime *)fm->_New(sizeof(ArrGraph_prime), true);
+                        newgraph->Init(start, end, fm);
+                        newgraph->push_range(ranges->at(k));
+                        range_prime *r = &ranges->at(k + 1);
+                        while (r->end <= end)
+                        {
+                            newgraph->push_range(*r);
+                            ++k;
+                            if (k >= ranges->size())
+                            {
+                                break;
+                            }
+                            r = &ranges->at(k + 1);
+                        }
+                        // input last range
+                        range_prime lastr;
+                        lastr = *r;
+                        lastr.end = newgraph->maxx;
+                        newgraph->push_range(lastr);
+                        newgraph->Compile();
+                        graph[i].ptr = reinterpret_cast<int *>(newgraph);
+                        graph[i].mod = 1;
+                        break;
+                    }
+                    fm->_tempPopLayer();
+                }
+                start = end;
+                fm->_tempPopLayer();
+            }
+        }
+        else if (ranges->size() == 2)
+        {
+            graph.NULLState();
+            graph.Init(2, false, true);
+            ibi center = ranges->at(0).end;
+            ibi start = minx;
+            ibi end = maxx - 1;
+            if (maxx - center > center - start)
+            {
+                minx = 2 * center + 1 - end;
+            }
+            else
+            {
+                maxx = 2 * center + 1 - start;
+            }
+            margin = (maxx - minx) / ranges->size();
+            VP vp0;
+            vp0.mod = 0;
+            vp0.ptr = reinterpret_cast<int *>(&ranges->at(0).value);
+            graph.push_back(vp0);
+            vp0.ptr = reinterpret_cast<int *>(&ranges->at(1).value);
+            graph.push_back(vp0);
+        }
+        fm->_tempPopLayer();
+    }
+
+    DeltaObj* fx(const ibi& x)
+    {
+        static constexpr void *jumpptr[2] = {&&ISVALUE, &&ISGRAPH};
+        ArrGraph_prime *ag = this;
+        fmvecarr<VP> *g = &graph;
+        VP vp;
+        float f = 0;
+        int index = 0;
+
+    GET_START:
+        f = (float)x - (float)ag->minx;
+        f = f / (float)ag->margin;
+        index = (int)f;
+
+        vp = (*g)[index];
+        goto *jumpptr[vp.mod];
+
+    ISGRAPH:
+        ag = reinterpret_cast<ArrGraph_prime *>(vp.ptr);
+        g = &ag->graph;
+        goto GET_START;
+
+    ISVALUE:
+        return reinterpret_cast<DeltaObj*>(vp.ptr);
+    }
+
+    void print_state()
+    {
+        cout << "arrgraph" << endl;
+        cout << "minx : " << minx << endl;
+        cout << "maxx : " << maxx << endl;
+        cout << "capacity : " << graph.size() << endl;
+        cout << "margin : " << margin << endl;
+        for (int i = 0; i < graph.size(); ++i)
+        {
+            if (graph[i].mod == 0)
+            {
+                cout << "index : " << i << "] = value : " << *reinterpret_cast<DeltaObj* *>(graph[i].ptr) << endl;
+            }
+            else
+            {
+                cout << "index : " << i << "] = ptr : " << endl;
+                reinterpret_cast<ArrGraph_prime *>(graph[i].ptr)->print_state();
+                cout << endl;
+            }
+        }
+    }
+};
+
 DeltaObj::DeltaObj(void* delta){
     mod = deltakind::delta;
     data = (int*)fm->_New(sizeof(ibi), true);
@@ -139,25 +384,37 @@ DeltaObj::DeltaObj(void* delta){
     *s = ibi(0);
 }
 
-DeltaObj::DeltaObj(unsigned int size){
+DeltaObj::DeltaObj(void* min, void* max){
+    ibi* ibimin = reinterpret_cast<ibi*>(min);
+    ibi* ibimax = reinterpret_cast<ibi*>(max);
     mod = deltakind::arr;
-    data = (int*)fm->_New(sizeof(fmvecarr<DeltaObj>), true);
-    fmvecarr<DeltaObj>* arr = reinterpret_cast<fmvecarr<DeltaObj>*>(data);
-    arr->Init(size, false, true);
+    data = (int*)fm->_New(sizeof(ArrGraph<ibi, DeltaObj*>), true);
+    ArrGraph<ibi, DeltaObj*>* arr = reinterpret_cast<ArrGraph<ibi, DeltaObj*>*>(data);
+    arr->Init(*ibimin, *ibimax, fm);
     Size = (int*)fm->_New(sizeof(ibi), true);
     ibi* s = reinterpret_cast<ibi>(Size);
     s->Init(false);
     *s = ibi(0);
 }
 
-DeltaObj::push(const DeltaObj& obj){
-    getArr()->push_back(obj);
+void DeltaObj::push(const ibi& end, DeltaObj* obj){
     if(obj.mod == deltakind::arr){
+        getArr()->push_range(getArr()->Range(end, obj));
         *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj.Size);
     }
-    else{
-        *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj.data);
+}
+
+void DeltaObj::Compile(){
+    if(obj.mod == deltakind::arr){
+        getArr()->Compile();
     }
+}
+
+DeltaObj* DeltaObj::fx(const ibi& index){
+    if(obj.mod == deltakind::arr){
+        getArr()->fx(index);
+    }
+    else return nullptr;
 }
 
 class ibr{
