@@ -64,12 +64,12 @@ struct DeltaObj{
     // mod == delta -> data = ibi
     // mod == arr -> data = ArrGraph<ibi, DeltaObj>
 
-    void push(const DeltaObj& obj);
+    void push(const ibi& end, DeltaObj* obj);
     void Compile();
     DeltaObj* fx(const ibi& index);
 
     DeltaObj(void* delta);
-    DeltaObj(unsigned int size);
+    DeltaObj(void* min, void* max);
     inline ArrGraph<ibi, DeltaObj*>* getArr() {
         return reinterpret_cast<ArrGraph<ibi, DeltaObj*>*>(data);
     }
@@ -176,7 +176,7 @@ public:
         *minx = min;
         maxx = (ibi*)fm->_New(sizeof(ibi), true);
         maxx->Init(false);
-        maxx = max;
+        *maxx = max;
         margin = (ibi*)fm->_New(sizeof(ibi), true);
         margin->Init(false);
         *margin = ibi(0);
@@ -197,7 +197,7 @@ public:
 
     void push_range(range_prime r)
     {
-        if (minx <= r.end && r.end <= maxx)
+        if (*minx <= r.end && r.end <= *maxx)
         {
             ranges->push_back(r);
         }
@@ -231,7 +231,7 @@ public:
             
             ibi start;
             start.Init(false);
-            start = minx;
+            start = *minx;
 
             ibi end;
             end.Init(false);
@@ -268,7 +268,7 @@ public:
                         // graph
                         ArrGraph_prime *newgraph =
                             (ArrGraph_prime *)fm->_New(sizeof(ArrGraph_prime), true);
-                        newgraph->Init(start, end, fm);
+                        newgraph->Init(start, end);
                         newgraph->push_range(ranges->at(k));
                         range_prime *r = &ranges->at(k + 1);
                         while (r->end <= end)
@@ -284,7 +284,7 @@ public:
                         // input last range
                         range_prime lastr;
                         lastr = *r;
-                        lastr.end = newgraph->maxx;
+                        lastr.end = *newgraph->maxx;
                         newgraph->push_range(lastr);
                         newgraph->Compile();
                         graph[i].ptr = reinterpret_cast<int *>(newgraph);
@@ -301,18 +301,20 @@ public:
         {
             graph.NULLState();
             graph.Init(2, false, true);
-            ibi center = ranges->at(0).end;
-            ibi start = minx;
-            ibi end = maxx - 1;
-            if (maxx - center > center - start)
+            ibi center; 
+            center.Init(false);
+            center = ranges->at(0).end;
+            ibi start; start.Init(false); start = *minx;
+            ibi end; end.Init(false); end = *maxx - ibi(1);
+            if (*maxx - center > center - start)
             {
-                minx = 2 * center + 1 - end;
+                *minx = ibi(2) * center + ibi(1) - end;
             }
             else
             {
-                maxx = 2 * center + 1 - start;
+                *maxx = ibi(2) * center + ibi(1) - start;
             }
-            margin = (maxx - minx) / ranges->size();
+            *margin = (*maxx - *minx) / ibi(ranges->size());
             VP vp0;
             vp0.mod = 0;
             vp0.ptr = reinterpret_cast<int *>(&ranges->at(0).value);
@@ -329,14 +331,13 @@ public:
         ArrGraph_prime *ag = this;
         fmvecarr<VP> *g = &graph;
         VP vp;
-        float f = 0;
+        ibi f; f.Init(false); f = ibi(0);
         int index = 0;
 
     GET_START:
-        f = (float)x - (float)ag->minx;
-        f = f / (float)ag->margin;
-        index = (int)f;
-
+        f = x - *ag->minx;
+        f = f / *ag->margin;
+        index = (int)f.integer_data[0];
         vp = (*g)[index];
         goto *jumpptr[vp.mod];
 
@@ -379,7 +380,7 @@ DeltaObj::DeltaObj(void* delta){
     n->Init(false);
     *n = *reinterpret_cast<ibi*>(delta);
     Size = (int*)fm->_New(sizeof(ibi), true);
-    ibi* s = reinterpret_cast<ibi>(Size);
+    ibi* s = reinterpret_cast<ibi*>(Size);
     s->Init(false);
     *s = ibi(0);
 }
@@ -392,26 +393,31 @@ DeltaObj::DeltaObj(void* min, void* max){
     ArrGraph<ibi, DeltaObj*>* arr = reinterpret_cast<ArrGraph<ibi, DeltaObj*>*>(data);
     arr->Init(*ibimin, *ibimax, fm);
     Size = (int*)fm->_New(sizeof(ibi), true);
-    ibi* s = reinterpret_cast<ibi>(Size);
+    ibi* s = reinterpret_cast<ibi*>(Size);
     s->Init(false);
     *s = ibi(0);
 }
 
 void DeltaObj::push(const ibi& end, DeltaObj* obj){
-    if(obj.mod == deltakind::arr){
+    if(mod == deltakind::arr){
         getArr()->push_range(getArr()->Range(end, obj));
-        *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj.Size);
+        if(obj->mod == deltakind::arr){
+            *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->Size);
+        }
+        else{
+            *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->data);
+        }
     }
 }
 
 void DeltaObj::Compile(){
-    if(obj.mod == deltakind::arr){
+    if(mod == deltakind::arr){
         getArr()->Compile();
     }
 }
 
 DeltaObj* DeltaObj::fx(const ibi& index){
-    if(obj.mod == deltakind::arr){
+    if(mod == deltakind::arr){
         getArr()->fx(index);
     }
     else return nullptr;
@@ -473,7 +479,6 @@ class ibr{
 
 #define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
 #define ricast(type, value) reinterpret_cast<type>(value);
-vecarr<ibi*> ibi::prime_numbers;
 
 bool ibr::befirst = false;
 ibr ibr::bestPI;
@@ -1133,9 +1138,37 @@ bool ibi::isint(int a) const
  void ibi::prime_data_init(){
     max_primecount.Init(false);
     max_primecount = ibi(2);
-    prime_all = DeltaObj(2);
-    prime_all.push(DeltaObj(ibi(4)));
-    prime_all.push(DeltaObj(ibi(2)));
+    
+    ibi* minibi = (ibi*)fm->_New(sizeof(ibi), true);
+    minibi->Init(false);
+    *minibi = ibi(1);
+
+    ibi* maxibi = (ibi*)fm->_New(sizeof(ibi), true);
+    maxibi->Init(false);
+    *maxibi = ibi(4);
+
+    prime_all = DeltaObj(minibi, maxibi);
+
+    ibi* delta0 = (ibi*)fm->_New(sizeof(ibi), true);
+    delta0->Init(false);
+    *delta0 = ibi(1);
+    DeltaObj* D0 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    *D0 = DeltaObj((void*)delta0);
+    prime_all.push(ibi(1), D0);
+
+    ibi* delta1 = (ibi*)fm->_New(sizeof(ibi), true);
+    delta1->Init(false);
+    *delta1 = ibi(1);
+    DeltaObj* D1 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    *D1 = DeltaObj((void*)delta1);
+    prime_all.push(ibi(2), D1);
+
+    ibi* delta2 = (ibi*)fm->_New(sizeof(ibi), true);
+    delta2->Init(false);
+    *delta2 = ibi(2);
+    DeltaObj* D2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    *D2 = DeltaObj((void*)delta2);
+    prime_all.push(ibi(4), D2);
  }
 
 void ibi::make_new_prime()
