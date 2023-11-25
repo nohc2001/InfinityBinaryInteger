@@ -116,8 +116,9 @@ class ibi{
     ibi& operator%(const ibi& A) const; 
     bool isint(int a) const;
     static void prime_data_init();
-    static void make_new_prime(); // 소수층 업데이트(소수확장)
-    static ibi& prime(const ibi& count); // count 번째 소수를 반환
+    static void make_new_prime(); // prime level update
+    static ibi& prime_delta(const ibi& prime_num); // prime to next delta
+    static ibi& prime(const ibi& count); // count to count number of prime
 
     //소인수 분해
     fmvecarr<unsigned int>* PrimeFactorization();
@@ -1136,6 +1137,7 @@ bool ibi::isint(int a) const
 }
 
  void ibi::prime_data_init(){
+    fm->_tempPushLayer();
     max_primecount.Init(false);
     max_primecount = ibi(2);
     
@@ -1169,101 +1171,43 @@ bool ibi::isint(int a) const
     DeltaObj* D2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *D2 = DeltaObj((void*)delta2);
     prime_all.push(ibi(4), D2);
+    fm->_tempPopLayer();
  }
 
 void ibi::make_new_prime()
 {
-    ibi precount = max_primecount;
-    max_primecount = max_primecount + ibi(1);
-    ibi newprime = prime(max_primecount);
-    ibi len = (newprime / ibi(2)) + ibi(1);
-    DeltaObj new_all = DeltaObj(len.integer_data[0]);
-    ibi index = ibi(0);
-    for(;index < len;index = index + ibi(1)){
-        
-    }
-
-    // find new level of primes;
-
 }
 
-ibi& ibi::getindex_prime_inner(const ibi& count, DeltaObj obj){
+ibi& ibi::prime_delta(const ibi& prime_num){
     CreateDataFM(ibi, r);
     r = ibi(0);
+    
+    constexpr void* labels[2] = {&&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR, &&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA};
+    ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(prime_all.data);
+    DeltaObj* deltaobj = parr->fx(prime_num);
+    goto *labels[(unsigned int)deltaobj->mod];
 
+IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
+    parr = reinterpret_cast<ArrGraph_prime*>(deltaobj->data);
+    deltaobj = parr->fx(prime_num);
+    goto *labels[(unsigned int)deltaobj->mod];
+
+IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
     fm->_tempPushLayer();
-    ibi c;
-    c.Init(false);
-    c = ibi(0);
-
-    for(int i=0;i<obj.getArr()->size();++i){
-        fm->_tempPushLayer();
-        if(obj.getArr()->at(i).mod == deltakind::arr){
-            if(count < c+ibi(obj.getArr()->at(i).getArr()->size()))
-            {
-                c = c + ibi(obj.getArr()->at(i).getArr()->size());
-                r = r + *prime_all.Size;
-            }
-            else{
-                r = r + getindex_prime_inner(c, obj.getArr()->at(i));
-                fm->_tempPopLayer();
-                break;
-            }
-        }
-        else{
-            if(c == count){
-                r = *(ibi*)obj.getArr()->at(i).data;
-                fm->_tempPopLayer();
-                break;
-            }
-            else{
-                c = c + ibi(1);
-                r = *(ibi*)obj.getArr()->at(i).data;
-            }
-        }
-        fm->_tempPopLayer();
-    }
+    r = *reinterpret_cast<ibi*>(deltaobj->data);
     fm->_tempPopLayer();
-
     return r;
 }
 
 ibi& ibi::prime(const ibi& count){
+    // count to prime number
     CreateDataFM(ibi, r);
     r = ibi(1);
 
     fm->_tempPushLayer();
-    ibi c;
-    c.Init(false);
-    c = ibi(0);
 
-    for(int i=0;i<prime_all.getArr()->size();++i){
-        fm->_tempPushLayer();
-        if(prime_all.getArr()->at(i).mod == deltakind::arr){
-            if(count < c+ibi(prime_all.getArr()->at(i).getArr()->size()))
-            {
-                c = c + ibi(prime_all.getArr()->at(i).getArr()->size());
-                r = r + *prime_all.Size;
-            }
-            else{
-                r = r + getindex_prime_inner(c, obj.getArr()->at(i));
-                fm->_tempPopLayer();
-                break;
-            }
-        }
-        else{
-            if(c == count){
-                r = r + *(ibi*)prime_all.getArr()->at(i).data;
-                fm->_tempPopLayer();
-                break;
-            }
-            else{
-                c = c + ibi(1);
-                r = r + *(ibi*)prime_all.getArr()->at(i).data;
-            }
-        }
-        fm->_tempPopLayer();
-    }
+    
+
     fm->_tempPopLayer();
 
     return r;
