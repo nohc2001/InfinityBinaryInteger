@@ -1,0 +1,36 @@
+실수 범위에서 
+g(x) = f(f(x)) = x^2
+일때, g(x) = f^2(x) 그리고 f(x) = g^(1/2)(x)
+f(x) = abs(x)^sqrt2
+
+만약 g(x) = x^2 + 1 이라면, f(x)는?
+복소평면상의 이항정리에 의하여, 
+(a + b)^n = sum[k=0 to infinity](nCk * a^k * b^(n-k))
+때문에, 
+f(x) = 
+if(x ∈ ℝ){
+    x^sqrt2 - i
+}
+else{
+    ((x^sqrt2) / (sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k) / (x+i)^k)) + 1
+    >>
+    (
+        (
+            x^sqrt2
+        )
+        / 
+        (
+            sum[k=0 to infinity](
+                (sqrt2)_C_k * (-i)^k / (x+i)^k
+            )
+        )
+    ) 
+    + 
+    1
+}
+{i = sqrt(-1)}
+이면, 
+
+f(f(x)) = ((x^sqrt2-i)^sqrt2) / sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^sqrt2)^k) + 1
+= (x^2) * sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^(sqrt2 * k)) / sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^sqrt2)^k) + 1
+= x^2 + 1
