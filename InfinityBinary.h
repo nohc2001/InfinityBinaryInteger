@@ -60,6 +60,7 @@ typedef enum class deltakind{
 struct DeltaObj{
     deltakind mod;
     int* Size; // sum of all arr delta
+    int* len; // length of all arr
     int* data;
     // mod == delta -> data = ibi
     // mod == arr -> data = ArrGraph<ibi, DeltaObj>
@@ -384,6 +385,11 @@ DeltaObj::DeltaObj(void* delta){
     ibi* s = reinterpret_cast<ibi*>(Size);
     s->Init(false);
     *s = ibi(0);
+
+    len = (int*)fm->_New(sizeof(ibi), true);
+    ibi* l = reinterpret_cast<ibi*>(len);
+    l->Init(false);
+    *l = ibi(1);
 }
 
 DeltaObj::DeltaObj(void* min, void* max){
@@ -397,6 +403,11 @@ DeltaObj::DeltaObj(void* min, void* max){
     ibi* s = reinterpret_cast<ibi*>(Size);
     s->Init(false);
     *s = ibi(0);
+
+    len = (int*)fm->_New(sizeof(ibi), true);
+    ibi* l = reinterpret_cast<ibi*>(len);
+    l->Init(false);
+    *l = ibi(0);
 }
 
 void DeltaObj::push(const ibi& end, DeltaObj* obj){
@@ -404,9 +415,11 @@ void DeltaObj::push(const ibi& end, DeltaObj* obj){
         getArr()->push_range(getArr()->Range(end, obj));
         if(obj->mod == deltakind::arr){
             *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->Size);
+            *reinterpret_cast<ibi*>(len) = *reinterpret_cast<ibi*>(len) + *reinterpret_cast<ibi*>(obj->len);
         }
         else{
             *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->data);
+            *reinterpret_cast<ibi*>(len) = *reinterpret_cast<ibi*>(len) + ibi(1);
         }
     }
 }
@@ -1205,8 +1218,6 @@ ibi& ibi::prime(const ibi& count){
     r = ibi(1);
 
     fm->_tempPushLayer();
-
-    
 
     fm->_tempPopLayer();
 
