@@ -68,6 +68,9 @@ struct DeltaObj{
     void push(const ibi& end, DeltaObj* obj);
     void Compile();
     DeltaObj* fx(const ibi& index);
+    DeltaObj* flip();
+    DeltaObj* Cut(int* end);
+    DeltaObj* connectHole(int* loc);
 
     DeltaObj(void* delta);
     DeltaObj(void* min, void* max);
@@ -436,6 +439,23 @@ DeltaObj* DeltaObj::fx(const ibi& index){
         getArr()->fx(index);
     }
     else return nullptr;
+}
+
+DeltaObj* DeltaObj::flip(){
+    DeltaObj* newDeltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    
+    if(mod == deltakind::arr){
+        ArrGraph_prime* agp = *reinterpret_cast<ArrGraph_prime*>(data);
+        ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
+        ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
+        *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
+        ArrGraph_prime* newagp = *reinterpret_cast<ArrGraph_prime*>(newDeltaObj->data);
+        newagp->push_range(range_prime())
+    }
+}
+
+DeltaObj* DeltaObj::Cut(){
+
 }
 
 class ibr{
@@ -1150,7 +1170,7 @@ bool ibi::isint(int a) const
     }
 }
 
- void ibi::prime_data_init(){
+void ibi::prime_data_init(){
     max_primecount.Init(false);
     max_primeMul.Init(false);
     fm->_tempPushLayer();
@@ -1226,7 +1246,7 @@ void ibi::make_new_prime()
     ibi centersize; centersize.Init(false);
     centersize = ibi(0);
     centersize = max_primeMul - (ibi(2) * increase_size);
-    
+
 
     // fill the back of Delta (mirror image of front Delta)
     index0 = ibi(0);
