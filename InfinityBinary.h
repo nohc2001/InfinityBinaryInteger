@@ -84,7 +84,8 @@ class ibi{
 
     //static vecarr<ibi*> prime_numbers;
     //계획은 fmvecarr이 아닌 ArrGraph긴함.
-    static DeltaObj prime_all;
+    static DeltaObj prime_all; // 모든 소수 데이터
+    static ibi max_primeMul; // 1 부터 max_primecount 번째 소수 까지의 곱
     static ibi max_primecount; // 가용할 수 있는 가장 큰 소수의 번호
 
     ibi();
@@ -1150,8 +1151,9 @@ bool ibi::isint(int a) const
 }
 
  void ibi::prime_data_init(){
-    fm->_tempPushLayer();
     max_primecount.Init(false);
+    max_primeMul.Init(false);
+    fm->_tempPushLayer();
     max_primecount = ibi(2);
     
     ibi* minibi = (ibi*)fm->_New(sizeof(ibi), true);
@@ -1184,11 +1186,65 @@ bool ibi::isint(int a) const
     DeltaObj* D2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *D2 = DeltaObj((void*)delta2);
     prime_all.push(ibi(4), D2);
+
+    max_primeMul = ibi(6);
+
     fm->_tempPopLayer();
  }
 
 void ibi::make_new_prime()
 {
+    DeltaObj* prevD = prime_all;
+    DeltaObj* newD;
+    newD = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+
+    fm->_tempPushLayer();
+
+    max_primecount = max_primecount + ibi(1);
+    ibi newprime; newprime.Init(false);
+    newprime = prime(max_primecount);
+    max_primeMul = max_primeMul * newprime;
+    *newD = DeltaObj(ibi(1), max_primeMul);
+    ibi stacking_size;
+    stacking_size.Init(false);
+    stacking_size = *reinterpret_cast<ibi*>(prevD->Size);
+    ibi increse_size; increse_size.Init(false);
+    increase_size = ibi(0);
+    ibi index0; index0.Init(false); index0 = ibi(0);
+    ibi frontmax; frontmax.Init(false); frontmax = newprime / ibi(2);
+
+    // fill front of new Delta
+    for(;index0 < frontmax;){
+        fm->_tempPushLayer();
+        newD->push(stacking_size * (index0 + ibi(1)), prevD);
+        index0 = index0 + ibi(1);
+        increase_size = increase_size + stacking_size;
+        fm->_tempPopLayer();
+    }
+    
+    // fill the center of Delta
+    ibi centersize; centersize.Init(false);
+    centersize = ibi(0);
+    centersize = max_primeMul - (ibi(2) * increase_size);
+    
+
+    // fill the back of Delta (mirror image of front Delta)
+    index0 = ibi(0);
+    frontmax = frontmax - ibi(1);
+    for(;index0 < frontmax;){
+        fm->_tempPushLayer();
+        newD->push(stacking_size * (index0 + ibi(1)), prevD);
+        index0 = index0 + ibi(1);
+        fm->_tempPopLayer();
+    }
+
+    // fill the last mirror of front (back) fill to max_primeMul
+
+
+    // push 2 in the last
+    newD->push(stacking_size * (index0 + ibi(1)), prevD);
+
+    fm->_tempPopLayer();
 }
 
 ibi& ibi::prime_delta(const ibi& prime_num){
@@ -1218,7 +1274,33 @@ ibi& ibi::prime(const ibi& count){
     r = ibi(1);
 
     fm->_tempPushLayer();
+    DeltaObj* dpi = prime_all;
+    while(true){
+        int i=0;
+        ibi index; index.Init(false); index = ibi(0);
+        while(index >= count){
+            ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi.data);
+            DeltaObj* agp_deltaobj = agp->ranges->at(i).value;
+            ibi* len = *reinterpret_cast<ibi*>(agp_deltaobj->len);
+            if(index + *len < count){
+                index += *reinterpret_cast<ibi*>(agp_deltaobj->len);
+                r += *reinterpret_cast<ibi*>(agp_deltaobj->Size);
+            }
+            else{
+                break;
+            }
+            ++i;
+        }
 
+        ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi.data);
+        DeltaObj* agp_deltaobj = agp->ranges->at(i).value;
+        if(agp_deltaobj->mod == deltakind::delta){
+            break;
+        }
+        else{
+            dpi = reinterpret_cast<DeltaObj*>(agp_deltaobj->data);
+        }
+    }
     fm->_tempPopLayer();
 
     return r;

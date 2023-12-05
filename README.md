@@ -3,8 +3,10 @@ InfinityBinaryInteger is Special Utility of express numbers correctly and no "er
 
 ibi is integer class<br />
 ibr is rational number class<br />
-ibc is complex number class<br />
-expr is math expression.<br />
+expr is math expression with ibr and operation(operation, function..).<br />
+irr is real number that contain expr<br />
+irc is complex number class that contain two irr.<br />
+equa is equation. it can have roots.
 function is math function.<br />
 Set is Set<br />
 Axiom is Custom axiomatic system of Math. it can make Many Theorms in that axiom.<br />
