@@ -442,20 +442,32 @@ DeltaObj* DeltaObj::fx(const ibi& index){
 }
 
 DeltaObj* DeltaObj::flip(){
-    DeltaObj* newDeltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
-    
     if(mod == deltakind::arr){
+        DeltaObj* newDeltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
         ArrGraph_prime* agp = *reinterpret_cast<ArrGraph_prime*>(data);
         ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
-        ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
+        ibi* maxx = (ibi*)fm->_New(sizeof(ibi), true); maxx->Init(false); *maxx = *agp->maxx;
         *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
         ArrGraph_prime* newagp = *reinterpret_cast<ArrGraph_prime*>(newDeltaObj->data);
-        newagp->push_range(range_prime())
+        //newagp->push_range(range_prime())
+        ibi savemax; savemax.Init(false); savemax = *maxx;
+        for(int i = agp->ranges->size() - 1;i>=0;--i){
+            range_prime v;
+            v.value = agp->ranges->at(i).value;
+            v.end = savemax;
+            newDeltaObj->push(v.end, v.value);
+            savemax = *maxx - agp->ranges->at(i).end;
+        }
+        newDeltaObj->Compile();
+        return newDeltaObj;
+    }
+    else{
+        return this;
     }
 }
 
-DeltaObj* DeltaObj::Cut(){
-
+DeltaObj* DeltaObj::Cut(const ibi& cutline){
+    
 }
 
 class ibr{
