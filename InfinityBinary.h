@@ -69,7 +69,7 @@ struct DeltaObj{
     void Compile();
     DeltaObj* fx(const ibi& index);
     DeltaObj* flip();
-    DeltaObj* Cut(int* end);
+    DeltaObj* Cut(const ibi& cutline);
     DeltaObj* connectHole(int* loc);
 
     DeltaObj(void* delta);
@@ -448,7 +448,6 @@ DeltaObj* DeltaObj::flip(){
         ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
         ibi* maxx = (ibi*)fm->_New(sizeof(ibi), true); maxx->Init(false); *maxx = *agp->maxx;
         *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
-        ArrGraph_prime* newagp = *reinterpret_cast<ArrGraph_prime*>(newDeltaObj->data);
         //newagp->push_range(range_prime())
         ibi savemax; savemax.Init(false); savemax = *maxx;
         for(int i = agp->ranges->size() - 1;i>=0;--i){
@@ -467,7 +466,31 @@ DeltaObj* DeltaObj::flip(){
 }
 
 DeltaObj* DeltaObj::Cut(const ibi& cutline){
+    ArrGraph_prime* agp = *reinterpret_cast<ArrGraph_prime*>(data);
+    ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
+    ibi* maxx = (ibi*)fm->_New(sizeof(ibi), true); maxx->Init(false); *maxx = *agp->maxx;
     
+    if(cutline < *minx || *maxx < cutline){
+        return nullptr;
+    }
+    
+    DeltaObj* newDeltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
+    
+    int i;
+    for(i=0;i<agp->ranges->size() && agp->ranges->at(i).end < cutline;++i){
+        range_prime v;
+        v.value = agp->ranges->at(i).value;
+        v.end = agp->ranges->at(i).end;
+        newDeltaObj->push(v.end, v.value);
+    }
+
+    DeltaObj* delta_obj = agp->ranges->at(i).value->Cut(cutline);
+    if(delta_obj != nullptr){
+        newDeltaObj->push(cutline, delta_obj);
+    } 
+    newDeltaObj->Compile();
+    return newDeltaObj;
 }
 
 class ibr{
