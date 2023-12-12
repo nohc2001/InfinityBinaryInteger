@@ -498,7 +498,11 @@ void DeltaObj::connectHole(const ibi& loc){
     ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(data);
     DeltaObj* lastlast_deltaObj = this;
     DeltaObj* last_deltaObj = this;
+    ibi *k = reinterpret_cast<ibi*>(this->len);
+    *k = *k - ibi(1);
     DeltaObj* deltaobj = parr->fx(loc);
+    k = reinterpret_cast<ibi*>(deltaobj->len);
+    *k = *k - ibi(1);
     goto *labels[(unsigned int)deltaobj->mod];
 
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
@@ -506,6 +510,8 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
     lastlast_deltaObj = last_deltaObj;
     last_deltaObj = deltaobj;
     deltaobj = parr->fx(loc);
+    k = reinterpret_cast<ibi*>(deltaobj->len);
+    *k = *k - ibi(1);
     goto *labels[(unsigned int)deltaobj->mod];
 
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
@@ -522,6 +528,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
     }
     ArrGraph_prime* newlparr = reinterpret_cast<ArrGraph_prime*>(new_last_deltaObj->data);
     newlparr->ranges->erase(obj_erase);
+    //ranges[obj_erase-1] 에 obj_erase 위치의 value를 더해야 함. > 그래야 사이즈가 안무너짐.
 }
 
 class ibr{
