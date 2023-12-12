@@ -1349,8 +1349,56 @@ void ibi::make_new_prime()
     newD->push(increse_size, dboj2);
 
     //fill the holes
+    ibi stacklevel; stacklevel.Init(false); stacklevel = ibi(1);
+    ibi prep; prep.Init(false); prep = max_primecount;
+    while(true){
+        fm->_tempPushLayer();
+        ibi pcount; pcount.Init(false); pcount = ibi(0);
+        ibi saturate_index; saturate_index.Init(false); saturate_index = ibi(max_primecount);
+        while(true){
+            fm->_tempPushLayer();
+            if(prime(saturate_index).pow(ibi(2)) < max_primeMul) {
+                fm->_tempPopLayer();
+                break;
+            }
+            saturate_index = saturate_index + ibi(1);
+            fm->_tempPopLayer();
+        }
+
+        while(true){
+            fm->_tempPushLayer();
+            ibi hole; hole.Init(false); hole = ibi(0);
+            ibi index1; index1.Init(false); index1 = prep;
+            for(;index1 < saturate_index;){
+                fm->_tempPushLayer();
+                hole = prime(prep + index).pow(stacklevel) * prime(prep + index + pcount);
+                if(hole < max_primeMul){
+                    newD->connectHole(hole);
+                }
+                else{
+                    saturate_index = index1;
+                }
+                index1 = index1 + ibi(1);
+                fm->_tempPopLayer();
+            }
+            pcount = pcount + ibi(1);
+            if(saturate_index == prep){
+                fm->_tempPopLayer();
+                break;
+            }
+            fm->_tempPopLayer();
+        }
+        stacklevel = stacklevel + ibi(1);
+        if(prime(prep).pow(stacklevel) > max_primeMul){
+            fm->_tempPopLayer();
+            break;
+        }
+        fm->_tempPopLayer();
+    }
     
     fm->_tempPopLayer();
+
+    return newD;
 }
 
 ibi& ibi::prime_delta(const ibi& prime_num){
