@@ -1312,24 +1312,44 @@ void ibi::make_new_prime()
     ibi centersize; centersize.Init(false);
     centersize = ibi(0);
     centersize = max_primeMul - (ibi(2) * increase_size);
-
+    ibi hcs; hcs.Init(false); // half_center_size
+    hcs = centersize / ibi(2);
+    DeltaObj* DCut = prevD->Cut(hcs);
+    newD->push(increse_size + hcs, DCut);
+    DeltaObj* DCutflip = DCut->flip();
+    newD->push(increse_size + centersize, DCutflip);
+    increse_size = increse_size + centersize;
 
     // fill the back of Delta (mirror image of front Delta)
+    DeltaObj* Dflip = prevD->flip();
     index0 = ibi(0);
     frontmax = frontmax - ibi(1);
     for(;index0 < frontmax;){
         fm->_tempPushLayer();
-        newD->push(stacking_size * (index0 + ibi(1)), prevD);
+        newD->push(increse_size + stacking_size * (index0 + ibi(1)), Dflip);
         index0 = index0 + ibi(1);
+        increse_size = increse_size + stacking_size;
         fm->_tempPopLayer();
     }
 
     // fill the last mirror of front (back) fill to max_primeMul
-
+    DeltaObj* dobj2 = fm->_New(sizeof(DeltaObj), true);
+    ibi* thePpi = fm->_New(sizeof(ibi), true);
+    thePpi->Init(false); *thePpi = stacking_size;
+    *dobj2 = DeltaObj(thePpi);
+    newD->push(increse_size + stacking_size, dboj2);
+    increse_size = increse_size + stacking_size;
 
     // push 2 in the last
-    newD->push(stacking_size * (index0 + ibi(1)), prevD);
+    DeltaObj* dobj2 = fm->_New(sizeof(DeltaObj), true);
+    ibi* thetwo = fm->_New(sizeof(ibi), true);
+    thetwo->Init(false); *thetwo = ibi(2);
+    *dobj2 = DeltaObj(thetwo);
+    increse_size = increse_size + ibi(2);
+    newD->push(increse_size, dboj2);
 
+    //fill the holes
+    
     fm->_tempPopLayer();
 }
 
