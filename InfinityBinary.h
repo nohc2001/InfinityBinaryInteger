@@ -70,7 +70,7 @@ struct DeltaObj{
     DeltaObj* fx(const ibi& index);
     DeltaObj* flip();
     DeltaObj* Cut(const ibi& cutline);
-    DeltaObj* connectHole(int* loc);
+    void connectHole(int* loc);
 
     DeltaObj(void* delta);
     DeltaObj(void* min, void* max);
@@ -491,6 +491,37 @@ DeltaObj* DeltaObj::Cut(const ibi& cutline){
     } 
     newDeltaObj->Compile();
     return newDeltaObj;
+}
+
+void DeltaObj::connectHole(const ibi& loc){
+    constexpr void* labels[2] = {&&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR, &&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA};
+    ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(data);
+    DeltaObj* lastlast_deltaObj = this;
+    DeltaObj* last_deltaObj = this;
+    DeltaObj* deltaobj = parr->fx(loc);
+    goto *labels[(unsigned int)deltaobj->mod];
+
+IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
+    parr = reinterpret_cast<ArrGraph_prime*>(deltaobj->data);
+    lastlast_deltaObj = last_deltaObj;
+    last_deltaObj = deltaobj;
+    deltaobj = parr->fx(loc);
+    goto *labels[(unsigned int)deltaobj->mod];
+
+IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
+    ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(last_deltaObj->data);
+    DeltaObj* new_last_deltaObj = fm->_New(sizeof(DeltaObj), true);
+    *new_last_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
+    int obj_erase = 0;
+    for(int i=0;i<lparr->ranges->size();++i){
+        range_prime v = lparr->ranges->at(i);
+        if(v.value == deltaobj){
+            obj_erase = i;
+        }
+        new_last_deltaObj->push(v.end, v.value);
+    }
+    ArrGraph_prime* newlparr = reinterpret_cast<ArrGraph_prime*>(new_last_deltaObj->data);
+    newlparr->ranges->erase(obj_erase);
 }
 
 class ibr{
