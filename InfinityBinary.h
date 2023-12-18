@@ -588,6 +588,8 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         pparent_arr->ranges->last().value = newParent_dobj;
         //여기 써있는 코드는 잘못됨. arr하나가 바뀌면, 그 모든 부모가 다 새로 만들어져야 함. (트리형식이여서 어짜피 데이터드는건 같음. 생각보다 별로 안든다.)
         //parent가 nullptr인 deltaobj로 도달하면, 더이상 안바꿔도 된다.
+
+        //추가로 arr항목의 range 개수가 0이면 그 항목을 없애는 코드도 추가하자.
     }
 
     /*
