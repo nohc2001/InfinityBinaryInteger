@@ -62,6 +62,7 @@ struct DeltaObj{
     int* Size; // sum of all arr delta
     int* len; // length of all arr
     int* data;
+    DeltaObj* Parent = nullptr;
     // mod == delta -> data = ibi
     // mod == arr -> data = ArrGraph<ibi, DeltaObj>
 
@@ -71,6 +72,7 @@ struct DeltaObj{
     DeltaObj* flip();
     DeltaObj* Cut(const ibi& cutline);
     void connectHole(int* loc);
+    DeltaObj* RangeCopy();
 
     DeltaObj(void* delta);
     DeltaObj(void* min, void* max);
@@ -420,10 +422,12 @@ void DeltaObj::push(const ibi& end, DeltaObj* obj){
         if(obj->mod == deltakind::arr){
             *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->Size);
             *reinterpret_cast<ibi*>(len) = *reinterpret_cast<ibi*>(len) + *reinterpret_cast<ibi*>(obj->len);
+            obj->Parent = this;
         }
         else{
             *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->data);
             *reinterpret_cast<ibi*>(len) = *reinterpret_cast<ibi*>(len) + ibi(1);
+            obj->Parent = this;
         }
     }
 }
@@ -493,6 +497,20 @@ DeltaObj* DeltaObj::Cut(const ibi& cutline){
     return newDeltaObj;
 }
 
+DeltaObj* DeltaObj::RangeCopy(){
+    if(this->mod == deltakind::delta){
+        return nullptr;
+    }
+    ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(this->data);
+    DeltaObj* new_deltaObj = fm->_New(sizeof(DeltaObj), true);
+    *new_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
+    for(int i=0;i<lparr->ranges->size();++i){
+        range_prime v = lparr->ranges->at(i);
+        new_deltaObj->push(v.end, v.value);
+    }
+    return new_deltaObj;
+}
+
 void DeltaObj::connectHole(const ibi& loc){
     constexpr void* labels[2] = {&&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR, &&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA};
     ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(data);
@@ -527,7 +545,59 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         new_last_deltaObj->push(v.end, v.value);
     }
     ArrGraph_prime* newlparr = reinterpret_cast<ArrGraph_prime*>(new_last_deltaObj->data);
+
+    //만약 obj_erase 가 0이 아니면
+    if(obj_erase > 0){
+        ibi* destibi = reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase-1).value->data);
+        *destibi = *destibi + *reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase).value->data);
+        // *reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase-1).value->Size) = *destibi;
+    }
+    else{
+        // 다른 위치에 값이 있는 경우.
+        DeltaObj* parent_dobj = lastlast_deltaObj;
+        DeltaObj* present_dobj = last_deltaObj;
+        while(obj_erase == 0){
+            ArrGraph_prime* parent_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
+            int k=0;
+            for(k=0;k<parent_arr->ranges->size();++k){
+                if(parent_arr->ranges->at(k).value == reinterpret_cast<int*>(present_dobj)){
+                    break;
+                }
+            }
+            obj_erase = k;
+            present_dobj = parent_dobj;
+            parent_dobj = parent_dobj->Parent;
+        }
+
+        while(present_dobj->mod == deltakind::arr){
+            ArrGraph_prime* present_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
+            parent_dobj = present_dobj;
+            present_dobj = reinterpret_cast<DeltaObj*>(present_arr->ranges->last().value);
+        }
+
+        ibi* newnum = fm->_New(sizeof(ibi), true);
+        newnum->Init(false);
+        *newnum = *reinterpret_cast<ibi*>(present_dobj->data) + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
+        DeltaObj* newDelta = fm->_New(sizeof(DeltaObj), true);
+        *newDelta = DeltaObj((void*)newnum);
+        DeltaObj* newParent_dobj = parent_dobj->RangeCopy();
+        ArrGraph_prime* nparent_arr = reinterpret_cast<ArrGraph_prime*>(newParent_dobj->data);
+        nparent_arr->ranges->last().value = *newDelta;
+        nparent_arr->ranges->last().end = nparent_arr->ranges->last().end + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
+        ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->Parent->data);
+        pparent_arr->ranges->last().value = newParent_dobj;
+        //여기 써있는 코드는 잘못됨. arr하나가 바뀌면, 그 모든 부모가 다 새로 만들어져야 함. (트리형식이여서 어짜피 데이터드는건 같음. 생각보다 별로 안든다.)
+        
+    }
+
+    /*
+    1. deltaobj의 상대적 위치가 0이 아닌 최소부모를 찾는다.
+    2. 그 부모로 부터 arr이 아닌 delta가 될때까지 내려간다.
+    3. 마지막 arr을 새로운 arr로 대체한다.
+    */
+    
     newlparr->ranges->erase(obj_erase);
+    newlparr->Compile();
     //ranges[obj_erase-1] 에 obj_erase 위치의 value를 더해야 함. > 그래야 사이즈가 안무너짐.
 }
 
