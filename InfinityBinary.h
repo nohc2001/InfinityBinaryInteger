@@ -508,6 +508,7 @@ DeltaObj* DeltaObj::RangeCopy(){
         range_prime v = lparr->ranges->at(i);
         new_deltaObj->push(v.end, v.value);
     }
+    new_deltaObj->Parent = this->Parent;
     return new_deltaObj;
 }
 
@@ -581,13 +582,43 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         DeltaObj* newDelta = fm->_New(sizeof(DeltaObj), true);
         *newDelta = DeltaObj((void*)newnum);
         DeltaObj* newParent_dobj = parent_dobj->RangeCopy();
+        newParent_dobj->Parent = parent_dobj->Parent;
         ArrGraph_prime* nparent_arr = reinterpret_cast<ArrGraph_prime*>(newParent_dobj->data);
         nparent_arr->ranges->last().value = *newDelta;
         nparent_arr->ranges->last().end = nparent_arr->ranges->last().end + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
-        ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->Parent->data);
-        pparent_arr->ranges->last().value = newParent_dobj;
+        
         //여기 써있는 코드는 잘못됨. arr하나가 바뀌면, 그 모든 부모가 다 새로 만들어져야 함. (트리형식이여서 어짜피 데이터드는건 같음. 생각보다 별로 안든다.)
         //parent가 nullptr인 deltaobj로 도달하면, 더이상 안바꿔도 된다.
+
+        ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->Parent->data);
+        DeltaObj* pastPtr = pparent_arr->ranges->last().value;
+        DeltaObj* pastDelta = newParent_dobj;
+        DeltaObj* pastDelta_Parent = newParent_dobj->Parent;
+        DeltaObj* origin_Parent = pastPtr->Parent;
+        while(origin_Parent->Parent != nullptr){
+            pastDelta_Parent = origin_Parent->RangeCopy();
+            pparent_arr = reinterpret_cast<ArrGraph_prime*>(pastDelta_Parent->data);
+            int i = 0;
+            for(i = 0; i<pparent_arr->ranges->size();++i){
+                if(pparent_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                    pparent_arr->ranges->at(i).value = pastDelta;
+                    break;
+                }
+            }
+            
+            pastPtr = origin_Parent;
+            pastDelta = pastDelta_Parent;
+            origin_Parent = pastPtr->Parent;
+        }
+
+        ArrGraph_prime* origin_arr = reinterpret_cast<ArrGraph_prime*>(origin_Parent->data);
+        int i = 0;
+        for(i = 0; i<origin_arr->ranges->size();++i){
+            if(origin_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                origin_arr->ranges->at(i).value = pastDelta;
+                break;
+            }
+        }
 
         //추가로 arr항목의 range 개수가 0이면 그 항목을 없애는 코드도 추가하자.
     }
