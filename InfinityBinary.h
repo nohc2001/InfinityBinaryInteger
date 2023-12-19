@@ -523,7 +523,7 @@ void DeltaObj::connectHole(const ibi& loc){
     k = reinterpret_cast<ibi*>(deltaobj->len);
     *k = *k - ibi(1);
     goto *labels[(unsigned int)deltaobj->mod];
-
+ㅡ
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
     parr = reinterpret_cast<ArrGraph_prime*>(deltaobj->data);
     lastlast_deltaObj = last_deltaObj;
