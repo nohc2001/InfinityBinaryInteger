@@ -534,28 +534,61 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
     goto *labels[(unsigned int)deltaobj->mod];
 
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
-    ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(last_deltaObj->data);
-    DeltaObj* new_last_deltaObj = fm->_New(sizeof(DeltaObj), true);
-    *new_last_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
-    int obj_erase = 0;
-    for(int i=0;i<lparr->ranges->size();++i){
-        range_prime v = lparr->ranges->at(i);
-        if(v.value == deltaobj){
-            obj_erase = i;
-        }
-        new_last_deltaObj->push(v.end, v.value);
-    }
-    ArrGraph_prime* newlparr = reinterpret_cast<ArrGraph_prime*>(new_last_deltaObj->data);
-
+    
+    DeltaObj* parent_dobj = lastlast_deltaObj;
     //만약 obj_erase 가 0이 아니면
     if(obj_erase > 0){
+        ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(last_deltaObj->data);
+        DeltaObj* new_last_deltaObj = fm->_New(sizeof(DeltaObj), true);
+        *new_last_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
+        int obj_erase = 0;
+        for(int i=0;i<lparr->ranges->size();++i){
+            range_prime v = lparr->ranges->at(i);
+            if(v.value == deltaobj){
+                obj_erase = i;
+            }
+            new_last_deltaObj->push(v.end, v.value);
+        }
+
+        ArrGraph_prime* newlparr = reinterpret_cast<ArrGraph_prime*>(new_last_deltaObj->data);
+
         ibi* destibi = reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase-1).value->data);
         *destibi = *destibi + *reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase).value->data);
+
+        DeltaObj* pastPtr = last_deltaObj;
+        DeltaObj* pastDelta = new_last_deltaObj;
+        DeltaObj* pastDelta_Parent = new_last_deltaObj->Parent;
+        DeltaObj* origin_Parent = pastPtr->Parent;
+        while(origin_Parent->Parent != nullptr){
+            pastDelta_Parent = origin_Parent->RangeCopy();
+            ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(pastDelta_Parent->data);
+            int i = 0;
+            for(i = 0; i<pparent_arr->ranges->size();++i){
+                if(pparent_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                    pastDelta->Compile();
+                    pparent_arr->ranges->at(i).value = pastDelta;
+                    break;
+                }
+            }
+            
+            pastPtr = origin_Parent;
+            pastDelta = pastDelta_Parent;
+            origin_Parent = pastPtr->Parent;
+        }
+
+        ArrGraph_prime* origin_arr = reinterpret_cast<ArrGraph_prime*>(origin_Parent->data);
+        int i = 0;
+        for(i = 0; i<origin_arr->ranges->size();++i){
+            if(origin_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                pastDelta->Compile();
+                origin_arr->ranges->at(i).value = pastDelta;
+                break;
+            }
+        }
         // *reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase-1).value->Size) = *destibi;
     }
     else{
         // 다른 위치에 값이 있는 경우.
-        DeltaObj* parent_dobj = lastlast_deltaObj;
         DeltaObj* present_dobj = last_deltaObj;
         while(obj_erase == 0){
             ArrGraph_prime* parent_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
@@ -601,6 +634,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
             int i = 0;
             for(i = 0; i<pparent_arr->ranges->size();++i){
                 if(pparent_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                    pastDelta->Compile();
                     pparent_arr->ranges->at(i).value = pastDelta;
                     break;
                 }
@@ -615,6 +649,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         int i = 0;
         for(i = 0; i<origin_arr->ranges->size();++i){
             if(origin_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                pastDelta->Compile();
                 origin_arr->ranges->at(i).value = pastDelta;
                 break;
             }
