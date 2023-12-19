@@ -534,9 +534,20 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
     goto *labels[(unsigned int)deltaobj->mod];
 
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
-    
+    /*
+    1. deltaobj의 상대적 위치가 0이 아닌 최소부모를 찾는다.
+    2. 그 부모로 부터 arr이 아닌 delta가 될때까지 내려간다.
+    3. 마지막 arr을 새로운 arr로 대체한다. (그 위 모든 부모까지.)
+    */
+
+    //arr하나가 바뀌면, 그 모든 부모가 다 새로 만들어져야 함. (트리형식이여서 어짜피 데이터드는건 같음. 생각보다 별로 안든다.)
+    //parent가 nullptr인 deltaobj로 도달하면, 더이상 안바꿔도 된다.
+
+    // objerase 위치의 항목을 삭제하는 코드가 새로운 코드에 적응을 못해서 지워짐.
+    // 추가 필요.
+    //추가로 arr항목의 range 개수가 0이면 그 항목을 없애는 코드도 추가하자.
+
     DeltaObj* parent_dobj = lastlast_deltaObj;
-    //만약 obj_erase 가 0이 아니면
     if(obj_erase > 0){
         ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(last_deltaObj->data);
         DeltaObj* new_last_deltaObj = fm->_New(sizeof(DeltaObj), true);
@@ -585,10 +596,8 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
                 break;
             }
         }
-        // *reinterpret_cast<ibi*>(newlparr->ranges->at(obj_erase-1).value->Size) = *destibi;
     }
     else{
-        // 다른 위치에 값이 있는 경우.
         DeltaObj* present_dobj = last_deltaObj;
         while(obj_erase == 0){
             ArrGraph_prime* parent_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
@@ -619,9 +628,6 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         ArrGraph_prime* nparent_arr = reinterpret_cast<ArrGraph_prime*>(newParent_dobj->data);
         nparent_arr->ranges->last().value = *newDelta;
         nparent_arr->ranges->last().end = nparent_arr->ranges->last().end + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
-        
-        //여기 써있는 코드는 잘못됨. arr하나가 바뀌면, 그 모든 부모가 다 새로 만들어져야 함. (트리형식이여서 어짜피 데이터드는건 같음. 생각보다 별로 안든다.)
-        //parent가 nullptr인 deltaobj로 도달하면, 더이상 안바꿔도 된다.
 
         ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->Parent->data);
         DeltaObj* pastPtr = pparent_arr->ranges->last().value;
@@ -654,19 +660,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
                 break;
             }
         }
-
-        //추가로 arr항목의 range 개수가 0이면 그 항목을 없애는 코드도 추가하자.
     }
-
-    /*
-    1. deltaobj의 상대적 위치가 0이 아닌 최소부모를 찾는다.
-    2. 그 부모로 부터 arr이 아닌 delta가 될때까지 내려간다.
-    3. 마지막 arr을 새로운 arr로 대체한다.
-    */
-    
-    newlparr->ranges->erase(obj_erase);
-    newlparr->Compile();
-    //ranges[obj_erase-1] 에 obj_erase 위치의 value를 더해야 함. > 그래야 사이즈가 안무너짐.
 }
 
 class ibr{
