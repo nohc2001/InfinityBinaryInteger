@@ -720,6 +720,28 @@ class ibr{
     static ibr& tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
 };
 
+class operation{
+
+};
+
+enum class expr_segment_type{
+    EST_RationalNumber = 0,
+    EST_Operation = 1,
+    EST_UnknownVariable = 2
+};
+
+struct expr_segment{
+    expr_segment_type t;
+    union{
+        ibr* num;
+        operation* oper;
+    };
+}
+
+class expr{
+
+}
+
 #define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
 #define ricast(type, value) reinterpret_cast<type>(value);
 
