@@ -13,10 +13,46 @@ Axiom is Custom axiomatic system of Math. it can make Many Theorms in that axiom
 
 they are developed for making correct math reserch program.
 
-ibi integer provide follow operations<br />
-: =, >, <, >=, <=, ==, +, -, *, /, %, pow, sqrt_approximate, get_new_prime, PrimeFactorization, nCr, nPr, nHr, factorial, unaryPlus...
+## IBI
 
-ibi expression:<br />
+### ibi integer provide follow operations<br />
+void operator=(const ibi& ref);<br />
+bool cmp(const ibi& A, bool left_big, bool include_same) const;<br />
+bool operator>(const ibi& A) const;<br />
+bool operator>=(const ibi& A) const;<br />
+bool operator<(const ibi& A) const;<br />
+bool operator<=(const ibi& A) const;<br />
+bool operator==(const ibi& A) const;<br />
+bool operator!=(const ibi& A) const;<br />
+static void carry(ibi* num, int carryloc);<br />
+static void carry_under(ibi* num, int carryloc);<br />
+static ibi& add_absolute(const ibi& A, const ibi& B);<br />
+static ibi& sub_absolute(const ibi& A, const ibi& B);<br />
+ibi& operator+(const ibi& A) const;<br />
+ibi& operator-(const ibi& A) const;<br />
+ibi& operator<<(const int& n) const;<br />
+ibi& operator>>(const int& n) const;<br />
+static ibi& mul_32(unsigned int A, unsigned int B);<br />
+ibi& operator*(const ibi& A) const;<br />
+static ibi& div_32(const ibi& A, unsigned int divn);<br />
+ibi& operator/(const ibi& A) const;<br />
+ibi& operator%(const ibi& A) const; <br />
+bool isint(int a) const;<br />
+static void prime_data_init();<br />
+static void make_new_prime();<br />
+static ibi& prime_delta(const ibi& prime_num);<br />
+static ibi& prime(const ibi& count);<br />
+fmvecarr<unsigned int>* PrimeFactorization();<br />
+ibi& abs() const;<br />
+ibi& pow(const ibi& A) const;<br />
+ibi& sqrt_approximate(const ibi& A, unsigned int operation_times) const;<br />
+ibi& tetration(const ibi& A) const;<br />
+static ibi& factorial(const ibi& A);<br />
+ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;<br />
+lcstr& ToString(int base_num) const;<br />
+lwstr* dataString() const; <br />
+
+### ibi expression:<br />
 1. 256 based(1byte based expression of number)<br />
 > 0~63 number in circle range (원숫자 영역)<br />
 ○①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮<br />
@@ -51,5 +87,30 @@ ex> [+㍙䷛⒋□㊳⓯㏲䷉㉔㉖㍟㉜]<br />
 플러스 다1, 주33, 점4, 사1, 원38, 온15, 일19, 주8, 원24, 원26, 다7, 원32<br />
 plus da1, ju33, jum4, sa1, one38, own15, il19, ju8, one24, one26, da7, one32<br />
 
-ibr rational number provide follow operations<br />
-: =, >, <, >=, <=, ==, +, -, *, /, exp_approximate(exponetial, sqrt ...), gamma_approximate, nCr, nPr, nHr, unaryPlus ...<br />
+## IBR
+
+### ibr rational number provide follow operations
+void clean();<br />
+bool operator>(const ibr& A) const;<br />
+bool operator<(const ibr& A) const;<br />
+bool operator==(const ibr& A) const;<br />
+bool operator!=(const ibr& A) const;<br />
+bool operator>=(const ibr& A) const;<br />
+bool operator<=(const ibr& A) const;<br />
+ibr& operator+(const ibr& A) const;<br />
+ibr& operator-(const ibr& A) const;<br />
+ibr& operator*(const ibr& A) const;<br />
+ibr& operator/(const ibr& A) const;<br />
+ibr& floor_function() const;<br />
+ibr& operator%(const ibr& A) const;<br />
+ibr& exp_approximate(const ibr& A, const ibi& operation_times) const;<br />
+static ibr& gamma_approximate(const ibr& A, const ibi& operation_times);<br />
+static ibr& nCr(const ibr& N, const ibr& R, const ibi& operation_times);<br />
+static ibr& nHr(const ibr& N, const ibr& R, const ibi& operation_times);<br />
+static ibr& nPr(const ibr& N, const ibr& R, const ibi& operation_times);<br />
+static ibr& ln_approximate(const ibr& X, const ibi& operation_times);<br />
+static ibr& getPI_approximate(const ibi& operation_times);<br />
+static ibr& get_e_approximate(const ibi& operation_times);<br />
+static ibr& sin_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
+static ibr& cos_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
+static ibr& tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
