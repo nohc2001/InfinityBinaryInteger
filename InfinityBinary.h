@@ -1948,42 +1948,49 @@ void ibr::operator=(const ibr &ref)
 void ibr::clean()
 {
     fm->_tempPushLayer();
-    fmvecarr<unsigned int> *np = numerator.PrimeFactorization();
-    fmvecarr<unsigned int> *dp = denominator.PrimeFactorization();
-    size_t min = (np->up > dp->up) ? dp->up : np->up;
-    for (int i = 0; i < min; ++i)
+    ibi A; A.Init(false); A = numerator;
+    ibi B; B.Init(false); B = denominator;
+    ibi C;
+    C.Init(false);
+    C = ibi(0);
+    while (true)
     {
-        if (np->at(i) > dp->at(i))
+        fm->_tempPushLayer();
+        if (A > B)
         {
-            (*np)[i] -= (*dp)[i];
-            (*dp)[i] = 0;
+            C = A % B;
+            if (C != ibi(0))
+            {
+                A = C;
+            }
+            else
+            {
+                break;
+            }
+        }
+        else if (B > A)
+        {
+            C = B % A;
+            if (C != ibi(0))
+            {
+                B = C;
+            }
+            else
+            {
+                break;
+            }
         }
         else
         {
-            (*dp)[i] -= (*np)[i];
-            (*np)[i] = 0;
+            C = A;
+            break;
         }
+        fm->_tempPopLayer();
     }
 
-    numerator.integer_data.up = 0;
-    numerator.integer_data.push_back(1);
-    for (int i = 0; i < np->up; ++i)
-    {
-        for (int k = 0; k < np->at(i); ++k)
-        {
-            numerator = numerator * (*ibi::prime_numbers[i]);
-        }
-    }
+    numerator = numerator / C;
+    denominator = denominator / C;
 
-    denominator.integer_data.up = 0;
-    denominator.integer_data.push_back(1);
-    for (int i = 0; i < dp->up; ++i)
-    {
-        for (int k = 0; k < dp->at(i); ++k)
-        {
-            denominator = denominator * (*ibi::prime_numbers[i]);
-        }
-    }
     fm->_tempPopLayer();
 }
 
