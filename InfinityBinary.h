@@ -57,6 +57,8 @@ typedef enum class deltakind{
     arr = 1
 };
 
+class ibi;
+
 struct DeltaObj{
     deltakind mod;
     int* Size; // sum of all arr delta
@@ -71,14 +73,11 @@ struct DeltaObj{
     DeltaObj* fx(const ibi& index);
     DeltaObj* flip();
     DeltaObj* Cut(const ibi& cutline);
-    void connectHole(int* loc);
+    void connectHole(const ibi& loc);
     DeltaObj* RangeCopy();
 
     DeltaObj(void* delta);
     DeltaObj(void* min, void* max);
-    inline ArrGraph<ibi, DeltaObj*>* getArr() {
-        return reinterpret_cast<ArrGraph<ibi, DeltaObj*>*>(data);
-    }
 };
 
 class ibi{
@@ -89,7 +88,7 @@ class ibi{
 
     //static vecarr<ibi*> prime_numbers;
     //계획은 fmvecarr이 아닌 ArrGraph긴함.
-    static DeltaObj prime_all; // 모든 소수 데이터
+    static DeltaObj* prime_all; // 모든 소수 데이터
     static ibi max_primeMul; // 1 부터 max_primecount 번째 소수 까지의 곱
     static ibi max_primecount; // 가용할 수 있는 가장 큰 소수의 번호
 
@@ -192,6 +191,7 @@ public:
         ranges->NULLState();
         ranges->Init(2, false, true);
         islocal = false;
+        return this;
     }
 
     range_prime Range(const ibi& end, DeltaObj* value)
@@ -418,7 +418,7 @@ DeltaObj::DeltaObj(void* min, void* max){
 
 void DeltaObj::push(const ibi& end, DeltaObj* obj){
     if(mod == deltakind::arr){
-        getArr()->push_range(getArr()->Range(end, obj));
+        reinterpret_cast<ArrGraph_prime*>(data)->push_range(reinterpret_cast<ArrGraph_prime*>(data)->Range(end, obj));
         if(obj->mod == deltakind::arr){
             *reinterpret_cast<ibi*>(Size) = *reinterpret_cast<ibi*>(Size) + *reinterpret_cast<ibi*>(obj->Size);
             *reinterpret_cast<ibi*>(len) = *reinterpret_cast<ibi*>(len) + *reinterpret_cast<ibi*>(obj->len);
@@ -434,13 +434,13 @@ void DeltaObj::push(const ibi& end, DeltaObj* obj){
 
 void DeltaObj::Compile(){
     if(mod == deltakind::arr){
-        getArr()->Compile();
+        reinterpret_cast<ArrGraph_prime*>(data)->Compile();
     }
 }
 
 DeltaObj* DeltaObj::fx(const ibi& index){
     if(mod == deltakind::arr){
-        getArr()->fx(index);
+        reinterpret_cast<ArrGraph_prime*>(data)->fx(index);
     }
     else return nullptr;
 }
@@ -448,7 +448,7 @@ DeltaObj* DeltaObj::fx(const ibi& index){
 DeltaObj* DeltaObj::flip(){
     if(mod == deltakind::arr){
         DeltaObj* newDeltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
-        ArrGraph_prime* agp = *reinterpret_cast<ArrGraph_prime*>(data);
+        ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(data);
         ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
         ibi* maxx = (ibi*)fm->_New(sizeof(ibi), true); maxx->Init(false); *maxx = *agp->maxx;
         *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
@@ -470,7 +470,7 @@ DeltaObj* DeltaObj::flip(){
 }
 
 DeltaObj* DeltaObj::Cut(const ibi& cutline){
-    ArrGraph_prime* agp = *reinterpret_cast<ArrGraph_prime*>(data);
+    ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(data);
     ibi* minx = (ibi*)fm->_New(sizeof(ibi), true); minx->Init(false); *minx = *agp->minx;
     ibi* maxx = (ibi*)fm->_New(sizeof(ibi), true); maxx->Init(false); *maxx = *agp->maxx;
     
@@ -502,7 +502,7 @@ DeltaObj* DeltaObj::RangeCopy(){
         return nullptr;
     }
     ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(this->data);
-    DeltaObj* new_deltaObj = fm->_New(sizeof(DeltaObj), true);
+    DeltaObj* new_deltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *new_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
     for(int i=0;i<lparr->ranges->size();++i){
         range_prime v = lparr->ranges->at(i);
@@ -523,7 +523,7 @@ void DeltaObj::connectHole(const ibi& loc){
     k = reinterpret_cast<ibi*>(deltaobj->len);
     *k = *k - ibi(1);
     goto *labels[(unsigned int)deltaobj->mod];
-ㅡ
+
 IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR:
     parr = reinterpret_cast<ArrGraph_prime*>(deltaobj->data);
     lastlast_deltaObj = last_deltaObj;
@@ -548,11 +548,11 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
     //추가로 arr항목의 range 개수가 0이면 그 항목을 없애는 코드도 추가하자.
 
     DeltaObj* parent_dobj = lastlast_deltaObj;
+    int obj_erase = loc.integer_data[0];
     if(obj_erase > 0){
         ArrGraph_prime* lparr = reinterpret_cast<ArrGraph_prime*>(last_deltaObj->data);
-        DeltaObj* new_last_deltaObj = fm->_New(sizeof(DeltaObj), true);
+        DeltaObj* new_last_deltaObj = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
         *new_last_deltaObj = DeltaObj(lparr->minx, lparr->maxx);
-        int obj_erase = 0;
         for(int i=0;i<lparr->ranges->size();++i){
             range_prime v = lparr->ranges->at(i);
             if(v.value == deltaobj){
@@ -575,7 +575,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
             ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(pastDelta_Parent->data);
             int i = 0;
             for(i = 0; i<pparent_arr->ranges->size();++i){
-                if(pparent_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                if(pparent_arr->ranges->at(i).value == pastPtr){
                     pastDelta->Compile();
                     pparent_arr->ranges->at(i).value = pastDelta;
                     break;
@@ -590,7 +590,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         ArrGraph_prime* origin_arr = reinterpret_cast<ArrGraph_prime*>(origin_Parent->data);
         int i = 0;
         for(i = 0; i<origin_arr->ranges->size();++i){
-            if(origin_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+            if(origin_arr->ranges->at(i).value == pastPtr){
                 pastDelta->Compile();
                 origin_arr->ranges->at(i).value = pastDelta;
                 break;
@@ -598,12 +598,13 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         }
     }
     else{
+        //ibi* parentArrIn0 = parent_dobj
         DeltaObj* present_dobj = last_deltaObj;
         while(obj_erase == 0){
-            ArrGraph_prime* parent_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
+            ArrGraph_prime* parent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->data);
             int k=0;
             for(k=0;k<parent_arr->ranges->size();++k){
-                if(parent_arr->ranges->at(k).value == reinterpret_cast<int*>(present_dobj)){
+                if(parent_arr->ranges->at(k).value == present_dobj){
                     break;
                 }
             }
@@ -613,22 +614,22 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         }
 
         while(present_dobj->mod == deltakind::arr){
-            ArrGraph_prime* present_arr = reinterpret_cast<ArrGraph_prime*>(dobj->data);
+            ArrGraph_prime* present_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->data);
             parent_dobj = present_dobj;
             present_dobj = reinterpret_cast<DeltaObj*>(present_arr->ranges->last().value);
         }
 
-        ibi* newnum = fm->_New(sizeof(ibi), true);
+        ibi* newnum = (ibi*)fm->_New(sizeof(ibi), true);
         newnum->Init(false);
-        *newnum = *reinterpret_cast<ibi*>(present_dobj->data) + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
-        DeltaObj* newDelta = fm->_New(sizeof(DeltaObj), true);
+        *newnum = *reinterpret_cast<ibi*>(present_dobj->data);  /* + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data); */ 
+        DeltaObj* newDelta = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
         *newDelta = DeltaObj((void*)newnum);
         DeltaObj* newParent_dobj = parent_dobj->RangeCopy();
         newParent_dobj->Parent = parent_dobj->Parent;
         ArrGraph_prime* nparent_arr = reinterpret_cast<ArrGraph_prime*>(newParent_dobj->data);
-        nparent_arr->ranges->last().value = *newDelta;
-        nparent_arr->ranges->last().end = nparent_arr->ranges->last().end + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
-
+        nparent_arr->ranges->last().value = newDelta;
+        nparent_arr->ranges->last().end = nparent_arr->ranges->last().end; /* + *reinterpret_cast<ibi*>(newlparr->ranges->at(0).value->data);
+*/
         ArrGraph_prime* pparent_arr = reinterpret_cast<ArrGraph_prime*>(parent_dobj->Parent->data);
         DeltaObj* pastPtr = pparent_arr->ranges->last().value;
         DeltaObj* pastDelta = newParent_dobj;
@@ -639,7 +640,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
             pparent_arr = reinterpret_cast<ArrGraph_prime*>(pastDelta_Parent->data);
             int i = 0;
             for(i = 0; i<pparent_arr->ranges->size();++i){
-                if(pparent_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+                if(pparent_arr->ranges->at(i).value == pastPtr){
                     pastDelta->Compile();
                     pparent_arr->ranges->at(i).value = pastDelta;
                     break;
@@ -654,7 +655,7 @@ IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA:
         ArrGraph_prime* origin_arr = reinterpret_cast<ArrGraph_prime*>(origin_Parent->data);
         int i = 0;
         for(i = 0; i<origin_arr->ranges->size();++i){
-            if(origin_arr->ranges->at(i).value == reinterpret_cast<int*>(pastPtr)){
+            if(origin_arr->ranges->at(i).value == pastPtr){
                 pastDelta->Compile();
                 origin_arr->ranges->at(i).value = pastDelta;
                 break;
@@ -1389,28 +1390,28 @@ void ibi::prime_data_init(){
     maxibi->Init(false);
     *maxibi = ibi(4);
 
-    prime_all = DeltaObj(minibi, maxibi);
+    *prime_all = DeltaObj(minibi, maxibi);
 
     ibi* delta0 = (ibi*)fm->_New(sizeof(ibi), true);
     delta0->Init(false);
     *delta0 = ibi(1);
     DeltaObj* D0 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *D0 = DeltaObj((void*)delta0);
-    prime_all.push(ibi(1), D0);
+    prime_all->push(ibi(1), D0);
 
     ibi* delta1 = (ibi*)fm->_New(sizeof(ibi), true);
     delta1->Init(false);
     *delta1 = ibi(1);
     DeltaObj* D1 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *D1 = DeltaObj((void*)delta1);
-    prime_all.push(ibi(2), D1);
+    prime_all->push(ibi(2), D1);
 
     ibi* delta2 = (ibi*)fm->_New(sizeof(ibi), true);
     delta2->Init(false);
     *delta2 = ibi(2);
     DeltaObj* D2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *D2 = DeltaObj((void*)delta2);
-    prime_all.push(ibi(4), D2);
+    prime_all->push(ibi(4), D2);
 
     max_primeMul = ibi(6);
 
@@ -1429,12 +1430,15 @@ void ibi::make_new_prime()
     ibi newprime; newprime.Init(false);
     newprime = prime(max_primecount);
     max_primeMul = max_primeMul * newprime;
-    *newD = DeltaObj(ibi(1), max_primeMul);
+    ibi* one = (ibi*)fm->_New(sizeof(ibi), true);
+    one->Init(false);
+    *one = ibi(1);
+    *newD = DeltaObj((void*)one, (void*)&max_primeMul);
     ibi stacking_size;
     stacking_size.Init(false);
     stacking_size = *reinterpret_cast<ibi*>(prevD->Size);
     ibi increse_size; increse_size.Init(false);
-    increase_size = ibi(0);
+    increse_size = ibi(0);
     ibi index0; index0.Init(false); index0 = ibi(0);
     ibi frontmax; frontmax.Init(false); frontmax = newprime / ibi(2);
 
@@ -1443,14 +1447,14 @@ void ibi::make_new_prime()
         fm->_tempPushLayer();
         newD->push(stacking_size * (index0 + ibi(1)), prevD);
         index0 = index0 + ibi(1);
-        increase_size = increase_size + stacking_size;
+        increse_size = increse_size + stacking_size;
         fm->_tempPopLayer();
     }
     
     // fill the center of Delta
     ibi centersize; centersize.Init(false);
     centersize = ibi(0);
-    centersize = max_primeMul - (ibi(2) * increase_size);
+    centersize = max_primeMul - (ibi(2) * increse_size);
     ibi hcs; hcs.Init(false); // half_center_size
     hcs = centersize / ibi(2);
     DeltaObj* DCut = prevD->Cut(hcs);
@@ -1472,20 +1476,20 @@ void ibi::make_new_prime()
     }
 
     // fill the last mirror of front (back) fill to max_primeMul
-    DeltaObj* dobj2 = fm->_New(sizeof(DeltaObj), true);
-    ibi* thePpi = fm->_New(sizeof(ibi), true);
+    DeltaObj* dobj2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    ibi* thePpi = (ibi*)fm->_New(sizeof(ibi), true);
     thePpi->Init(false); *thePpi = stacking_size;
     *dobj2 = DeltaObj(thePpi);
-    newD->push(increse_size + stacking_size, dboj2);
+    newD->push(increse_size + stacking_size, dobj2);
     increse_size = increse_size + stacking_size;
 
     // push 2 in the last
-    DeltaObj* dobj2 = fm->_New(sizeof(DeltaObj), true);
-    ibi* thetwo = fm->_New(sizeof(ibi), true);
+    dobj2 = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
+    ibi* thetwo = (ibi*)fm->_New(sizeof(ibi), true);
     thetwo->Init(false); *thetwo = ibi(2);
     *dobj2 = DeltaObj(thetwo);
     increse_size = increse_size + ibi(2);
-    newD->push(increse_size, dboj2);
+    newD->push(increse_size, dobj2);
 
     //fill the holes
     ibi stacklevel; stacklevel.Init(false); stacklevel = ibi(1);
@@ -1510,7 +1514,7 @@ void ibi::make_new_prime()
             ibi index1; index1.Init(false); index1 = prep;
             for(;index1 < saturate_index;){
                 fm->_tempPushLayer();
-                hole = prime(prep + index).pow(stacklevel) * prime(prep + index + pcount);
+                hole = prime(prep + index1).pow(stacklevel) * prime(prep + index1 + pcount);
                 if(hole < max_primeMul){
                     newD->connectHole(hole);
                 }
@@ -1537,7 +1541,7 @@ void ibi::make_new_prime()
     
     fm->_tempPopLayer();
 
-    return newD;
+    ibi::prime_all = newD;
 }
 
 ibi& ibi::prime_delta(const ibi& prime_num){
@@ -1545,7 +1549,7 @@ ibi& ibi::prime_delta(const ibi& prime_num){
     r = ibi(0);
     
     constexpr void* labels[2] = {&&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_ARR, &&IBI_PRIME_DELTA_FUNC_DELTAMOD_IS_DELTA};
-    ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(prime_all.data);
+    ArrGraph_prime* parr = reinterpret_cast<ArrGraph_prime*>(prime_all->data);
     DeltaObj* deltaobj = parr->fx(prime_num);
     goto *labels[(unsigned int)deltaobj->mod];
 
@@ -1572,12 +1576,12 @@ ibi& ibi::prime(const ibi& count){
         int i=0;
         ibi index; index.Init(false); index = ibi(0);
         while(index >= count){
-            ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi.data);
+            ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi->data);
             DeltaObj* agp_deltaobj = agp->ranges->at(i).value;
-            ibi* len = *reinterpret_cast<ibi*>(agp_deltaobj->len);
+            ibi* len = reinterpret_cast<ibi*>(agp_deltaobj->len);
             if(index + *len < count){
-                index += *reinterpret_cast<ibi*>(agp_deltaobj->len);
-                r += *reinterpret_cast<ibi*>(agp_deltaobj->Size);
+                index = index + *reinterpret_cast<ibi*>(agp_deltaobj->len);
+                r = r + *reinterpret_cast<ibi*>(agp_deltaobj->Size);
             }
             else{
                 break;
@@ -1585,7 +1589,7 @@ ibi& ibi::prime(const ibi& count){
             ++i;
         }
 
-        ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi.data);
+        ArrGraph_prime* agp = reinterpret_cast<ArrGraph_prime*>(dpi->data);
         DeltaObj* agp_deltaobj = agp->ranges->at(i).value;
         if(agp_deltaobj->mod == deltakind::delta){
             break;
@@ -1600,6 +1604,7 @@ ibi& ibi::prime(const ibi& count){
 }
 
 // 소인수 분해
+/*
 fmvecarr<unsigned int> *ibi::PrimeFactorization()
 {
     fmvecarr<unsigned int> *pfarr = ricast(fmvecarr<unsigned int>*, fm->_tempNew(sizeof(fmvecarr<unsigned int>)));
@@ -1610,7 +1615,8 @@ fmvecarr<unsigned int> *ibi::PrimeFactorization()
     ibi copy;
     copy.Init(false);
     copy = *this;
-    size_t prime_index = 0;
+    ibi prime_index; prime_ind = 0;
+    ibi::prime()
     ibi *prime = ibi::prime_numbers[prime_index];
     ibi result;
     result.Init(false);
@@ -1639,6 +1645,7 @@ fmvecarr<unsigned int> *ibi::PrimeFactorization()
 	
 	return pfarr;
 }
+*/
 
 ibi& ibi::abs() const
 {
@@ -1813,17 +1820,17 @@ ibi& ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap) const
 
 lcstr& ibi::ToString(int base_num = 10) const
 {
-    lcstr str;
-    str.Init(integer_data.size() * 32, false);
+    lcstr* str = (lcstr*)fm->_New(sizeof(lcstr), true);
+    str->Init(integer_data.size() * 32, false);
     fm->_tempPushLayer();
 
     if (isPositive)
     {
-        str.push_back('+');
+        str->push_back('+');
     }
     else
     {
-        str.push_back('-');
+        str->push_back('-');
     }
 
     ibi base;
@@ -1846,21 +1853,21 @@ lcstr& ibi::ToString(int base_num = 10) const
         nstr = temp.c_str();
         if (base_num > 10)
         {
-            str.insert(1, ']');
+            str->insert(1, ']');
             for (int i = temp.size() - 1; i >= 0; --i)
             {
-                str.insert(1, nstr[i]);
+                str->insert(1, nstr[i]);
             }
-            str.insert(1, '[');
+            str->insert(1, '[');
         }
         else
         {
-            str.insert(1, nstr[0]);
+            str->insert(1, nstr[0]);
         }
         base = base * pastbase;
     }
     fm->_tempPopLayer();
-    return str;
+    return *str;
 }
 
 lwstr* ibi::dataString() const

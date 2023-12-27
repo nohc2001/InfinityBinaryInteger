@@ -2029,6 +2029,7 @@ namespace freemem{
 			ranges->NULLState();
 			ranges->Init(2, false, true);
 			islocal = false;
+			return this;
 		}
 
 		range < T, V > Range(T end, V value)
