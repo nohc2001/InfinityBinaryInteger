@@ -80,6 +80,8 @@ struct DeltaObj{
     DeltaObj(void* min, void* max);
 };
 
+#define IBI_INIT DeltaObj* ibi::prime_all = nullptr; ibi ibi::max_primeMul = ibi(); ibi ibi::max_primecount = ibi();
+
 class ibi{
     public:
     bool isPositive = true;
@@ -1390,6 +1392,7 @@ void ibi::prime_data_init(){
     maxibi->Init(false);
     *maxibi = ibi(4);
 
+    prime_all = (DeltaObj*)fm->_New(sizeof(DeltaObj), true);
     *prime_all = DeltaObj(minibi, maxibi);
 
     ibi* delta0 = (ibi*)fm->_New(sizeof(ibi), true);
