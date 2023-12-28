@@ -733,6 +733,9 @@ enum class expr_oper_type{
 class expr_operator{
     public:
     expr_oper_type type;
+    unsigned int parameter_num;
+    //fmvecarr<fmvecarr<unsigned int>*> commutative_property;
+    int* func = nullptr;
 };
 
 class expr_variable{
@@ -740,6 +743,7 @@ class expr_variable{
 
 enum class iboperation_type{
     IBOT_CustomFunction = 0,
+    
     IBOT_Plus = 1,
     IBOT_Minus = 2,
     IBOT_Multiply = 3,
@@ -754,7 +758,13 @@ enum class iboperation_type{
     IBOT_NatureLogarithm = 12,
     IBOT_Sin = 13,
     IBOT_Cos = 14,
-    IBOT_Tan = 15
+    IBOT_Tan = 15,
+
+    IBOT_SigmaSum,
+    IBOT_PiMultiply,
+    IBOT_Limit,
+    IBOT_Derivative,
+    IBOT_Integral
 };
 
 class iboperator{
