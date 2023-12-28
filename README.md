@@ -6,7 +6,7 @@ ibr is rational number class<br />
 expr is math expression with ibr and operation(operation, function..).<br />
 irr is real number that contain expr<br />
 irc is complex number class that contain two irr.<br />
-equa is equation. it can have roots.
+equa is equation. it can have roots.<br />
 function is math function.<br />
 Set is Set<br />
 Axiom is Custom axiomatic system of Math. it can make Many Theorms in that axiom.<br />
@@ -114,3 +114,80 @@ static ibr& get_e_approximate(const ibi& operation_times);<br />
 static ibr& sin_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
 static ibr& cos_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
 static ibr& tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);<br />
+
+## expr
+
+The expr class uses the expr symbol: <br />
+### "ꭢ"<br />
+as a character representing itself.<br />
+
+This character contains four characters, e, x, p, and r, respectively.<br />
+This symbol is used to distinguish it from a basic function when representing a function or variable for a sentence.<br />
+
+### the structure of expr
+
+By default, the expr is saved as an array of expr_segment instances that are the underlying elements that make up the sentence.<br />
+
+expr = array<expr_segment><br />
+expr_segment = { ꭢsegtype(enum), union{ꭢoper, ꭢvar, ꭢconst}}<br />
+
+At this time, the expr_segment can have three forms: operator, variable, and constant.<br />
+
+ꭢoper = {
+    expr_oper_type type; // type of operation
+    unsigned int parameter_num; // number of parameters
+    int* func = nullptr; // actual function
+};
+
+The operation comes first, and then the variable or constant comes out as many as the parameter number of the operation.<br />
+If you encounter an operation while obtaining the parameters of the operation, process the newly discovered operation and insert it into the parameter.<br />
+ex><br />
+expr array data = <br />
+[ꭢA, a, b, ꭢB, c, d, e, ꭢC, ꭢD, f, g, h, i]<br />
+=> ꭢA(a, b, ꭢB(c, d), e, ꭢC(ꭢD(f), g, h), i)<br />
+
+There can be many types of expr functions, <br />
+such as the conjunction function "_", <br />
+the repetition function "ꭢRepeat", <br />
+and the condition function "ꭢIf". <br />
+The expr can also contain variables, allowing other external expr to enter their place.<br />
+
+But what really matters is the sentence constant.<br />
+It can fit most of the mathematical expressions that we are familiar with.<br />
+Just sentence functions and variables are used to compute the expressions and computations that the sentence constant represents.<br />
+
+expr constant is also familliar with expr.<br />
+expr_constant = { expr_constant_type type;<br />
+    union{<br />
+        ibr* constant_rational_num;<br />
+        iboperator* constant_operator;<br />
+        ibvariable* constant_variable;<br />
+    };<br />
+};<br />
+
+And way of interpret of data is also same with expr.<br />
+ex><br />
+expr_const = [+, 10, -, 2, 3]<br />
+=> [+ [10, - [2, 3]]]<br />
+
+There are additional features given to sentences to make them more useful and familiar.<br />
+It's about the commutative_property of mathematics, <br />
+The parameters of a certain operation are [] to be exchanged, <br />
+You'll be tied to a () that can't be exchanged.<br />
+ex><br />
+f(2, [3, 4]) == f(2, [4, 3])<br />
+
+In Addition,<br />
+If parameter_num == -1, there is no limit to the number of parameters, and all parameters have the commutative_property.<br />
+If parameter_num == -2, there is no limit to the number of parameters, and all parameters do not have a commutative_property.<br />
+
+ex><br />
+when param_num == -1<br />
+f[a, b, c, d, e] == f[e, d, c, b, a] == ...<br />
+
+when param_num == -2<br />
+f(a, b, c, d, e) != f(b, a, c, d, e)<br />
+
+A function having only two parameters may be expressed as follows by a user's definition.<br />
+ex><br />
+^(a, b) == a ^ b<br />
