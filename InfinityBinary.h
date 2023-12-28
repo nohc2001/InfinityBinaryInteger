@@ -720,27 +720,91 @@ class ibr{
     static ibr& tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
 };
 
-class operation{
+enum class expr_oper_type{
+    EOT_Connect = 0,
+    EOT_Repeat = 1,
+    EOT_If = 2,
+    EOT_Custom = 3,
+    EOT_UnKnown = 4
+};
 
+class expr_operator{
+    public:
+    expr_oper_type type;
+};
+
+class expr_variable{
+};
+
+enum class iboperation_type{
+    IBOT_CustomFunction = 0,
+    IBOT_Plus = 1,
+    IBOT_Minus = 2,
+    IBOT_Multiply = 3,
+    IBOT_Division = 4,
+    IBOT_FloorFunction = 5,
+    IBOT_Extra = 6,
+    IBOT_Exponetial = 7,
+    IBOT_Gamma = 8,
+    IBOT_nCr = 9,
+    IBOT_nHr = 10,
+    IBOT_nPr = 11,
+    IBOT_NatureLogarithm = 12,
+    IBOT_Sin = 13,
+    IBOT_Cos = 14,
+    IBOT_Tan = 15
+};
+
+class iboperator{
+    public:
+    iboperation_type type;
+    unsigned int parameter_num;
+    fmvecarr<fmvecarr<unsigned int>*> commutative_property;
+    int* func = nullptr;
+};
+
+class ibvariable{
+    public:
+    lcstr name;
+};
+
+enum class expr_constant_type{
+    ECT_Parameter = 0,
+    ECT_Operation = 1,
+    ECT_Variable = 2,
+    ECT_Unknown = 3
+};
+
+class expr_constant{
+    public:
+    expr_constant_type type;
+    union{
+        ibr* constant_rational_num;
+        iboperator* constant_operator;
+        ibvariable* constant_variable;
+    };
 };
 
 enum class expr_segment_type{
-    EST_RationalNumber = 0,
-    EST_Operation = 1,
-    EST_UnknownVariable = 2
+    EST_expr_oper = 0,
+    EST_expr_var = 1,
+    EST_expr_const = 2,
+    EST_UnKnown = 3;
 };
 
 struct expr_segment{
-    expr_segment_type t;
+    expr_segment_type type;
     union{
-        ibr* num;
-        operation* oper;
+        expr_operator* oper;
+        expr_variable* var;
+        expr_constant* _const;
     };
-}
+};
 
 class expr{
-
-}
+    public:
+    fmvecarr<expr_segment> data;
+};
 
 #define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
 #define ricast(type, value) reinterpret_cast<type>(value);
