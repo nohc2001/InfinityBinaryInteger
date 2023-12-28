@@ -26,6 +26,8 @@ constexpr wchar_t bytebased[16][17] = {
     {L'●', L'❶', L'❷', L'❸', L'❹', L'❺', L'❻', L'❼', L'❽', L'❾', L'❿', L'⓫', L'⓬', L'⓭', L'⓮', L'⓯'}
 };
 
+constexpr wchar_t expr_symbol = L'ꭢ';
+
 struct uint_wstr{
     wchar_t str[5] = {};
 };
