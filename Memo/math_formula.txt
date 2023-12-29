@@ -1,0 +1,50 @@
+수학의 정리를 수집하기
+1. +
+    정의 : 
+        if[b 는 양의 정수] then a+b = a_ꭢRepeat<k = 1 ~ b>[+ 1]
+        if[b 는 음의 정수] then a+b+(-b) = a -> a+b_ꭢRepeat<k = 1 ~ (-b)>[+ 1] = a -> a+b = a_ꭢRepeat<k = 1 ~ (-b)>[- 1]
+        if[b 는 유리수] then a+b.numerator = a_ꭢRepeat<k = 1 ~ b.denominator>[+ b] -> a+b =  a_ꭢRepeat<k = 1 ~ b.denominator>[+ (b/b.denominator)]
+    항등원 a + 0 = a
+    교환법칙 a+b = b+a
+    결합법칙 a+(b+c) = (a+b)+c
+2. -
+    항등원 a - 0 = a
+    a - b = - (b - a)
+3. *
+    정의 
+        if[b 는 양의 정수] then a*b = 1_ꭢRepeat<k = 1 ~ b>[+ a]
+        if[b 는 음의 정수] then a*(-b) = 1_ꭢRepeat<k = 1 ~ (-b)>[+ a] -> a*b + a*(-b) = 0 = 1_ꭢRepeat<k = 1 ~ (-b)>[+ a] + (-(1_ꭢRepeat<k = 1 ~ (-b)>[+ a]))
+            -> a * b = -(1_ꭢRepeat<k = 1 ~ (-b)>[+ a])
+        if[b 는 유리수] then
+    항등원 a * 1 = a
+    교환법칙 a*b = b*a
+    결합법칙 a*(b*c) = (a*b)*c
+    분배법칙 a*(b+c) = a*b + a*c 
+        > 이로부터 파생되는 모든 곱셈공식
+4. /
+    a / 1 = a
+    통분 if[b != 0 && d != 0] a/b + c/d = (a*d + c*b) / (b*d)
+    가비의 이 if[b != 0 && d != 0 && b+d != 0] a/b = c/d = (a+c)/(b+d)
+
+5. 등식의 변환 (A = B 일때)
+    f(A) = f(B)
+
+6. 절댓값
+
+7. 바닥함수
+
+8. 거듭제곱
+    정의 : a^n = 1_ꭢRepeat<k = 1 ~ n>[* a]
+    a^b * a^c = a^(b+c)
+    (a^b)^c = a^(b*c)
+    (a*b)^c = a^c * b^c
+
+9. 로그
+    n^(log_n(a)) = a
+    log_n(a) + log_n(b) = log_n(a*b)
+    log_n(a) = log_c(a) / log_c(n)
+    log_n(a^b) = b * log_n(a)
+
+10. 제곱근
+    sqrt_n(a)^n = a
+    sqrt_n(a) * sqrt_m(b) = sqrt_(n*m)(a^m * b^n)
