@@ -816,6 +816,11 @@ struct expr_segment{
 class expr{
     public:
     fmvecarr<expr_segment> data;
+
+    expr();
+    ~expr();
+
+    
 };
 
 #define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
