@@ -1,27 +1,41 @@
 수학의 정리를 수집하기
 1. +
-    정의 : 
+    정의 : a + b
         if[b 는 양의 정수] then a+b = a_ꭢRepeat<k = 1 ~ b>[+ 1]
-        if[b 는 음의 정수] then a+b+(-b) = a -> a+b_ꭢRepeat<k = 1 ~ (-b)>[+ 1] = a -> a+b = a_ꭢRepeat<k = 1 ~ (-b)>[- 1]
-        if[b 는 유리수] then a+b.numerator = a_ꭢRepeat<k = 1 ~ b.denominator>[+ b] -> a+b =  a_ꭢRepeat<k = 1 ~ b.denominator>[+ (b/b.denominator)]
+        if[b 는 음의 정수] then 
+            a+b+(-b) = a -> a+b_ꭢRepeat<k = 1 ~ (-b)>[+ 1] = a 
+            -> a+b = a_ꭢRepeat<k = 1 ~ (-b)>[- 1]
+        if[b 는 유리수] then 
+            a+b.numerator = a_ꭢRepeat<k = 1 ~ b.denominator>[+ 1] 
+            -> a+b =  a_ꭢRepeat<k = 1 ~ b.denominator>[+ (1/b.denominator)]
+            -> a+b = a_ꭢRepeat<k = 1 ~ b.denominator>[+ 1]_/b.denominator
     항등원 a + 0 = a
     교환법칙 a+b = b+a
     결합법칙 a+(b+c) = (a+b)+c
 2. -
+    정의 : a - b = a + (-b)
     항등원 a - 0 = a
     a - b = - (b - a)
 3. *
-    정의 
-        if[b 는 양의 정수] then a*b = 1_ꭢRepeat<k = 1 ~ b>[+ a]
-        if[b 는 음의 정수] then a*(-b) = 1_ꭢRepeat<k = 1 ~ (-b)>[+ a] -> a*b + a*(-b) = 0 = 1_ꭢRepeat<k = 1 ~ (-b)>[+ a] + (-(1_ꭢRepeat<k = 1 ~ (-b)>[+ a]))
-            -> a * b = -(1_ꭢRepeat<k = 1 ~ (-b)>[+ a])
-        if[b 는 유리수] then
+    정의 : a * b
+        if[b 는 양의 정수] then a*b = 0_ꭢRepeat<k = 1 ~ b>[+ a]
+        if[b 는 음의 정수] then 
+            a*(-b) = 0_ꭢRepeat<k = 1 ~ (-b)>[+ a] 
+            -> a*b + a*(-b) = 0 = 0_ꭢRepeat<k = 1 ~ (-b)>[+ a]_+ (-(0_ꭢRepeat<k = 1 ~ (-b)>[+ a]))
+            -> a*b = -(0_ꭢRepeat<k = 1 ~ (-b)>[+ a])
+        if[b 는 유리수] then 
+            a * b.numerator = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a] 
+            -> (a * b.numerator) / b.denominator = a*b = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a/b.denominator]
+            -> a*b = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a]_/b.denominator
     항등원 a * 1 = a
     교환법칙 a*b = b*a
     결합법칙 a*(b*c) = (a*b)*c
     분배법칙 a*(b+c) = a*b + a*c 
         > 이로부터 파생되는 모든 곱셈공식
 4. /
+    정의
+        b * (1/b) = 1
+        a / b = a * (1/b)
     a / 1 = a
     통분 if[b != 0 && d != 0] a/b + c/d = (a*d + c*b) / (b*d)
     가비의 이 if[b != 0 && d != 0 && b+d != 0] a/b = c/d = (a+c)/(b+d)
