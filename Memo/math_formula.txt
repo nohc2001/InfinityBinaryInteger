@@ -1,4 +1,7 @@
 수학의 정리를 수집하기
+0. 등식의 변환 (A = B 일때)
+    f(A) = f(B)
+
 1. +
     정의 : a + b
         if[b 는 양의 정수] then a+b = a_ꭢRepeat<k = 1 ~ b>[+ 1]
@@ -40,25 +43,34 @@
     통분 if[b != 0 && d != 0] a/b + c/d = (a*d + c*b) / (b*d)
     가비의 이 if[b != 0 && d != 0 && b+d != 0] a/b = c/d = (a+c)/(b+d)
 
-5. 등식의 변환 (A = B 일때)
-    f(A) = f(B)
+5. 절댓값
 
-6. 절댓값
+6. 바닥함수
 
-7. 바닥함수
-
-8. 거듭제곱
-    정의 : a^n = 1_ꭢRepeat<k = 1 ~ n>[* a]
+7. 거듭제곱
+    정의 : 
+        if[b 가 양의 정수] then a^b = 1_ꭢRepeat<k = 1 ~ b>[* a]
+        if[b 가 음의 정수] then 
+            a^(-b) = 1_ꭢRepeat<k = 1 ~ (-b)>[* a]
+            -> a^(-b) * a^b = 1 = 1_ꭢRepeat<k = 1 ~ (-b)>[* a]_ꭢRepeat<k = 1 ~ (-b)>[* (1/a)]
+            -> a^b = 1_ꭢRepeat<k = 1 ~ (-b)>[* (1/a)]
+            -> a^b = 1/(a^b)
+        if[b가 유리수] then
+            a^b.numerator = 1_ꭢRepeat<k = 1 ~ b.numerator>[* a]
+            -> (a^b)^b.denominator = a^b.numerator
+            -> 1_ꭢRepeat<k = 1 ~ b.numerator>[* a] = 1_ꭢRepeat<k = 1 ~ b.denominator>[* a^b]
+            -> ?...
     a^b * a^c = a^(b+c)
     (a^b)^c = a^(b*c)
     (a*b)^c = a^c * b^c
 
-9. 로그
-    n^(log_n(a)) = a
+8. 로그
+    정의 : n^(log_n(a)) = a
     log_n(a) + log_n(b) = log_n(a*b)
     log_n(a) = log_c(a) / log_c(n)
     log_n(a^b) = b * log_n(a)
 
-10. 제곱근
+9. 제곱근
+    정의 : sqrt_n(a)^n = a
     sqrt_n(a)^n = a
     sqrt_n(a) * sqrt_m(b) = sqrt_(n*m)(a^m * b^n)
