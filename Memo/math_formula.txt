@@ -1,3 +1,37 @@
+등호(=) 정의
+undefined : =
+variable : a, b, c
+1. 반사성. a = a
+2. 대칭성. (a = b) ⇒ (b = a)
+3. 추이성. a = b ∧ b = c ⇒ a = c
+
+페아노 공리계
+undefined : 1, '
+variable : n, S
+1. 1 ∈ NatureNumberSet
+2. ∀n ∈ NatureNumberSet, n' ∈ NatureNumberSet
+3. ∀n ∈ NatureNumberSet, n' ≠ 1
+4. ∀n, m ∈ NatureNumberSet, n = m ⇒ n' = m'
+5. ((1 ∈ S) ∧ (∀n ∈ S, n' ∈ S)) ⇒ NatureNumberSet ⊂ S
+
+_ 정의
+undefined : _
+variable : A, B
+A_B = AB
+
+ꭢRepeat<n> 정의
+undefined : ꭢRepeat
+variable : a, b
+if(b ∈ NatureNumberSet) then
+    1. ꭢRepeat<1>[a] = a
+    2. ꭢRepeat<b'>[a] = a_ꭢRepeat<b>[a]
+
+자연수의 더하기 정의 +
+undefined : +
+variable : n, m
+if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
+    2. n + m = n_ꭢRepeat<m>[']
+
 수학의 정리를 수집하기
 0. 등식의 변환 (A = B 일때)
     f(A) = f(B)

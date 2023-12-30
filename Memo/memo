@@ -26,4 +26,3 @@ expr 필요한 기능
 3. const_operation : expr의 값을 연산
 4. expr_operation : expr을 연산
 5. get_value_approximate : expr의 값을 유리수로 근사하는 것. 
-
