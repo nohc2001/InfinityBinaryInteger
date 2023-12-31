@@ -113,8 +113,26 @@ if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
     2. │a│^2 = a^2
     3. │a│ = │-a│
 
-6. 바닥함수
-    
+6. 바닥함수, 나머지함수
+    undefined : │?│, ├?┤
+    variable : a, b
+    0. ∀n ∈ Z, n ≤ a < n+1 ⇒│a│= n
+    0. ├a┤ = a - │a│
+    1. a ∈ Z ⇒ │a+b│ = a + │b│
+    2. │a+b│ = │a│ + │b│ + │├a┤+├b┤│
+    3. │a*b│ = a*b - ├a*b┤ = │a│*│b│ + │├a┤*│b││ + ││a│*├b┤│ ...
+    4.  ├├a┤┤ = ├a┤
+        ││a││ = │a│
+        ├│a│┤ = 0
+        │├a┤│ = 0
+    5.  ││a│+b│ = │a│ + │b│
+        │├a┤+b│ = │b│
+        ├│a│+b┤ = ├a┤
+        ├├a┤+b┤ = ├a+b┤
+    6.  ││a│*b│ = │a│*│b│ + ││a│*├b┤│
+        │├a┤*b│ = │├a┤*│b│ + ├a┤*├b┤│
+        ├│a│*b┤ = ├│a│*├b┤┤
+        ├├a┤*b┤ = ├├a┤*│b│+├a┤*├b┤┤
 
 10. 펙토리얼
     정의 : n! = 1 * ꭢRepeat<k = 1 ~ n>[* k]
