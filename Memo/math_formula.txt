@@ -21,16 +21,18 @@ A_B = AB
 
 ꭢRepeat<n> 정의
 undefined : ꭢRepeat
-variable : a, b
+variable : a, b, k, ꭢf(k)
 if(b ∈ NatureNumberSet) then
     1. ꭢRepeat<1>[a] = a
     2. ꭢRepeat<b'>[a] = a_ꭢRepeat<b>[a]
+    3. ꭢRepeat<k = a ~ a>[ꭢf(k)] = ꭢf(a)
+    4. ꭢRepeat<k = a ~ b'>[ꭢf(k)] = ꭢRepeat<k = a ~ b>[ꭢf(k)]_ꭢf(b')
 
 자연수의 더하기 정의 +
 undefined : +
 variable : n, m
 if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
-    2. n + m = n_ꭢRepeat<m>[']
+    1. n + m = n_ꭢRepeat<m>[']
 
 수학의 정리를 수집하기
 0. 등식의 변환 (A = B 일때)
@@ -38,14 +40,14 @@ if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
 
 1. +
     정의 : a + b
-        if[b 는 양의 정수] then a+b = a_ꭢRepeat<k = 1 ~ b>[+ 1]
+        if[b 는 양의 정수] then a+b = a_ꭢRepeat<b>[+ 1]
         if[b 는 음의 정수] then 
-            a+b+(-b) = a -> a+b_ꭢRepeat<k = 1 ~ (-b)>[+ 1] = a 
-            -> a+b = a_ꭢRepeat<k = 1 ~ (-b)>[- 1]
+            a+b+(-b) = a -> a+b_ꭢRepeat<(-b)>[+ 1] = a 
+            -> a+b = a_ꭢRepeat<(-b)>[- 1]
         if[b 는 유리수] then 
-            a+b.numerator = a_ꭢRepeat<k = 1 ~ b.denominator>[+ 1] 
-            -> a+b =  a_ꭢRepeat<k = 1 ~ b.denominator>[+ (1/b.denominator)]
-            -> a+b = a_ꭢRepeat<k = 1 ~ b.denominator>[+ 1]_/b.denominator
+            a+b.numerator = a_ꭢRepeat<b.numerator>[+ 1] 
+            -> a+b =  a_ꭢRepeat<b.numerator>[+ (1/b.denominator)]
+            -> a+b = a+(0_ꭢRepeat<b.numerator>[+ 1]_)/b.denominator
     항등원 a + 0 = a
     교환법칙 a+b = b+a
     결합법칙 a+(b+c) = (a+b)+c
@@ -55,19 +57,19 @@ if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
     a - b = - (b - a)
 3. *
     정의 : a * b
-        if[b 는 양의 정수] then a*b = 0_ꭢRepeat<k = 1 ~ b>[+ a]
+        if[b 는 양의 정수] then a*b = 0_ꭢRepeat<b>[+ a]
         if[b 는 음의 정수] then 
-            a*(-b) = 0_ꭢRepeat<k = 1 ~ (-b)>[+ a] 
-            -> a*b + a*(-b) = 0 = 0_ꭢRepeat<k = 1 ~ (-b)>[+ a]_+ (-(0_ꭢRepeat<k = 1 ~ (-b)>[+ a]))
-            -> a*b = -(0_ꭢRepeat<k = 1 ~ (-b)>[+ a])
+            a*(-b) = 0_ꭢRepeat<(-b)>[+ a] 
+            -> a*b + a*(-b) = 0 = 0_ꭢRepeat<(-b)>[+ a]_+ (-(0_ꭢRepeat<(-b)>[+ a]))
+            -> a*b = -(0_ꭢRepeat<(-b)>[+ a])
         if[b 는 유리수] then 
-            a * b.numerator = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a] 
-            -> (a * b.numerator) / b.denominator = a*b = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a/b.denominator]
-            -> a*b = 0_ꭢRepeat<k = 1 ~ b.numerator>[+ a]_/b.denominator
+            a * b.numerator = 0_ꭢRepeat<b.numerator>[+ a] 
+            -> (a * b.numerator) / b.denominator = a*b = 0_ꭢRepeat<b.numerator>[+ a/b.denominator]
+            -> a*b = (0_ꭢRepeat<b.numerator>[+ a]_)/b.denominator
     항등원 a * 1 = a
     교환법칙 a*b = b*a
     결합법칙 a*(b*c) = (a*b)*c
-    분배법칙 a*(b+c) = a*b + a*c 
+    분배법칙 a*(b+c) = a*b + a*c
         > 이로부터 파생되는 모든 곱셈공식
 4. /
     정의
@@ -76,10 +78,6 @@ if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
     a / 1 = a
     통분 if[b != 0 && d != 0] a/b + c/d = (a*d + c*b) / (b*d)
     가비의 이 if[b != 0 && d != 0 && b+d != 0] a/b = c/d = (a+c)/(b+d)
-
-5. 절댓값
-
-6. 바닥함수
 
 7. 거듭제곱
     정의 : 
@@ -108,3 +106,21 @@ if(n ∈ NatureNumberSet && m ∈ NatureNumberSet) then
     정의 : sqrt_n(a)^n = a
     sqrt_n(a)^n = a
     sqrt_n(a) * sqrt_m(b) = sqrt_(n*m)(a^m * b^n)
+
+5. 절댓값
+    정의 │a│ = sqrt_2(a^2)
+    1. │a│*│b│ = │a*b│
+    2. │a│^2 = a^2
+    3. │a│ = │-a│
+
+6. 바닥함수
+    
+
+10. 펙토리얼
+    정의 : n! = 1 * ꭢRepeat<k = 1 ~ n>[* k]
+
+11. 시그마
+    정의 : ∑<k = n ~ m>(f(k)) = 0_ꭢRepeat<k = n ~ m>[+ f(k)]
+
+12. 파이
+    정의 : ∏<k = n ~ m>(f(k)) = 1_ꭢRepeat<k = n ~ m>[* f(k)]
