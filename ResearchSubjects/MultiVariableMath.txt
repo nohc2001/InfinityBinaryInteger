@@ -10,3 +10,6 @@ a = 1 > c = inf
 a = 2 > c = inf
 a = 3 > c = 17
 a = 4 > c = 10.3
+
+정규분포식을 이용한 방법
+h\left(x\right)\ =\ e^{\frac{a}{2}-2a\cdot\left(\frac{x-\frac{a}{2}}{a}\right)^{2}}
