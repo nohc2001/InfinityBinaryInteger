@@ -1,0 +1,12 @@
+조합과 sin파동의 관계
+0Cx = sin(pi*x)/(pi*x) (동일)??
+
+
+g\left(x\right)\ =\frac{2^{\left(a+1\right)}}{2+a}\cdot\left(\frac{\sin\left(\frac{\pi}{\frac{a}{2}+1}\cdot\left(x-\frac{a}{2}\right)\right)}{\left(x-\frac{a}{2}\right)\left(\frac{\pi}{\frac{a}{2}+1}\right)}\right)^{\left(\frac{a}{2}+1\right)}
+g\left(x\right)^{\frac{\left(a+1+c\right)}{a+c}}
+
+a = 0 > c = inf
+a = 1 > c = inf
+a = 2 > c = inf
+a = 3 > c = 17
+a = 4 > c = 10.3
