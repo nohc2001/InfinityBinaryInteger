@@ -1934,6 +1934,12 @@ lcstr* ibi::ToString() const
     fm->_tempPushLayer();
 
     ibi present_value; present_value.Init(false); present_value = ibi(*this);
+    if(present_value.isPositive){
+        r->push_back('+');
+    }
+    else{
+        r->push_back('-');
+    }
     ibi resultv; resultv.Init(false); resultv = ibi(0);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
@@ -1947,10 +1953,15 @@ lcstr* ibi::ToString() const
     fm->_tempPopLayer();
 
     int len = r->len();
-    for(int i=0;i<len;++i){
+    int dlen = (len>>1);
+    for(int i=1;i<dlen;++i){
         char c = r->at(i);
         r->at(i) = r->at(len-i);
         r->at(len-i) = c;
+    }
+
+    if(r->size() == 1){
+        r->push_back('0');
     }
 
     return r;
