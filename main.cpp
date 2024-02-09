@@ -18,7 +18,7 @@ int main(){
   cout << "Hello Math!!" << endl;
   fm->_tempPushLayer();
 
-  ibi::prime_data_init();
+  //ibi::prime_data_init();
 
   unsigned int AData[10] = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
   unsigned int BData[2] = { 123456, 7890 };
@@ -34,6 +34,7 @@ int main(){
     ++count;
     fm->_tempPushLayer();
     A = A / B;
+    cout << A.ToString()->c_str() << endl;
     wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }

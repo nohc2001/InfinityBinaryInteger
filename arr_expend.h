@@ -153,6 +153,10 @@ class lcstr
 		return up;
 	}
 
+	size_t len(){
+		return up - 1;
+	}
+
 	void clear()
 	{
 		if (Arr != nullptr)

@@ -139,7 +139,7 @@ class ibi{
     static ibi& factorial(const ibi& A);
     ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;
 
-    lcstr& ToString(int base_num) const;
+    lcstr* ToString() const;
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
@@ -801,7 +801,7 @@ enum class expr_segment_type{
     EST_expr_oper = 0,
     EST_expr_var = 1,
     EST_expr_const = 2,
-    EST_UnKnown = 3;
+    EST_UnKnown = 3
 };
 
 struct expr_segment{
@@ -820,7 +820,7 @@ class expr{
     expr();
     ~expr();
 
-    
+
 };
 
 #define CreateDataFM(type, name) type& name = *(type*)fm->_tempNew(sizeof(type)); name.Init(false);
@@ -1924,56 +1924,36 @@ ibi& ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap) const
     }
 }
 
-lcstr& ibi::ToString(int base_num = 10) const
+lcstr* ibi::ToString() const
 {
-    lcstr* str = (lcstr*)fm->_New(sizeof(lcstr), true);
-    str->Init(integer_data.size() * 32, false);
+    lcstr* r = (lcstr*)fm->_tempNew(sizeof(lcstr));
+    r->NULLState();
+    r->Init(8, false);
+
+    //based 10.
     fm->_tempPushLayer();
 
-    if (isPositive)
-    {
-        str->push_back('+');
-    }
-    else
-    {
-        str->push_back('-');
+    ibi present_value; present_value.Init(false); present_value = ibi(*this);
+    ibi resultv; resultv.Init(false); resultv = ibi(0);
+    while(present_value != ibi(0)){
+        fm->_tempPushLayer();
+        resultv = present_value % ibi(10);
+        char addc = '0' + resultv.integer_data[0];
+        r->push_back(addc);
+        present_value = present_value / ibi(10);
+        fm->_tempPopLayer();
     }
 
-    ibi base;
-    base.Init(false);
-    base = ibi(1);
-    ibi pastbase;
-    pastbase.Init(false);
-    pastbase = ibi(base_num);
-    CreateDataFM(ibi, r);
-	
-    r = *this;
-    r.isPositive = true;
-
-    while (base < r)
-    {
-        unsigned int n = (r / base).integer_data[0] % base_num;
-        lcstr nstr;
-        string temp = to_string(n);
-        nstr.Init(temp.size(), true);
-        nstr = temp.c_str();
-        if (base_num > 10)
-        {
-            str->insert(1, ']');
-            for (int i = temp.size() - 1; i >= 0; --i)
-            {
-                str->insert(1, nstr[i]);
-            }
-            str->insert(1, '[');
-        }
-        else
-        {
-            str->insert(1, nstr[0]);
-        }
-        base = base * pastbase;
-    }
     fm->_tempPopLayer();
-    return *str;
+
+    int len = r->len();
+    for(int i=0;i<len;++i){
+        char c = r->at(i);
+        r->at(i) = r->at(len-i);
+        r->at(len-i) = c;
+    }
+
+    return r;
 }
 
 lwstr* ibi::dataString() const
@@ -1999,7 +1979,7 @@ lwstr* ibi::dataString() const
         uint_wstr uintstr = Get256BasedExpr(integer_data[i]);
         for(int k=0;k<4;++k){
             str->push_back(uintstr.str[k]);
-            str->push_back(L' ');
+            //str->push_back(L' ');
         }
     }
 
