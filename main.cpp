@@ -18,24 +18,25 @@ int main(){
   cout << "Hello Math!!" << endl;
   fm->_tempPushLayer();
 
-  //ibi::prime_data_init();
-
-  unsigned int AData[10] = {10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
-  unsigned int BData[2] = { 123456, 7890 };
-  ibi A;
+  ibr A;
   A.Init(false);
-  A = ibi(true, AData, 10);
+  A = ibr(3, 19);
 
-  ibi B;
+  ibr B;
   B.Init(false);
-  B = ibi(true, BData, 2);
+  B = ibr(2, 11);
+
+  ibi C;
+  C.Init(false);
+  C = ibi(19);
+  cout << C.ToString()->c_str() << endl;
 
   while(true){
     ++count;
     fm->_tempPushLayer();
-    A = A / B;
     cout << A.ToString()->c_str() << endl;
-    wcout << A.dataString()->c_str() << endl;
+    A = A + B;
+    //wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
 

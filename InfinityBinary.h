@@ -139,7 +139,7 @@ class ibi{
     static ibi& factorial(const ibi& A);
     ibi& dimenplus(const ibi& X, const ibi& dim, const ibi& ordermap) const;
 
-    lcstr* ToString() const;
+    lcstr* ToString(bool showpos = true) const;
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 };
 
@@ -720,6 +720,8 @@ class ibr{
     static ibr& sin_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
     static ibr& cos_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
     static ibr& tan_approximate(const ibr& X, const ibi& getPI_operation_times, const ibi& tayler_operation_times);
+
+    lcstr* ToString(bool showpos = true) const;
 };
 
 enum class expr_oper_type{
@@ -1924,7 +1926,7 @@ ibi& ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap) const
     }
 }
 
-lcstr* ibi::ToString() const
+lcstr* ibi::ToString(bool showpos) const
 {
     lcstr* r = (lcstr*)fm->_tempNew(sizeof(lcstr));
     r->NULLState();
@@ -1934,12 +1936,18 @@ lcstr* ibi::ToString() const
     fm->_tempPushLayer();
 
     ibi present_value; present_value.Init(false); present_value = ibi(*this);
-    if(present_value.isPositive){
-        r->push_back('+');
+    if (showpos)
+    {
+        if (present_value.isPositive)
+        {
+            r->push_back('+');
+        }
+        else
+        {
+            r->push_back('-');
+        }
     }
-    else{
-        r->push_back('-');
-    }
+
     ibi resultv; resultv.Init(false); resultv = ibi(0);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
@@ -1952,15 +1960,28 @@ lcstr* ibi::ToString() const
 
     fm->_tempPopLayer();
 
-    int len = r->len();
+    int len = r->size();
     int dlen = (len>>1);
-    for(int i=1;i<dlen;++i){
+    int i = 0;
+    if(showpos) {
+        i = 1;
+        dlen = (len+1>>1);
+    }
+    else{
+        len-=1;
+    }
+    
+    for(;i<dlen;++i){
         char c = r->at(i);
         r->at(i) = r->at(len-i);
         r->at(len-i) = c;
     }
 
-    if(r->size() == 1){
+    if(showpos && r->size() == 1){
+        r->push_back('0');
+    }
+
+    if(r->size() == 0){
         r->push_back('0');
     }
 
@@ -2037,7 +2058,9 @@ void ibr::Init(bool local)
 {
     islocal = local;
     numerator.Init(local);
+    numerator = ibi(0);
     denominator.Init(local);
+    denominator = ibi(1);
 }
 
 void ibr::operator=(const ibr &ref)
@@ -2053,17 +2076,20 @@ void ibr::clean()
 {
     fm->_tempPushLayer();
     ibi A; A.Init(false); A = numerator;
+    A.isPositive = true;
     ibi B; B.Init(false); B = denominator;
+    B.isPositive = true;
     ibi C;
     C.Init(false);
-    C = ibi(0);
+    C = ibi(1);
+    bool havefraction = false;
     while (true)
     {
         fm->_tempPushLayer();
         if (A > B)
         {
             C = A % B;
-            if (C != ibi(0))
+            if (C != ibi(1))
             {
                 A = C;
             }
@@ -2075,7 +2101,7 @@ void ibr::clean()
         else if (B > A)
         {
             C = B % A;
-            if (C != ibi(0))
+            if (C != ibi(1))
             {
                 B = C;
             }
@@ -2087,13 +2113,17 @@ void ibr::clean()
         else
         {
             C = A;
+            havefraction = true;
             break;
         }
         fm->_tempPopLayer();
     }
 
-    numerator = numerator / C;
-    denominator = denominator / C;
+    if (havefraction)
+    {
+        numerator = numerator / C;
+        denominator = denominator / C;
+    }
 
     fm->_tempPopLayer();
 }
@@ -2531,5 +2561,43 @@ ibr& ibr::cos_approximate(const ibr &X, const ibi &getPI_operation_times, const 
 ibr& ibr::tan_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     return sin_approximate(X, getPI_operation_times, tayler_operation_times) / cos_approximate(X, getPI_operation_times, tayler_operation_times);
+}
+
+lcstr* ibr::ToString(bool showpos) const{
+    lcstr* r = (lcstr*)fm->_tempNew(sizeof(lcstr));
+    r->NULLState();
+    r->Init(8, false);
+
+    fm->_tempPushLayer();
+    lcstr* numstr = numerator.ToString(false);
+    lcstr* denstr = denominator.ToString(false);
+
+    r->push_back('[');
+
+    if(showpos){
+        if(this->isPositive){
+            r->push_back('+');
+        }
+        else{
+            r->push_back('-');
+        }
+    }
+    
+
+    for(int i=0;i<numstr->size();++i){
+        r->push_back(numstr->at(i));
+    }
+
+    r->push_back('/');
+
+    for(int i=0;i<denstr->size();++i){
+        r->push_back(denstr->at(i));
+    }
+
+    r->push_back(']');
+
+    fm->_tempPopLayer();
+
+    return r;
 }
 #endif
