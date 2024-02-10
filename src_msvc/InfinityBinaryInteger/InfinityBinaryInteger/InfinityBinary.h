@@ -2046,7 +2046,7 @@ ibr::ibr(int num, int den)
 {
     numerator.integer_data.push_back(num);
     denominator.integer_data.push_back(den);
-    isPositive = XOR((num > 0), (den > 0));
+    isPositive = !XOR((num >= 0), (den >= 0));
 }
 
 void ibr::Init(bool local)
@@ -2182,6 +2182,7 @@ ibr& ibr::operator+(const ibr &A) const
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
 
+    r = ibr(0, 1);
     r.denominator = this->denominator * A.denominator;
     if (this->isPositive == A.isPositive)
     {
@@ -2209,7 +2210,7 @@ ibr& ibr::operator-(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
-
+    r = ibr(0, 1);
     r.denominator = this->denominator * A.denominator;
     if (this->isPositive == A.isPositive)
     {
@@ -2237,6 +2238,7 @@ ibr& ibr::operator*(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
+    r = ibr(0, 1);
     r.numerator = this->numerator * A.numerator;
     r.denominator = this->denominator * A.denominator;
     r.clean();
@@ -2248,6 +2250,7 @@ ibr& ibr::operator/(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
+    r = ibr(0, 1);
     r.numerator = this->numerator * A.denominator;
     r.denominator = this->denominator * A.numerator;
     r.clean();
@@ -2258,8 +2261,7 @@ ibr& ibr::operator/(const ibr &A) const
 ibr& ibr::floor_function() const
 {
     CreateDataFM(ibr, r);
-    r.numerator.integer_data.push_back(1);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(1, 1);
     fm->_tempPushLayer();
     r.numerator = this->numerator / this->denominator;
     r.denominator = ibi(1);
@@ -2272,6 +2274,7 @@ ibr& ibr::operator%(const ibr &A) const
     CreateDataFM(ibr, r);
 
     fm->_tempPushLayer();
+    r = ibr(0, 1);
     r = *this - ((*this / A).floor_function() * A);
     fm->_tempPopLayer();
 
@@ -2281,8 +2284,7 @@ ibr& ibr::operator%(const ibr &A) const
 ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
 {
     CreateDataFM(ibr, r);
-    r.numerator.integer_data.push_back(1);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(1, 1);
     fm->_tempPushLayer();
 
     ibi one;
@@ -2316,9 +2318,9 @@ ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
 ibr& ibr::gamma_approximate(const ibr &A, const ibi &operation_times)
 {
     CreateDataFM(ibr, r);
-    ;
+    
     fm->_tempPushLayer();
-
+    r = ibr(1, 1);
     ibr n;
     n.Init(false);
     n.numerator.integer_data.push_back(1);
@@ -2354,8 +2356,7 @@ ibr& ibr::ln_approximate(const ibr &X, const ibi &operation_times)
 {
     CreateDataFM(ibr, r);
     
-    r.numerator.integer_data.push_back(0);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(0, 1);
 
     if (X.numerator < X.denominator)
     {
@@ -2431,8 +2432,7 @@ ibr& ibr::getPI_approximate(const ibi &operation_times)
         return bestPI;
     CreateDataFM(ibr, r);
     ;
-    r.numerator.integer_data.push_back(0);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(0, 1);
 
     fm->_tempPushLayer();
 
@@ -2471,8 +2471,7 @@ ibr& ibr::get_e_approximate(const ibi &operation_times)
         return best_e;
     CreateDataFM(ibr, r);
     
-    r.numerator.integer_data.push_back(0);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(0, 1);
 
     fm->_tempPushLayer();
 
@@ -2510,8 +2509,7 @@ ibr& ibr::get_e_approximate(const ibi &operation_times)
 ibr& ibr::sin_approximate(const ibr &X, const ibi &getPI_operation_times, const ibi &tayler_operation_times)
 {
     CreateDataFM(ibr, r);
-    r.numerator.integer_data.push_back(0);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(0, 1);
 
     fm->_tempPushLayer();
 

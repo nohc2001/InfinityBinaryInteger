@@ -33,7 +33,7 @@ int main(){
     ++cc;
     fm->_tempPushLayer();
     cout << A.ToString()->c_str() << endl;
-    A = A + B;
+    A = A - B;
     //wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
