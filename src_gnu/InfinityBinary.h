@@ -486,7 +486,7 @@ DeltaObj* DeltaObj::Cut(const ibi& cutline){
     *newDeltaObj = DeltaObj((void*)minx, (void*)maxx);
     
     int i;
-    for(i=0;i<agp->ranges->size() && agp->ranges->at(i).end < cutline;++i){
+    for(i=0;(i<agp->ranges->size() && agp->ranges->at(i).end < cutline);++i){
         range_prime v;
         v.value = agp->ranges->at(i).value;
         v.end = agp->ranges->at(i).end;
@@ -972,7 +972,12 @@ bool ibi::operator==(const ibi &A) const
 bool ibi::operator!=(const ibi &A) const
 {
     if (isPositive != A.isPositive)
+    {
+        if ((A.integer_data.up == 1 && this->integer_data.up == 1) && (A.integer_data[0] == 0 && this->integer_data[0] == 0)) {
+            return false;
+        }
         return true;
+    }
     else
     {
         if (integer_data.up != A.integer_data.up)
@@ -2072,6 +2077,7 @@ void ibr::operator=(const ibr &ref)
 
 // fraction
 // 약분
+
 void ibr::clean()
 {
     fm->_tempPushLayer();
@@ -2089,9 +2095,14 @@ void ibr::clean()
         if (A > B)
         {
             C = A % B;
-            if (C != ibi(1))
+            if (C != ibi(1) && C != ibi(0))
             {
                 A = C;
+            }
+            else if (C == ibi(0)) {
+                C = B;
+                havefraction = true;
+                break;
             }
             else
             {
@@ -2101,9 +2112,14 @@ void ibr::clean()
         else if (B > A)
         {
             C = B % A;
-            if (C != ibi(1))
+            if (C != ibi(1) && C != ibi(0))
             {
                 B = C;
+            }
+            else if (C == ibi(0)) {
+                C = A;
+                havefraction = true;
+                break;
             }
             else
             {
