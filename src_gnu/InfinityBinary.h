@@ -2263,6 +2263,7 @@ ibr& ibr::operator/(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
+    r.isPositive = !XOR(this->isPositive, A.isPositive);
     r.numerator = this->numerator * A.denominator;
     r.denominator = this->denominator * A.numerator;
     r.clean();
@@ -2273,11 +2274,14 @@ ibr& ibr::operator/(const ibr &A) const
 ibr& ibr::floor_function() const
 {
     CreateDataFM(ibr, r);
-    r.numerator.integer_data.push_back(1);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(1, 1);
+
     fm->_tempPushLayer();
+
+    r.isPositive = this->isPositive;
     r.numerator = this->numerator / this->denominator;
     r.denominator = ibi(1);
+
     fm->_tempPopLayer();
     return r;
 }
@@ -2296,8 +2300,7 @@ ibr& ibr::operator%(const ibr &A) const
 ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
 {
     CreateDataFM(ibr, r);
-    r.numerator.integer_data.push_back(1);
-    r.denominator.integer_data.push_back(1);
+    r = ibr(1, 1);
     fm->_tempPushLayer();
 
     ibi one;
