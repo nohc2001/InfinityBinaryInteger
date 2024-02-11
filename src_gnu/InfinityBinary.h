@@ -2222,6 +2222,7 @@ ibr& ibr::operator-(const ibr &A) const
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
 
+    r.isPositive = this->isPositive;
     r.denominator = this->denominator * A.denominator;
     if (this->isPositive == A.isPositive)
     {
