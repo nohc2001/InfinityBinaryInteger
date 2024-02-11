@@ -2194,6 +2194,7 @@ ibr& ibr::operator+(const ibr &A) const
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
 
+    r.isPositive = this->isPositive;
     r.denominator = this->denominator * A.denominator;
     if (this->isPositive == A.isPositive)
     {
@@ -2250,6 +2251,7 @@ ibr& ibr::operator*(const ibr &A) const
 {
     CreateDataFM(ibr, r);
     fm->_tempPushLayer();
+    r.isPositive = !XOR(this->isPositive, A.isPositive);
     r.numerator = this->numerator * A.numerator;
     r.denominator = this->denominator * A.denominator;
     r.clean();
