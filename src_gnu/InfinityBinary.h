@@ -2056,7 +2056,7 @@ ibr::ibr(int num, int den)
 {
     numerator.integer_data.push_back(num);
     denominator.integer_data.push_back(den);
-    isPositive = XOR((num > 0), (den > 0));
+    isPositive = !XOR((num > 0), (den > 0));
 }
 
 void ibr::Init(bool local)
