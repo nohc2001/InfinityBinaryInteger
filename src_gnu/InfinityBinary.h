@@ -2062,6 +2062,7 @@ ibr::ibr(int num, int den)
 void ibr::Init(bool local)
 {
     islocal = local;
+    isPositive = true;
     numerator.Init(local);
     numerator = ibi(0);
     denominator.Init(local);
