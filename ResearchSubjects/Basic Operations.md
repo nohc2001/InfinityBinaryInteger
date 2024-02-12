@@ -92,9 +92,9 @@ identity element of b : a = <sup>b</sup>√b = b<sup>1/b</sup>
 inverse element of b : a = <sup>b</sup>√<sup>b</sup>√b = b<sup>1/b<sup>2</sup></sup>   
 2. domain and range : integer
 3. produce other operation   
-inverse function of a : [-<sub>3|0</sub>]()   
-inverse function of b : [-<sub>3|1</sub>]()   
-repeating function of a : +<sub>4|0</sub> produced by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
+inverse function of a : [-<sub>3|0</sub>](#operation-a--30-b)   
+inverse function of b : [-<sub>3|1</sub>](#operation-a--31-b)   
+repeating function of a : [+<sub>4|0</sub>](#operation-a-40-b) produced by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
 repeating function of b : +<sub>4|1</sub> produced by [a +<sub>4|1</sub> b = ꭢR<sup>b</sup>[a +<sub>3</sub> (]_1_ꭢR<sup>b</sup>[)]
 
 ### operation (a -<sub>3|0</sub> b)   
@@ -117,8 +117,26 @@ aka. log<sub>a</sub>b
 param count = 2   
 exchangeable = false   
 stackable = false   
-identity element = 0   
-inverse element : b = a   
+identity element of a : b = a +<sub>3</sub> a = a<sup>a</sup>   
+inverse element of a : b = a +<sub>3</sub> (a +<sub>3</sub> a) = a +<sub>4|1</sub> 3   
+identity element of b : a = b -<sub>3|0</sub> b = b<sup>1/b</sup> = <sup>b</sup>√b   
+inverse element of b : a = b -<sub>3|0</sub> (b -<sub>3|0</sub> b)   
 2. domain and range : rational number   
-find new number : rational number that exist in between n and n+1.
 3. produce other operation   
+
+### operation (a +<sub>4|0</sub> b)   
+aka. a<sup>b</sup>
+1. parameter
+param count = 2   
+exchangeable = false   
+stackable = false   
+identity element of a : b = 1   
+inverse element of a : b = 0   
+identity element of b : a = <sup>b</sup>√b = b<sup>1/b</sup>   
+inverse element of b : a = <sup>b</sup>√<sup>b</sup>√b = b<sup>1/b<sup>2</sup></sup>   
+2. domain and range : integer
+3. produce other operation   
+inverse function of a : [-<sub>3|0</sub>]()   
+inverse function of b : [-<sub>3|1</sub>]()   
+repeating function of a : +<sub>4|0</sub> produced by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
+repeating function of b : +<sub>4|1</sub> produced by [a +<sub>4|1</sub> b = ꭢR<sup>b</sup>[a +<sub>3</sub> (]_1_ꭢR<sup>b</sup>[)]
