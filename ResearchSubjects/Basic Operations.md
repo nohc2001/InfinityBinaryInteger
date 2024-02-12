@@ -8,6 +8,7 @@ Appendix
     4. Integration and Differential with new Additions : <sup>dim|dx</sup>$\int_a^b$(f(x)), df(x)-<sup>dim</sup>dx   
     5. Superimposed Sigma : <sup>dim</sup>$\sum_{k1=0}^{max}$(<sup>dim</sup>$\sum_{k2=0}^{k1}$(...(<sup>dim</sup>$\sum_{km=0}^{km-1}$(f({kn})))...))   
     6. expend function composition in rational space. : f<sup>r</sup>(x)    
+    7. Accurate value state prediction method when various variables are continuously influencing each other (time that don't affect each other is never exist.)   
     ETC. Additional Idea.    
 
 ## basic binominal operation : +<sub>n|m</sub>
