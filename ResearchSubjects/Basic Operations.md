@@ -184,3 +184,4 @@ repeating function of b : +<sub>5|3</sub> defined by [a +<sub>5|3</sub> b = ꭢR
 
 ## ETC
 1. addition dimansional coordinate and identity function.
+2. how to find expression property of dimansion addition?
