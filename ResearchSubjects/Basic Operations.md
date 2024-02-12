@@ -1,9 +1,20 @@
 # Reserch of Basic Operation of Math.
 
 ## Overview
-// description of reserch
+Appendix   
+    1. basic binominal operation : +<sub>n|m</sub>   
+    2. new Addition that copying previous operation property : <sup>u</sup>+<sub>n</sub>  
+    3. Integration with new Additions : <sup>dim|dx</sup>$\int_a^b$(f(x))   
 
-## Property of Operation
+## basic binominal operation : +<sub>n|m</sub>
+
+my goal of this research is to find all effective expression property of basic binominal operation(+<sub>n|m</sub>)   
+using this property, try calculate many operations and expression and equation of many hyper operations.   
+.+ and × is basic operation of modern math. expending basic knowledge of addition will develop math.     
+Historically, the inverse operations of these iterations of addition have had a profound effect on the number system of mathematics.    
+that point is also interesting in this research.
+
+### Property of Operation
     1. parameters
         1-1. parameters count
         1-2. parameters exchangeable
@@ -17,8 +28,6 @@
         3-2. repeating function
         3-3. copy property of operation
     4. founded expression property
-
-## basic binominal operation : +<sub>n|m</sub>
 
 ### operation nextnum(a), a'
 aka a' in Peano's axioms
@@ -165,4 +174,6 @@ inverse function of b : [-<sub>4|3</sub>]()
 repeating function of a : +<sub>5|1</sub> defined by [a +<sub>5|1</sub> b = ꭢR<sup>b</sup>[(]_(a -<sub>4|1</sub> a)_ꭢR<sup>b</sup>[) +<sub>4|1</sub> a]]   
 repeating function of b : +<sub>5|3</sub> defined by [a +<sub>5|3</sub> b = ꭢR<sup>b</sup>[a +<sub>4|1</sub> (]_1_ꭢR<sup>b</sup>[)]
 4. founded expression property   
-    1. a +<sub>4|1</sub> (2n+1) = a +<sub>5|2</sub> n
+    1. a +<sub>4|1</sub> (2n+1) = a +<sub>5|2</sub> n   
+
+
