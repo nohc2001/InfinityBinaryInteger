@@ -4,7 +4,11 @@
 Appendix   
     1. basic binominal operation : +<sub>n|m</sub>   
     2. new Addition that copying previous operation property : <sup>u</sup>+<sub>n</sub>  
-    3. Integration with new Additions : <sup>dim|dx</sup>$\int_a^b$(f(x))   
+    3. Adding with Increasing Variables : <sup>dim</sup>$\sum_{k=0}^{n}$(f(k))   
+    4. Integration and Differential with new Additions : <sup>dim|dx</sup>$\int_a^b$(f(x)), df(x)-<sup>dim</sup>dx   
+    5. Superimposed Sigma : <sup>dim</sup>$\sum_{k1=0}^{max}$(<sup>dim</sup>$\sum_{k2=0}^{k1}$(...(<sup>dim</sup>$\sum_{km=0}^{km-1}$(f({kn})))...))   
+    6. expend function composition in rational space. : f<sup>r</sup>(x)    
+    ETC. Additional Idea.    
 
 ## basic binominal operation : +<sub>n|m</sub>
 
@@ -177,3 +181,5 @@ repeating function of b : +<sub>5|3</sub> defined by [a +<sub>5|3</sub> b = ꭢR
     1. a +<sub>4|1</sub> (2n+1) = a +<sub>5|2</sub> n   
 
 
+## ETC
+1. addition dimansional coordinate and identity function.
