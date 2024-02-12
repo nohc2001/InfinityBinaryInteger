@@ -16,8 +16,9 @@
         3-1. inverse function
         3-2. repeating function
         3-3. copy property of operation
+    4. founded expression property
 
-## basic operation : +<sub>1</sub>
+## basic binominal operation : +<sub>n|m</sub>
 
 ### operation nextnum(a), a'
 aka a' in Peano's axioms
@@ -26,7 +27,7 @@ param count = 1
 stackable = true      
 2. domain and range : natural number (positive integer)   
 3. produce other operation   
-repeating function : [+<sub>1</sub>](#operation-a-1-b) produced by [a + b = a_ꭢR<sup>b</sup>[']]   
+repeating function : [+<sub>1</sub>](#operation-a-1-b) defined by [a + b = a_ꭢR<sup>b</sup>[']]   
 
 
 ### operation (a +<sub>1</sub> b)   
@@ -40,7 +41,7 @@ inverse element : b = 0 -<sub>1</sub> a = -a
 2. domain and range : 0 and natural number (unsigned integer)
 3. produce other operation   
 inverse function : [-<sub>1</sub>](#operation-a--1-b)   
-repeating function : [+<sub>2</sub>](#operation-a-2-b) produced by [a +<sub>2</sub> b = ꭢR<sup>b</sup>[+ a]]   
+repeating function : [+<sub>2</sub>](#operation-a-2-b) defined by [a +<sub>2</sub> b = ꭢR<sup>b</sup>[+ a]]   
 
 ### operation (a -<sub>1</sub> b)   
 aka. a - b   
@@ -66,7 +67,7 @@ inverse element : b = 1 -<sub>2</sub> a = 1/a
 2. domain and range : integer
 3. produce other operation   
 inverse function : [-<sub>2</sub>](#operation-a--2-b)   
-repeating function : [+<sub>3</sub>](#operation-a-3-b) produced by [a +<sub>2</sub> b = 1_ꭢR<sup>b</sup>[* a]]   
+repeating function : [+<sub>3</sub>](#operation-a-3-b) defined by [a +<sub>2</sub> b = 1_ꭢR<sup>b</sup>[* a]]   
 
 ### operation (a -<sub>2</sub> b)   
 aka. a ÷ b and a/b
@@ -94,8 +95,8 @@ inverse element of b : a = <sup>b</sup>√<sup>b</sup>√b = b<sup>1/b<sup>2</su
 3. produce other operation   
 inverse function of a : [-<sub>3|0</sub>](#operation-a--30-b)   
 inverse function of b : [-<sub>3|1</sub>](#operation-a--31-b)   
-repeating function of a : [+<sub>4|0</sub>](#operation-a-40-b) produced by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
-repeating function of b : +<sub>4|1</sub> produced by [a +<sub>4|1</sub> b = ꭢR<sup>b</sup>[a +<sub>3</sub> (]_1_ꭢR<sup>b</sup>[)]
+repeating function of a : [+<sub>4|0</sub>](#operation-a-40-b) defined by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
+repeating function of b : +<sub>4|1</sub> defined by [a +<sub>4|1</sub> b = ꭢR<sup>b</sup>[a +<sub>3</sub> (]_1_ꭢR<sup>b</sup>[)]
 
 ### operation (a -<sub>3|0</sub> b)   
 aka. <sup>b</sup>√a
@@ -125,18 +126,43 @@ inverse element of b : a = b -<sub>3|0</sub> (b -<sub>3|0</sub> b)
 3. produce other operation   
 
 ### operation (a +<sub>4|0</sub> b)   
-aka. a<sup>b</sup>
+aka. a<sup>a<sup>b</sup></sup>
 1. parameter
 param count = 2   
 exchangeable = false   
 stackable = false   
-identity element of a : b = 1   
-inverse element of a : b = 0   
-identity element of b : a = <sup>b</sup>√b = b<sup>1/b</sup>   
-inverse element of b : a = <sup>b</sup>√<sup>b</sup>√b = b<sup>1/b<sup>2</sup></sup>   
+identity element of a : b = 0   
+inverse element of a : b = log<sub>a</sub>-(countable infinity)   
+identity element of b : a = b -<sub>4|0</sub> b   
+inverse element of b : a = (b -<sub>4|0</sub> b) -<sub>4|0</sub> b   
 2. domain and range : integer
 3. produce other operation   
-inverse function of a : [-<sub>3|0</sub>]()   
-inverse function of b : [-<sub>3|1</sub>]()   
-repeating function of a : +<sub>4|0</sub> produced by [a +<sub>4|0</sub> b = ꭢR<sup>b</sup>[(]_<sup>a</sup>√a_ꭢR<sup>b</sup>[) +<sub>3</sub> a]]   
-repeating function of b : +<sub>4|1</sub> produced by [a +<sub>4|1</sub> b = ꭢR<sup>b</sup>[a +<sub>3</sub> (]_1_ꭢR<sup>b</sup>[)]
+inverse function of a : [-<sub>4|0</sub>]()   
+inverse function of b : [-<sub>4|2</sub>]()   
+repeating function of a : +<sub>5|0</sub> defined by [a +<sub>5|0</sub> b = ꭢR<sup>b</sup>[(]_(a -<sub>4|0</sub> a)_ꭢR<sup>b</sup>[) +<sub>4|0</sub> a]]   
+repeating function of b : +<sub>5|2</sub> defined by [a +<sub>5|2</sub> b = ꭢR<sup>b</sup>[a +<sub>4|0</sub> (]_0_ꭢR<sup>b</sup>[)]
+4. founded expression property   
+    1. a +<sub>4|0</sub> b = a +<sub>3</sub> (a +<sub>3</sub> b)   
+    2. (a +<sub>4|0</sub> b) +<sub>3</sub> (a +<sub>3</sub> c) = a +<sub>3</sub> ( a +<sub>3</sub> (b +<sub>1</sub> c ) )   
+    3. (a +<sub>4|0</sub> b) +<sub>2</sub> (a +<sub>4|0</sub> c) = a +<sub>3</sub> ((a +<sub>3</sub> b) +<sub>1</sub> (a +<sub>3</sub> c))   
+    4. (a +<sub>4|0</sub> b) +<sub>4|0</sub> c = (a +<sub>3</sub> c) +<sub>2</sub> (a +<sub>4|0</sub> (b +<sub>1</sub> (a +<sub>3</sub> b)))   
+
+
+### operation (a +<sub>4|1</sub> b)   
+aka. a<sup>(a<sup>(a<sup>(a<sup>(a<sup>(...)</sup>)</sup>)</sup>)</sup>)</sup> (number of a = b) = <sup>b</sup>a (tetration)
+1. parameter
+param count = 2   
+exchangeable = false   
+stackable = false   
+identity element of a : b = a -<sub>4|3</sub> a = 1   
+inverse element of a : b = a -<sub>4|3</sub> 1  
+identity element of b : a = b -<sub>4|1</sub> b   
+inverse element of b : a = (b -<sub>4|1</sub> b) -<sub>4|1</sub> b   
+2. domain and range : integer
+3. produce other operation   
+inverse function of a : [-<sub>4|1</sub>]()   
+inverse function of b : [-<sub>4|3</sub>]()   
+repeating function of a : +<sub>5|1</sub> defined by [a +<sub>5|1</sub> b = ꭢR<sup>b</sup>[(]_(a -<sub>4|1</sub> a)_ꭢR<sup>b</sup>[) +<sub>4|1</sub> a]]   
+repeating function of b : +<sub>5|3</sub> defined by [a +<sub>5|3</sub> b = ꭢR<sup>b</sup>[a +<sub>4|1</sub> (]_1_ꭢR<sup>b</sup>[)]
+4. founded expression property   
+    1. a +<sub>4|1</sub> (2n+1) = a +<sub>5|2</sub> n
