@@ -27,7 +27,7 @@ that point is also interesting in this research.
         3-1. inverse function
         3-2. repeating function
         3-3. copy property of operation
-    4. founded expression property
+    4. found expression property
 
 ### operation nextnum(a), a'
 aka a' in Peano's axioms
@@ -150,7 +150,7 @@ inverse function of a : [-<sub>4|0</sub>]()
 inverse function of b : [-<sub>4|2</sub>]()   
 repeating function of a : +<sub>5|0</sub> defined by [a +<sub>5|0</sub> b = ꭢR<sup>b</sup>[(]_(a -<sub>4|0</sub> a)_ꭢR<sup>b</sup>[) +<sub>4|0</sub> a]]   
 repeating function of b : +<sub>5|2</sub> defined by [a +<sub>5|2</sub> b = ꭢR<sup>b</sup>[a +<sub>4|0</sub> (]_0_ꭢR<sup>b</sup>[)]
-4. founded expression property   
+4. found expression property   
     1. a +<sub>4|0</sub> b = a +<sub>3</sub> (a +<sub>3</sub> b)   
     2. (a +<sub>4|0</sub> b) +<sub>3</sub> (a +<sub>3</sub> c) = a +<sub>3</sub> ( a +<sub>3</sub> (b +<sub>1</sub> c ) )   
     3. (a +<sub>4|0</sub> b) +<sub>2</sub> (a +<sub>4|0</sub> c) = a +<sub>3</sub> ((a +<sub>3</sub> b) +<sub>1</sub> (a +<sub>3</sub> c))   
@@ -173,7 +173,7 @@ inverse function of a : [-<sub>4|1</sub>]()
 inverse function of b : [-<sub>4|3</sub>]()   
 repeating function of a : +<sub>5|1</sub> defined by [a +<sub>5|1</sub> b = ꭢR<sup>b</sup>[(]_(a -<sub>4|1</sub> a)_ꭢR<sup>b</sup>[) +<sub>4|1</sub> a]]   
 repeating function of b : +<sub>5|3</sub> defined by [a +<sub>5|3</sub> b = ꭢR<sup>b</sup>[a +<sub>4|1</sub> (]_1_ꭢR<sup>b</sup>[)]
-4. founded expression property   
+4. found expression property   
     1. a +<sub>4|1</sub> (2n+1) = a +<sub>5|2</sub> n   
 
 
