@@ -7,7 +7,7 @@ We already have a code that can operate math correctly, so we have to consider a
 
 ## Appendix
 [1. Making Law(= experession property) with operating random examples.](#1-making-law-experession-property-with-operating-random-examples)    
-[2. Expression Tree]()   
+[2. Expression Graph](#expression-graph)   
 
 ## 1. Making Law(= experession property) with operating random examples.
 To find Law of Variable X, try making random expressions of X.   
@@ -59,7 +59,16 @@ In Reserch Prograss, if that law is used and that law is right, then reliability
 But if find wrong cases, reliability will be 0. and domain is updated to Candidate domain.
 
 
-method 2. Prove the Law from the underlying estimated Law (Expression Tree)
+method 2. Prove the Law from the underlying estimated Law (using Expression Graph)
 
 
-## Expression Tree
+## Expression Graph
+To Prove the Law, it have to fundemetal laws (materials.)   
+reliability of Law is defined by fundemetal laws.
+that mean if one of wrong material is found by computer, Law that based by that wrong material have to be wrong.   
+It's like a Parent-Child Relaitionships.   
+Parents will have multiple children, and children will also have multiple parents. Parents may have parents, and children may also be someone's parents.   
+we can use this structure with Graph(Node have multiple Parents and Childs)   
+That is Expression Graph.
+
+Expression Graph is also Law Storage. so if we want prove new theory, Expression Graph is good tool for prove.
