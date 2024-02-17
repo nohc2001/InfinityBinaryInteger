@@ -7,6 +7,7 @@ We already have a code that can operate math correctly, so we have to consider a
 
 ## Appendix
 [1. Making Law(= experession property) with operating random examples.](#1-making-law-experession-property-with-operating-random-examples)    
+[2. Expression Tree]()   
 
 ## 1. Making Law(= experession property) with operating random examples.
 To find Law of Variable X, try making random expressions of X.   
@@ -43,3 +44,22 @@ And We can find ID2, ID4 expressions have totaly same result in every value case
 So we can assumed this Law of X (√x^2 = │x│).   
 To find Law of X with not rational result, we also assumed by approximate value to rational number.   
 If difference of two values are decresing in many cases, we can assumed that Law of X.   
+
+
+After assumed Law, we have to find domain of X that Law is True.   
+But number that we consider have the discountable infinity of cases(real number).   
+The Brut Force algorithm (one by one) would not be the right way to do it.   
+
+method 1. just save that assumed Law and put the additional variable to judge reliability.       
+|ID|Law|reliability|Assumed Domain|Candidate Domain|   
+|--|-------|-----|--------|--------|
+|n|√x^2=│x│|4|complex number set|rational number set(-6.6<=x<=12345...(and other property))   
+
+In Reserch Prograss, if that law is used and that law is right, then reliability increse 1. and the Candidate domain is estimated from the previously values.   
+But if find wrong cases, reliability will be 0. and domain is updated to Candidate domain.
+
+
+method 2. Prove the Law from the underlying estimated Law (Expression Tree)
+
+
+## Expression Tree
