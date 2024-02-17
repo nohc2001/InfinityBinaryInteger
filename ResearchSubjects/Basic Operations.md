@@ -2,7 +2,7 @@
 
 ## Overview
 Appendix   
-    1. basic binominal operation : +<sub>n|m</sub>   
+    [1. basic binominal operation : +<sub>n|m</sub>](#basic-binominal-operation--nm)   
     2. new Addition that copying previous operation property : <sup>u</sup>+<sub>n</sub>  
     3. Adding with Increasing Variables : <sup>dim</sup>$\sum_{k=0}^{n}$(f(k))   
     4. Integration and Differential with new Additions : <sup>dim|dx</sup>$\int_a^b$(f(x)), df(x)-<sup>dim</sup>dx   
@@ -33,6 +33,7 @@ that point is also interesting in this research.
         3-2. repeating function
         3-3. copy property of operation
     4. found expression property
+   
 
 ### operation nextnum(a), a'
 aka a' in Peano's axioms
