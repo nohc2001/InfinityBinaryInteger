@@ -24,7 +24,7 @@ int main(){
 
   ibr B;
   B.Init(false);
-  B = ibr(2, 11);
+  B = ibr(23, 11);
 
   ibi C;
   C.Init(false);
@@ -36,7 +36,8 @@ int main(){
     fm->_tempPushLayer();
     cout << A.ToString()->c_str() << endl;
     cout << B.ToString()->c_str() << endl;
-    A = A / B;
+    A = A + B;
+    A = A.floor_function();
     //wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }
