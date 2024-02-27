@@ -891,6 +891,12 @@ void ibi::operator=(const ibi &ref)
     while (ref_size > integer_data.maxsize)
         integer_data.Init(ref_size+2, integer_data.islocal);
     integer_data.up = ref_size;
+
+    for(int i = ref_size-1;i>=0;--i){
+        if(integer_data[i] == 0) integer_data.up -= 1;
+        else break;
+    }
+    
     for (int i = 0; i < ref_size; ++i)
         integer_data[i] = ref.integer_data[i];
 }
@@ -1775,18 +1781,15 @@ ibi& ibi::pow(const ibi &A) const
 
     fm->_tempPushLayer();
 
-    unsigned int addsiz = 32 * (A.integer_data.up - 1);
+    unsigned int addsiz = 32 * (A.integer_data.up-1);
     unsigned int v = (unsigned int)A.integer_data.last();
     for (int i = 0; i < 32; ++i)
     {
         v = v >> 1;
+        ++addsiz;
         if (v == 0)
         {
             break;
-        }
-        else
-        {
-            --addsiz;
         }
     }
 
@@ -2322,6 +2325,8 @@ ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
         r.denominator = r.denominator * A.denominator;
         r.clean();
         fm->_tempPopLayer();
+
+        cout << "r : " << r.ToString(true) << endl;
     }
 
     r.denominator.pow(A.numerator);
