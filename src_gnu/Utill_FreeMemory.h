@@ -14,7 +14,7 @@ namespace freemem
 #define Init_VPTR freemem::Init_VPTR_x64
 #define ptr_size 8
 #define ptr_max 0xFFFFFFFFFFFFFFFF
-#define ptr_type int64_t
+#define ptr_type uint64_t
 
 #define _GetByte(dat, loc) (dat >> loc) % 2
 #define _SetByte(dat, loc, is) dat = freemem::SetByte8(dat, loc, is);
@@ -767,14 +767,15 @@ namespace freemem
 			else
 			{
 				// fup �� �� á����
-				ptr_type start = (ptr_type) DataPtr;
+				
+				ptr_type start = (ptr_type)DataPtr;
 				ptr_type end = (ptr_type) DataPtr;
 				for (int i = 0; i < (int)AAsize; ++i)
 				{
 					start = end;
 					start = start + ((byte8) (*(byte8 *) (start - 1)));
 					end = (ptr_type) AllocArr[i];
-					if (end - start > (int)byteSiz + 1)
+					if ((int)(end - start) > (int)byteSiz + 1)
 					{
 						int index = start + 1 - (ptr_type) DataPtr;
 						if (SizeMemorySize == 1)

@@ -892,13 +892,13 @@ void ibi::operator=(const ibi &ref)
         integer_data.Init(ref_size+2, integer_data.islocal);
     integer_data.up = ref_size;
 
-    for(int i = ref_size-1;i>=0;--i){
+    for (int i = 0; i < ref_size; ++i)
+        integer_data[i] = ref.integer_data[i];
+    
+    for(int i = ref_size-1;i>=1;--i){
         if(integer_data[i] == 0) integer_data.up -= 1;
         else break;
     }
-    
-    for (int i = 0; i < ref_size; ++i)
-        integer_data[i] = ref.integer_data[i];
 }
 
 bool ibi::cmp(const ibi &A, bool left_big, bool include_same) const
@@ -2326,7 +2326,7 @@ ibr& ibr::exp_approximate(const ibr &A, const ibi &operation_times) const
         r.clean();
         fm->_tempPopLayer();
 
-        cout << "r : " << r.ToString(true) << endl;
+        cout << "r : " << r.ToString(true)->c_str() << endl;
     }
 
     r.denominator.pow(A.numerator);
