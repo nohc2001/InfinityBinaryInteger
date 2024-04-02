@@ -2268,7 +2268,7 @@ namespace freemem{
 	2. use <<, >>, & instead *, /, % (ok)
 	3. normal casting > reinterpret_cast<> (ok)
 	4. data align (16 or 32byte) -> after finish all task, data align start.
-	5. current Data caching (when [] operator use, if last index +- value is in same fagment, do not excute logic and return add address value.)
+	5. current Data caching (when [] operator use, if last index +- value is in same fagment, do not excute logic and return add address value.) (ok)
 	*/
 	//16byte
 	template <typename T>
@@ -2276,11 +2276,15 @@ namespace freemem{
 	{
 	public:
 		circularArray<int *> *ptrArray = nullptr; // 8byte
+		circularArray<T*>* lastCArr = nullptr; // 8byte cache
+		ui32 last_outerIndex = 0; // 4byte
 		ui32 array_siz = 0; // up 4byte
-		ui8 array_capacity_pow2 = 10; // 1byte
+		ui32 array_capacity_pow2 = 10; // 1byte
 		ui8 fragment_siz_pow2 = 10; // 1byte
 		ui8 array_depth = 1; // 1byte
 		bool mbDbg = true; // 1byte
+		//4byte extra
+		
 
 		infArray()
 		{
@@ -2464,8 +2468,11 @@ namespace freemem{
 		//use caching. (pre bake function.)
 		T &operator[](int index)
 		{
-			T nullv = 0;
 			int fragPercent = ((1 << (fragment_siz_pow2+1))-1);
+			if((last_outerIndex >> fragment_siz_pow2) == index >> fragment_siz_pow2){
+				return lastCArr->operator[](index & fragPercent);
+			}
+			T nullv = 0;
 			if (index >= 1 << array_capacity_pow2)
 			{
 				cout << "error! array index bigger than capacity!" << endl;
@@ -2478,6 +2485,9 @@ namespace freemem{
 					(int)((index >> fragment_siz * (array_depth - i))) & fragPercent));
 			}
 			circularArray<T> *vptr = reinterpret_cast<circularArray<T> *>(ptr);
+
+			lastCArr = vptr;
+			last_outerIndex = index;
 
 			// T *vptr = ptr;
 			int inindex = ((int)(index)) & fragPercent;
