@@ -246,9 +246,9 @@ ln(<sup>b</sup>√a) = (2bln b)e<sup>2bln b</sup> = 2blnb * b<sup>2b</sup>
 <sup>b</sup>√a = (b<sup>2b</sup>)(<sup>b<sup>2b</sup></sup>)   
 a =  b<sup>2b<sup>2b+2</sup></sup>   
 </details> 
-2: domain and range : integer
-3: produce other operation   
-4: found expression property     
+2: domain and range : integer<br>   
+3: produce other operation<br>   
+4: found expression property<br>    
 </details>
 
 ### operation (a -<sub>4|2</sub> b)   
@@ -258,28 +258,33 @@ a =  b<sup>2b<sup>2b+2</sup></sup>
 param count = 2   
 exchangeable = false   
 stackable = false   
-<details><summary>identity element of a : b = ?</summary>
+identity element of a : b = a<sup>a<sup>a</sup></sup> = a +<sub>4|0</sub> a = a +<sub>4|1</sub> 3   
+inverse element of a : b = a<sup>a<sup>a<sup>a<sup>a</sup></sup></sup></sup> = a +<sub>4|1</sub> 5    
 
-expr
+<details><summary>identity element of b : a = <sup>b</sup>√b</summary>   
+
+log<sub>a</sub>(log<sub>a</sub>(b)) = b   
+log<sub><sup>x</sup>√b</sub>(b) = x   
+a = <sup>x</sup>√b</sub>   
+log<sub><sup>x</sup>√b</sub></sub>(log<sub><sup>x</sup>√b</sub></sub>(b)) = log<sub><sup>x</sup>√b</sub></sub>(x)   
+if x == b, log<sub>a</sub>(log<sub>a</sub>(b)) = b   
+a = <sup>b</sup>√b   
 </details>   
 
-<details><summary>inverse element of a : b = ? </summary>
+<details><summary>inverse element of b : a = <sup>b -<sub>4|0</sub> 1/<sup>b</sup>√b</sup>√b = <sup>(e<sup>W(ln(b<sup>b<sup>1/b</sup></sup>)))</sup></sup>√b</summary>
 
-expr
-</details>   
-
-<details><summary>identity element of b : a = ?</summary>   
-
-expr
-</details>   
-
-<details><summary>inverse element of b : a = ?</summary>
-
-expr 
+log<sub>a</sub>(log<sub>a</sub>(b)) = <sup>b</sup>√b   
+log<sub><sup>x</sup>√b</sub>(b) = x   
+a = <sup>x</sup>√b</sub>   
+log<sub><sup>x</sup>√b</sub></sub>(log<sub><sup>x</sup>√b</sub></sub>(b)) = log<sub><sup>x</sup>√b</sub></sub>(x) = <sup>b</sup>√b    
+(<sup>x</sup>√b)<sup><sup>b</sup>√b</sup> = x = (b<sup><sup>b</sup>√b</sup>)<sup>1/x</sup>   
+x<sup>x</sup> = b<sup><sup>b</sup>√b</sup>   
+x = b<sup>b<sup>1/b</sup></sup>   
+a = <sup>(e<sup>W(ln(b<sup>b<sup>1/b</sup></sup>)))</sup></sup>√b = <sup>b -<sub>4|0</sub> 1/<sup>b</sup>√b</sup>√b   
 </details> 
-2: domain and range : integer
-3: produce other operation   
-4: found expression property     
+2: domain and range : integer<br>   
+3: produce other operation<br>   
+4: found expression property<br>     
 </details>
 
 ## ETC
