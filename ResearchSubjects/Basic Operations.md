@@ -175,7 +175,7 @@ repeating function of a : $+_{5|0}$ defined by [$a +_{5|0} b = ꭢR^b[(]_(a -_{4
 repeating function of b : $+_{5|2}$ defined by [$a +_{5|2} b = ꭢR^b[a +_{4|0} (];0;ꭢR^b[)]$]
 4. found expression property   
     1. $a +_{4|0} b = a +_3 (a +_3 b)$   
-    2. $(a +{4|0} b) +_3 (a +_3 c) = a +_3 ( a +_3 (b +_1 c ) )$   
+    2. $(a +_{4|0} b) +_3 (a +_3 c) = a +_3 ( a +_3 (b +_1 c ) )$   
     3. $(a +_{4|0} b) +_2 (a +_{4|0} c) = a +_3 ((a +_3 b) +_1 (a +_3 c))$   
     4. $(a +_{4|0} b) +_{4|0} c = (a +_3 c) +_2 (a +_{4|0} (b +_1 (a +_3 b)))$   
 </details>
