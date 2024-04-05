@@ -2,12 +2,12 @@
 
 ## Overview
 Appendix   
-    [1. basic binominal operation : $+_{n|m}$](#basic-binominal-operation--nm)   
-    [2. new Addition that copying previous operation property : $^{u}+_{n}$]()  
-    [3. Adding with Increasing Variables : $^{dim}\sum_{k=0}^{n}\left(f\left(k\right)\right)$]()   
-    [4. Integration and Differential with new Additions : $^{dim|dx}\int_{a}^{b}f\left(x\right)$, $^{dim|dx}df\left(x\right)$]()   
-    [5. Superimposed Sigma : $^{dim}\sum_{k0=0}^{max}\left(^{dim}\sum_{k1=0}^{k0}\left(^{dim}\sum_{k2=0}^{k1}\left( ... \right)\right)\right)$]()   
-    [6. expend function composition in rational space. : $f^{r}\left(x\right)$]()    
+    [1. basic binominal operation](#basic-binominal-operation--nm) : $+_{n|m}$   
+    [2. new Addition that copying previous operation property]() : $^{u}+_{n}$  
+    [3. Adding with Increasing Variables]() : $^{dim}\sum_{k=0}^{n}\left(f\left(k\right)\right)$   
+    [4. Integration and Differential with new Additions]() : $^{dim|dx}\int_{a}^{b}f\left(x\right)$, $^{dim|dx}df\left(x\right)$   
+    [5. Superimposed Sigma]() : $^{dim}\sum_{k0=0}^{max}\left(^{dim}\sum_{k1=0}^{k0}\left(^{dim}\sum_{k2=0}^{k1}\left( ... \right)\right)\right)$   
+    [6. expend function composition in rational space.]() : $f^{r}\left(x\right)$    
     [7. Accurate value state prediction method when various variables are continuously influencing each other (time that don't affect each other is never exist.)]()   
     [ETC. Additional Idea.]()    
 
