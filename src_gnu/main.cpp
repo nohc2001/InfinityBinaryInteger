@@ -36,7 +36,7 @@ int main(){
     fm->_tempPushLayer();
     cout << A.ToString()->c_str() << endl;
     cout << B.ToString()->c_str() << endl;
-    A = A.exp_approximate(B, ibi(100));
+    A = A.exp_approximate(B, ibi(10));
     //wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
   }

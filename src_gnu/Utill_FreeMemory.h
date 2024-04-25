@@ -1770,6 +1770,7 @@ namespace freemem{
 			up = 0;
 			islocal = true;
 			fmlayer = -1;
+			isdebug = false;
 		}
 
 		~ fmvecarr()
@@ -1790,6 +1791,7 @@ namespace freemem{
 			maxsize = 0;
 			up = 0;
 			fmlayer = -1;
+			isdebug = false;
 		}
 
 		void Init(size_t siz, bool local, bool isdebug = false)
@@ -1826,6 +1828,7 @@ namespace freemem{
 			islocal = local;
 			Arr = newArr;
 			maxsize = siz;
+			isdebug = isdebug;
 		}
 
 		T & at(size_t i)
@@ -2343,14 +2346,14 @@ namespace freemem{
 			array_depth = 1;
 			mbDbg = isdbg;
 			ptrArray = (fmCirculArarr<int *> *)fm->_New(sizeof(fmCirculArarr<int *>), mbDbg);
-			ptrArray->Init(fragment_siz, mbDbg);
+			ptrArray->Init(1 << fmgsiz_pow, mbDbg);
 
 			fmCirculArarr<T> *arr =
 				(fmCirculArarr<T> *)fm->_New(sizeof(fmCirculArarr<T>), mbDbg);
-			arr->Init(fragment_siz, mbDbg);
+			arr->Init(1 << fragment_siz_pow2, mbDbg);
 			ptrArray->operator[](0) = (int *)arr;
 
-			for (int i = 1; i < fragment_siz; ++i)
+			for (int i = 1; i < (1 << fragment_siz_pow2); ++i)
 			{
 				ptrArray->operator[](i) = nullptr;
 			}
@@ -2365,12 +2368,12 @@ namespace freemem{
 		void Release()
 		{
 			if(!mbDbg) return;
-			for (uint32 k = 0; k < array_depth; ++k)
+			for (ui32 k = 0; k < array_depth; ++k)
 			{
-				uint32 maxn = 1 << (fragment_siz_pow2 * array_depth - k);
-				for (uint32 n = 0; n < maxn; ++n)
+				ui32 maxn = 1 << (fragment_siz_pow2 * array_depth - k);
+				for (ui32 n = 0; n < maxn; ++n)
 				{
-					uint32 seek = n << (fragment_siz_pow2 * (k + 1));
+					ui32 seek = n << (fragment_siz_pow2 * (k + 1));
 					fmCirculArarr<int *> *ptr = ptrArray;
 					for (int i = 0; i < array_depth - k; ++i)
 					{
@@ -2408,7 +2411,7 @@ namespace freemem{
 
 		int get_max_capacity_inthisArr()
 		{
-			return 1 << (fragment_siz_pow * (array_depth + 1));
+			return 1 << (fragment_siz_pow2 * (array_depth + 1));
 		}
 
 /*
@@ -2435,7 +2438,7 @@ namespace freemem{
 		
 		void push(T value)
 		{
-			if (array_siz + 1 <= array_capacity)
+			if (array_siz + 1 <= 1 << array_capacity_pow2)
 			{
 				//set(array_siz, value);
 				(*this)[array_siz] = value;
@@ -2475,7 +2478,7 @@ namespace freemem{
 						{
 							fmCirculArarr<T> *aptr =
 								reinterpret_cast<fmCirculArarr<T> *>(fm->_New(sizeof(fmCirculArarr<T>), mbDbg));
-							aptr->Init(fragment_siz, mbDbg);
+							aptr->Init(1 << fragment_siz_pow2, mbDbg);
 							tptr->operator[](inindex) = (int *)aptr;
 							ptr = reinterpret_cast<fmCirculArarr<int *> *>(tptr->operator[](inindex));
 						}
@@ -2483,7 +2486,7 @@ namespace freemem{
 						{
 							fmCirculArarr<int *> *insptr =
 								reinterpret_cast<fmCirculArarr<int *>*>(fm->_New(sizeof(fmCirculArarr<int *>), mbDbg));
-							insptr->Init(fragment_siz, mbDbg);
+							insptr->Init(1 << fragment_siz_pow2, mbDbg);
 							tptr->operator[](inindex) = (int *)insptr;
 
 							ptr = reinterpret_cast<fmCirculArarr<int *> *>(tptr->operator[](inindex));
@@ -2528,7 +2531,7 @@ namespace freemem{
 			for (int i = 0; i < array_depth; ++i)
 			{
 				ptr = reinterpret_cast<fmCirculArarr<int *> *>(ptr->operator[](
-					(int)((index >> fragment_siz * (array_depth - i))) & fragPercent));
+					(int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
 			}
 			fmCirculArarr<T> *vptr = reinterpret_cast<fmCirculArarr<T> *>(ptr);
 
@@ -2554,7 +2557,7 @@ namespace freemem{
 			for (int i = 0; i < array_depth; ++i)
 			{
 				ptr = reinterpret_cast<fmCirculArarr<int *> *>(ptr->operator[](
-					(int)((index >> fragment_siz * (array_depth - i))) & fragPercent));
+					(int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
 			}
 			fmCirculArarr<T> *vptr = reinterpret_cast<fmCirculArarr<T> *>(ptr);
 			return vptr;
@@ -2571,7 +2574,7 @@ namespace freemem{
 			{
 				ptr =
 					reinterpret_cast<fmCirculArarr<int *> *>(ptr->operator[](
-						(int)((index >> (fragment_siz * (array_depth - i)))) & fragPercent));
+						(int)((index >> ((1 << fragment_siz_pow2) * (array_depth - i)))) & fragPercent));
 			}
 			return ptr;
 		}
@@ -2579,7 +2582,7 @@ namespace freemem{
 		// direction : -1 or 1
 		void move(int index, int direction, bool expend)
 		{
-			uint32 fragSiz = (1 << fragment_siz_pow2);
+			ui32 fragSiz = (1 << fragment_siz_pow2);
 			T save;
 			fmCirculArarr<T> *corearr = get_bottom_array(index);
 			int inindex = index & fragPercent;
