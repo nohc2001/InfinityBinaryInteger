@@ -56,4 +56,13 @@ good music
 Forza Horizon 5 Soundtrack Exclusive: Metrik – Route 174 https://www.youtube.com/watch?v=7zO5LuLWQao
 C418 - Excursion https://www.youtube.com/watch?v=jjuMyBEJAH8&list=OLAK5uy_l9bKCTMw16VAlIi2UgvgzlFhgMuItR8p4
 minecraft credit : https://www.youtube.com/watch?v=uNCGM7FJ8wQ
-Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.com/watch?v=aGf5pENphWs
+Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.com/watch?v=aGf5pENphWs   '
+
+연산 속도를 더 빠르게 할 필요가 있음 (최적화)
+1. SIMD
+2. 아마 fmvecarr 에서 길이가 늘어나면 배열을 복사하는 것 때문에 느려짐. 4096 단위로 inf_array 로 해야 됨.
+3. GPU를 활용할 수 있다면 (CUDA or DirectX or OpenCL..)
+4. 코드를 asm으로 변환, 디펜던시 체인 탐색
+5. 64바이트 코드 얼라인
+6. 멀티스레딩 활용
+7. 추가적인 최적화 생각해보기
