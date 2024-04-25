@@ -61,6 +61,7 @@ Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.co
 연산 속도를 더 빠르게 할 필요가 있음 (최적화)
 1. SIMD
 2. 아마 fmvecarr 에서 길이가 늘어나면 배열을 복사하는 것 때문에 느려짐. 4096 단위로 inf_array 로 해야 됨.
+    -> 일단 fmDynamicArr을 따로 테스트를 해서 완성을 하고 보완해야 겠음.
 3. GPU를 활용할 수 있다면 (CUDA or DirectX or OpenCL..)
 4. 코드를 asm으로 변환, 디펜던시 체인 탐색
 5. 64바이트 코드 얼라인
