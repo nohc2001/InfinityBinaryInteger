@@ -15,7 +15,7 @@ int main(){
 
   fm = new FM_System0();
   fm->SetHeapData(4096, 4096, 4096, 4096);
-  cout << "Hello Math!!" << endl;
+  std::cout << "Hello Math!!" << endl;
   fm->_tempPushLayer();
 
   unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
@@ -46,13 +46,13 @@ int main(){
   ibi C;
   C.Init(false);
   C = ibi(19);
-  cout << C.ToString()->c_str() << endl;
+  std::cout << C.ToString()->c_str() << endl;
 
   while(true){
     ++count;
     fm->_tempPushLayer();
-    cout << A.ToString()->c_str() << endl;
-    cout << B.ToString()->c_str() << endl;
+    std::cout << A.ToString()->c_str() << endl;
+    std::cout << B.ToString()->c_str() << endl;
     A = A.exp_approximate(B, ibi(10));
     //wcout << A.dataString()->c_str() << endl;
     fm->_tempPopLayer();
