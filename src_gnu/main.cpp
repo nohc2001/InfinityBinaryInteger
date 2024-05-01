@@ -18,6 +18,23 @@ int main(){
   cout << "Hello Math!!" << endl;
   fm->_tempPushLayer();
 
+  unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
+  unsigned int* Bdata = (uint*)fm->_tempNew(4*500);
+  for(int i=0;i<1000;++i){
+    Adata[i] = i;
+  }
+  for(int i=0;i<500;++i){
+    Bdata[i] = -i;
+  }
+
+  ibi K;
+  K.Init(false);
+  K = ibi(true, Adata, 1000);
+  ibi J; J.Init(false);
+  J = ibi(true, Bdata, 500);
+
+  K = K+J;
+
   ibr A;
   A.Init(false);
   A = ibr(3, 19);

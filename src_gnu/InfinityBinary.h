@@ -6,6 +6,7 @@
 using namespace freemem;
 
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
+typedef unsigned int v8ui __attribute__ ((vector_size (32)));
 
 constexpr wchar_t bytebased[16][17] = {
     {L'○', L'①' ,L'②' ,L'③' ,L'④' ,L'⑤' ,L'⑥' ,L'⑦' ,L'⑧' ,L'⑨' ,L'⑩' ,L'⑪' ,L'⑫' ,L'⑬' ,L'⑭' ,L'⑮'},
@@ -1029,11 +1030,20 @@ void ibi::carry_under(ibi *num, int carryloc)
 ibi& ibi::add_absolute(const ibi &A, const ibi &B)
 {
 	CreateDataFM(ibi, r);
+    if(A > B){
+        r = A;
+    }
+    else{
+        r = B;
+    }
+
     fm->_tempPushLayer();
+    // no optim
+    /*
     r = B;
-    int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
-    int i;
-    for (i = 0; i < maxsiz; ++i)
+    unsigned int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
+
+    for (int i = 0; i < maxsiz; ++i)
     {
         unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
         unsigned int Tx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
@@ -1049,6 +1059,143 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
         }
         else{
             r.integer_data[i] = Tx;
+        }
+    }
+    
+    */
+
+    //simd optimized
+    register unsigned int temp = (A.integer_data.size() > B.integer_data.size()) ? B.integer_data.size() : A.integer_data.size();
+    unsigned int addSiz = 1;
+    addSiz += temp;
+    unsigned int addSiz_v8 = addSiz >> 3;
+    unsigned int addSiz_v88 = addSiz >> 6;
+    unsigned int* APBarr = (unsigned int*)&r.integer_data[0]; // max
+    unsigned int* Marr = (unsigned int*)fm->_tempNew(addSiz << 2); // max
+    unsigned int* Carr = (unsigned int*)fm->_tempNew((addSiz+1) << 2); // carry
+    Carr[0] = 0;
+    if(addSiz_v88){
+        register v8ui Ar, Br, Ar2, Br2;
+        register v8ui Ar3, Br3, Ar4, Br4;
+        constexpr v8ui ActiveVec = {1, 1, 1, 1, 1, 1, 1, 1};
+        constexpr v8ui OffVec = {0, 0, 0, 0, 0, 0, 0, 0};
+        v8ui* APBptr = (v8ui*)&APBarr[0];
+        v8ui* Mptr = (v8ui*)&Marr[0];
+        temp = (addSiz_v88<<6);
+        for(uint si=0;si<temp;si+=64){
+            Ar = *(v8ui*)&A.integer_data[si];
+            Br = *(v8ui*)&B.integer_data[si];
+            Ar2 = *(v8ui*)&A.integer_data[si+8];
+            Br2 = *(v8ui*)&B.integer_data[si+8];
+            Ar3 = *(v8ui*)&A.integer_data[si+16];
+            Br3 = *(v8ui*)&B.integer_data[si+16];
+            Ar4 = *(v8ui*)&A.integer_data[si+24];
+            Br4 = *(v8ui*)&B.integer_data[si+24];
+            *APBptr = Ar + Br;
+            *Mptr = (Ar > Br) ? Ar : Br;
+            *(APBptr+1) = Ar2 + Br2;
+            *(Mptr+1) = (Ar2 > Br2) ? Ar2 : Br2;
+            *(APBptr+2) = Ar3 + Br3;
+            *(Mptr+2) = (Ar3 > Br3) ? Ar3 : Br3;
+            *(APBptr+3) = Ar4 + Br4;
+            *(Mptr+3) = (Ar4 > Br4) ? Ar4 : Br4;
+            APBptr+=4;
+            Mptr+=4;
+            Ar = *(v8ui*)&A.integer_data[si+32];
+            Br = *(v8ui*)&B.integer_data[si+32];
+            Ar2 = *(v8ui*)&A.integer_data[si+40];
+            Br2 = *(v8ui*)&B.integer_data[si+40];
+            Ar3 = *(v8ui*)&A.integer_data[si+48];
+            Br3 = *(v8ui*)&B.integer_data[si+48];
+            Ar4 = *(v8ui*)&A.integer_data[si+56];
+            Br4 = *(v8ui*)&B.integer_data[si+56];
+            *APBptr = Ar + Br;
+            *Mptr = (Ar > Br) ? Ar : Br;
+            *(APBptr+1) = Ar2 + Br2;
+            *(Mptr+1) = (Ar2 > Br2) ? Ar2 : Br2;
+            *(APBptr+2) = Ar3 + Br3;
+            *(Mptr+2) = (Ar3 > Br3) ? Ar3 : Br3;
+            *(APBptr+3) = Ar4 + Br4;
+            *(Mptr+3) = (Ar4 > Br4) ? Ar4 : Br4;
+            APBptr+=4;
+            Mptr+=4;
+
+            *(v8ui*)&Carr[si+1] = (*(v8ui*)&Marr[si] > *(v8ui*)&APBarr[si]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+9] = (*(v8ui*)&Marr[si+8] > *(v8ui*)&APBarr[si+8]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+17] = (*(v8ui*)&Marr[si+16] > *(v8ui*)&APBarr[si+16]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+25] = (*(v8ui*)&Marr[si+24] > *(v8ui*)&APBarr[si+24]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+33] = (*(v8ui*)&Marr[si+32] > *(v8ui*)&APBarr[si+32]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+41] = (*(v8ui*)&Marr[si+40] > *(v8ui*)&APBarr[si+40]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+49] = (*(v8ui*)&Marr[si+48] > *(v8ui*)&APBarr[si+48]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+57] = (*(v8ui*)&Marr[si+56] > *(v8ui*)&APBarr[si+56]) ? ActiveVec : OffVec;
+        }
+
+        temp = addSiz_v8 << 3;
+        for(uint si=(addSiz_v88 << 6);si<temp;si+=8){
+            Ar = *(v8ui*)&A.integer_data[si];
+            Br = *(v8ui*)&B.integer_data[si];
+            *(v8ui*)&APBarr[si] = Ar + Br;
+            *(v8ui*)&Marr[si] = (Ar > Br) ? Ar : Br;
+            *(v8ui*)&Carr[si+1] = (*(v8ui*)&Marr[si] > *(v8ui*)&APBarr[si]) ? ActiveVec : OffVec;
+        }
+
+        register unsigned int uA, uB;
+        for(uint i=temp;i<addSiz;++i){
+            uA = A.integer_data[i];
+            uB = B.integer_data[i];
+            APBarr[i] = uA + uB;
+            Marr[i] = (uA > uB) ? uA : uB;
+            Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
+        }
+
+        for(uint i=0;i<addSiz;++i){
+            if(Carr[i]){
+                carry(&r, i);
+            }
+        }
+    }
+    else if(addSiz_v8){
+        register v8ui Ar, Br;
+        constexpr v8ui ActiveVec = {1, 1, 1, 1, 1, 1, 1, 1};
+        constexpr v8ui OffVec = {0, 0, 0, 0, 0, 0, 0, 0};
+        for(uint i=0;i<addSiz_v8;++i){
+            uint si = i << 3;
+            Ar = *(v8ui*)&A.integer_data[si];
+            Br = *(v8ui*)&B.integer_data[si];
+            *(v8ui*)&APBarr[si] = Ar + Br;
+            *(v8ui*)&Marr[si] = (Ar > Br) ? Ar : Br;
+            *(v8ui*)&Carr[si+1] = (*(v8ui*)&Marr[si] > *(v8ui*)&APBarr[si]) ? ActiveVec : OffVec;
+        }
+
+        register unsigned int uA, uB;
+        for(uint i=(addSiz_v8 << 3);i<addSiz;++i){
+            uA = A.integer_data[i];
+            uB = B.integer_data[i];
+            APBarr[i] = uA + uB;
+            Marr[i] = (uA > uB) ? uA : uB;
+            Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
+        }
+
+        for(uint i=0;i<addSiz;++i){
+            if(Carr[i]){
+                carry(&r, i);
+            }
+        }
+    }
+    else{
+        register unsigned int uA, uB;
+        for(uint i=0;i<addSiz;++i){
+            uA = A.integer_data[i];
+            uB = B.integer_data[i];
+            APBarr[i] = uA + uB;
+            Marr[i] = (uA > uB) ? uA : uB;
+            Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
+        }
+
+        for(uint i=1;i<addSiz;++i){
+            if(Carr[i]){
+                carry(&r, i);
+            }
         }
     }
     fm->_tempPopLayer();
