@@ -215,39 +215,74 @@ inline void fastConvolusion(CArray &a, CArray &b, Complex *resultdata_out, int r
 }
 
 int main(){
-    CArray carr(1024);
-    CArray carr2(1024);
-    unsigned int* arr = new unsigned int[1024];
-    fft_addStamp(1024);
+    CArray carr(2048);
+    CArray carr2(2048);
+    unsigned int* arr = new unsigned int[2048];
+    unsigned int* arr2 = new unsigned int[2048];
+    fft_addStamp(2048);
 
-    while (true)
+    bool bb = true;
+    while (bb)
     {
         for (int i = 0; i < 1024; ++i)
         {
             arr[i] = (unsigned int)rand();
+            arr2[i] = (unsigned int)rand();
             double d = (double)(arr[i]);
             carr[i] = Complex(d, 0.0);
+            d = (double)(arr2[i]);
+            carr2[i] = Complex(d, 0.0);
+            // cout << (int)arr[i] << ", ";
+        }
+        
+        for (int i = 1024; i < 2048; ++i)
+        {
+            arr[i] = 0.0;
+            arr2[i] = 0.0;
+            double d = (double)(arr[i]);
+            carr[i] = Complex(d, 0.0);
+            d = (double)(arr2[i]);
             carr2[i] = Complex(d, 0.0);
             // cout << (int)arr[i] << ", ";
         }
         // cout << endl;
         // cout << endl;
 
+        for (int i = 0; i < 2048; ++i){
+            cout << arr[i] << ", ";
+        }
+        cout << endl;
+        cout << endl;
+
+        for (int i = 0; i < 2048; ++i){
+            cout << arr2[i] << ", ";
+        }
+        cout << endl;
+        cout << endl;
+
         fft_useStamp(carr);
+        fft_useStamp(carr2);
+
+        for (int i = 0; i < 2048; ++i)
+        {
+            carr[i] = carr[i] * carr2[i];
+        }
         ifft_useStamp(carr);
 
         bool b = true;
         int error = 0;
-        for (int i = 0; i < 1024; ++i)
+        for (int i = 0; i < 2048; ++i)
         {
             unsigned int c = (unsigned int)(carr[i].real() + 0.5);
-            // cout << (int)c << ", ";
+            cout << c << ", ";
             // cout << carr[i].real() << ", ";
-            b = b & (c == arr[i]);
-            error += c - arr[i];
+            // b = b & (c == arr[i]);
+            //error += c - arr[i];
         }
         // cout << endl;
         // cout << endl;
+
+/*
 
         if (b)
         {
@@ -257,6 +292,10 @@ int main(){
         {
             cout << "error!! : " << error << endl;
         }
+
+        
+*/
+        bb = false;
     }
 
     return 0;
