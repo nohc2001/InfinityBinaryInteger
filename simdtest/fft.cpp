@@ -218,6 +218,7 @@ int main(){
     CArray carr(1024);
     CArray carr2(1024);
     unsigned int* arr = new unsigned int[1024];
+    fft_addStamp(1024);
 
     while (true)
     {
@@ -232,15 +233,7 @@ int main(){
         // cout << endl;
         // cout << endl;
 
-        fft_addStamp(1024);
         fft_useStamp(carr);
-
-        // for(int i=0;i<1024;++i){
-        // cout << "(" << carr[i].real() << ", " << carr[i].imag() << "), ";
-        //}
-        // cout << endl;
-        // cout << endl;
-
         ifft_useStamp(carr);
 
         bool b = true;
