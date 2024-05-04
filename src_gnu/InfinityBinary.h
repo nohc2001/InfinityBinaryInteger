@@ -1,12 +1,43 @@
 #ifndef INF_BIN_INT
 #define INF_BIN_INT
 #include <math.h>
+#include <complex>
 #include "arr_expend.h"
 #include "Utill_FreeMemory.h"
 using namespace freemem;
 
+typedef std::complex<float> Complex;
+
+typedef struct FFTSwapPair{
+    unsigned int index0;
+    unsigned int index1;
+
+    FFTSwapPair(){}
+    FFTSwapPair(int i0, int i1){
+        index0 = i0;
+        index1 = i1;
+    }
+    ~FFTSwapPair(){}
+}; // siz : 8byte
+
+typedef struct FFTOperPair{
+    Complex w; // 16
+    unsigned int t_index; // 4
+    unsigned int u_index; // 4
+
+    FFTOperPair(){
+    }
+    FFTOperPair(Complex pw, unsigned int ti, unsigned int ui){
+        w = pw;
+        t_index = ti;
+        u_index = ui;
+    }
+    ~FFTOperPair(){}
+}; // siz : 24byte
+
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 typedef unsigned int v8ui __attribute__ ((vector_size (32)));
+typedef float v8uf __attribute__ ((vector_size (32)));
 
 constexpr wchar_t bytebased[16][17] = {
     {L'○', L'①' ,L'②' ,L'③' ,L'④' ,L'⑤' ,L'⑥' ,L'⑦' ,L'⑧' ,L'⑨' ,L'⑩' ,L'⑪' ,L'⑫' ,L'⑬' ,L'⑭' ,L'⑮'},
@@ -83,7 +114,12 @@ struct DeltaObj{
     DeltaObj(void* min, void* max);
 };
 
-#define IBI_INIT DeltaObj* ibi::prime_all = nullptr; ibi ibi::max_primeMul = ibi(); ibi ibi::max_primecount = ibi();
+
+#define IBI_INIT DeltaObj* ibi::prime_all = nullptr; \
+    ibi ibi::max_primeMul = ibi(); \
+    ibi ibi::max_primecount = ibi(); \
+    fmDynamicArr<FFTOperPair>* ibi::fftoper = nullptr;\
+    fmDynamicArr<FFTSwapPair>* ibi::fftswap = nullptr;
 
 class ibi{
     public:
@@ -96,6 +132,9 @@ class ibi{
     static DeltaObj* prime_all; // 모든 소수 데이터
     static ibi max_primeMul; // 1 부터 max_primecount 번째 소수 까지의 곱
     static ibi max_primecount; // 가용할 수 있는 가장 큰 소수의 번호
+    static fmDynamicArr<FFTOperPair>* fftoper;
+    static fmDynamicArr<FFTSwapPair>* fftswap;
+    static void StaticInit();
 
     ibi();
     ibi(const ibi& ref);
@@ -835,6 +874,16 @@ ibi ibr::pi_oper_time;
 ibr ibr::best_e;
 ibi ibr::e_oper_time;
 
+void ibi::StaticInit(){
+    ibi::fftoper = (fmDynamicArr<FFTOperPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTOperPair>()));
+    ibi::fftoper->NULLState();
+    ibi::fftoper->Init(8, false); // 16byte objs, 256 capacity
+
+    ibi::fftswap = (fmDynamicArr<FFTSwapPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTSwapPair>()));
+    ibi::fftswap->NULLState();
+    ibi::fftswap->Init(9, false); // 8byte objs, 512 capacity
+}
+
 ibi::ibi() : isPositive(true)
 {
     integer_data.NULLState();
@@ -1352,6 +1401,218 @@ ibi& ibi::mul_32(unsigned int A, unsigned int B)
     r = r + operand[2];
 
     fm->_tempPopLayer();
+    return r;
+}
+
+inline unsigned int reverseBits(unsigned int num, int bits)
+{
+	unsigned int reverse_num = 0;
+	for (int i = 0; i < bits; i++)
+	{
+		if ((num & (1 << i)))
+			reverse_num |= 1 << ((bits - 1) - i);
+	}
+	return reverse_num;
+}
+
+void fft_addStamp(unsigned int dataSiz)
+{
+    constexpr float PI = 3.14159265358979323846;
+    ibi::fftswap->Init(9, false, dataSiz);
+    ibi::fftoper->Init(8, false, dataSiz);
+
+    const size_t N = dataSiz;
+    const size_t M = log2(N);
+
+    // bit-reversed permutation
+    for (size_t i = 0; i < N; i++)
+    {
+        size_t j = reverseBits(i, M);
+        if (i < j){
+            ibi::fftswap->push_back(FFTSwapPair(i, j));
+        }
+    }
+
+    // butterfly updates
+    for (size_t s = 1; s <= M; s++)
+    {
+        size_t m = 1 << s;
+        Complex wm = std::polar(1.0f, -2.0f * PI / m);
+
+        for (size_t k = 0; k < N; k += m)
+        {
+            Complex w = 1;
+            for (size_t j = 0; j < m / 2; j++)
+            {
+                ibi::fftoper->push_back(FFTOperPair(w, k + j + m / 2, k + j));
+                w *= wm;
+            }
+        }
+    }
+}
+
+void fft_useStamp(fmDynamicArr<Complex>& x){
+    Complex temp;
+    for(int i=0;i<ibi::fftswap->size();++i){
+        FFTSwapPair& sp = ibi::fftswap->at(i);
+        unsigned int index0 = sp.index0;
+        unsigned int index1 = sp.index1;
+        temp = x[index0];
+        x[index0] = x[index1];
+        x[index1] = temp;
+    }
+
+    for(int i=0;i<ibi::fftoper->size();++i){
+        FFTOperPair& op = ibi::fftoper->at(i);
+        Complex w = op.w;
+        unsigned int ti = op.t_index;
+        unsigned int ui = op.u_index;
+        Complex t = w * x[ti];
+        Complex u = x[ui];
+        x[ui] = u + t;
+        x[ti] = u - t;
+    }
+}
+
+inline void ifft_useStamp(fmDynamicArr<Complex> &x)
+{
+    constexpr unsigned int signbit = 1 << 31;
+    constexpr v8ui conjB = {0, signbit, 0, signbit, 0, signbit, 0, signbit};
+    // conjugate the complex numbers
+    //x = x.apply(std::conj);
+    //constexpr v8uf conjV = {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f};
+    //혹은 비트만 바꿔서 부호 바꾸기
+    unsigned int s = x.size() >> 5;
+    uint si = 0;
+    for(uint si=0; si<s; si += 32){
+        v8ui* so0 = reinterpret_cast<v8ui*>(&x.at(si));
+        v8ui* so1 = reinterpret_cast<v8ui*>(&x.at(si+4));
+        v8ui* so2 = reinterpret_cast<v8ui*>(&x.at(si+8));
+        v8ui* so3 = reinterpret_cast<v8ui*>(&x.at(si+12));
+        v8ui* so4 = reinterpret_cast<v8ui*>(&x.at(si+16));
+        v8ui* so5 = reinterpret_cast<v8ui*>(&x.at(si+20));
+        v8ui* so6 = reinterpret_cast<v8ui*>(&x.at(si+24));
+        v8ui* so7 = reinterpret_cast<v8ui*>(&x.at(si+28));
+        *so0 = *so0 ^ conjB;
+        *so1 = *so1 ^ conjB;
+        *so2 = *so2 ^ conjB;
+        *so3 = *so3 ^ conjB;
+        *so4 = *so4 ^ conjB;
+        *so5 = *so5 ^ conjB;
+        *so6 = *so6 ^ conjB;
+        *so7 = *so7 ^ conjB;
+    }
+
+    // forward fft
+    fft_useStamp(x);
+
+    // conjugate the complex numbers again
+    //x = x.apply(std::conj);
+    si = 0;
+    for(uint si=0; si<s; si += 32){
+        v8ui* so0 = reinterpret_cast<v8ui*>(&x.at(si));
+        v8ui* so1 = reinterpret_cast<v8ui*>(&x.at(si+4));
+        v8ui* so2 = reinterpret_cast<v8ui*>(&x.at(si+8));
+        v8ui* so3 = reinterpret_cast<v8ui*>(&x.at(si+12));
+        v8ui* so4 = reinterpret_cast<v8ui*>(&x.at(si+16));
+        v8ui* so5 = reinterpret_cast<v8ui*>(&x.at(si+20));
+        v8ui* so6 = reinterpret_cast<v8ui*>(&x.at(si+24));
+        v8ui* so7 = reinterpret_cast<v8ui*>(&x.at(si+28));
+        *so0 = *so0 ^ conjB;
+        *so1 = *so1 ^ conjB;
+        *so2 = *so2 ^ conjB;
+        *so3 = *so3 ^ conjB;
+        *so4 = *so4 ^ conjB;
+        *so5 = *so5 ^ conjB;
+        *so6 = *so6 ^ conjB;
+        *so7 = *so7 ^ conjB;
+    }
+
+    // scale the numbers
+    float divf = 1.0f / (float)x.size();
+    v8uf divV = {divf, divf, divf, divf, divf, divf, divf, divf};
+    //x /= x.size();
+    si = 0;
+    for(uint si=0; si<s; si += 32){
+        v8uf* so0 = reinterpret_cast<v8uf*>(&x.at(si));
+        v8uf* so1 = reinterpret_cast<v8uf*>(&x.at(si+4));
+        v8uf* so2 = reinterpret_cast<v8uf*>(&x.at(si+8));
+        v8uf* so3 = reinterpret_cast<v8uf*>(&x.at(si+12));
+        v8uf* so4 = reinterpret_cast<v8uf*>(&x.at(si+16));
+        v8uf* so5 = reinterpret_cast<v8uf*>(&x.at(si+20));
+        v8uf* so6 = reinterpret_cast<v8uf*>(&x.at(si+24));
+        v8uf* so7 = reinterpret_cast<v8uf*>(&x.at(si+28));
+        *so0 = *so0 * divV;
+        *so1 = *so1 * divV;
+        *so2 = *so2 * divV;
+        *so3 = *so3 * divV;
+        *so4 = *so4 * divV;
+        *so5 = *so5 * divV;
+        *so6 = *so6 * divV;
+        *so7 = *so7 * divV;
+    }
+}
+
+ibi& ibi::operator*(const ibi &A) const
+{
+    CreateDataFM(ibi, r);
+    fm->_tempPushLayer();
+    r = ibi(0);
+    unsigned int dSiz = (this->integer_data.size() > A.integer_data.size()) ? this->integer_data.size() : A.integer_data.size();
+    unsigned int Siz = dSiz;
+    dSiz = dSiz << 1;
+    fmDynamicArr<Complex> TCArr;
+    TCArr.NULLState();
+    TCArr.Init(9, false, dSiz);
+
+    fmDynamicArr<Complex> ACArr;
+    ACArr.NULLState();
+    ACArr.Init(9, false, dSiz);
+
+    r.integer_data.Init(dSiz, false);
+    fmDynamicArr<uint64_t> rdata;
+    rdata.NULLState();
+    rdata.Init(9, false, dSiz);
+
+    fft_addStamp(dSiz);
+
+    for (int i = 0; i < Siz; ++i)
+    {
+        double d = (double)(integer_data[i]);
+        TCArr[i] = Complex(d, 0.0);
+        d = (double)(A.integer_data[i]);
+        ACArr[i] = Complex(d, 0.0);
+    }
+    for (int i = Siz; i < dSiz; ++i)
+    {
+        TCArr[i] = Complex(0.0, 0.0);
+        ACArr[i] = Complex(0.0, 0.0);
+    }
+
+    fft_useStamp(TCArr);
+    fft_useStamp(ACArr);
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        TCArr[i] = TCArr[i] * ACArr[i];
+    }
+    ifft_useStamp(TCArr);
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        uint64_t c = (uint64_t)(TCArr[i].real() + 0.5);
+        rdata[i] = c;
+    }
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        if(rdata[i] >> 32 != 0){
+            rdata[i+1] += rdata[i] >> 32;
+        }
+        
+        r.integer_data[i] = (unsigned int)rdata[i];
+    }
+
     return r;
 }
 

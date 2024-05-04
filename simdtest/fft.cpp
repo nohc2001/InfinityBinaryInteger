@@ -214,56 +214,81 @@ inline void fastConvolusion(CArray &a, CArray &b, Complex *resultdata_out, int r
     delete[] bdata;
 }
 
+unsigned int* fastMultiple(unsigned int* A, unsigned int* B, int datasiz){
+    unsigned int dSiz = datasiz << 1;
+    CArray carrA(dSiz);
+    CArray carrB(dSiz);
+    uint64_t* rarr = new uint64_t[dSiz];
+    unsigned int* rrarr = new unsigned int[dSiz];
+    fft_addStamp(dSiz);
+    for (int i = 0; i < datasiz; ++i)
+    {
+        double d = (double)(A[i]);
+        carrA[i] = Complex(d, 0.0);
+        d = (double)(B[i]);
+        carrB[i] = Complex(d, 0.0);
+    }
+
+    for (int i = datasiz; i < dSiz; ++i)
+    {
+        carrA[i] = Complex(0.0, 0.0);
+        carrB[i] = Complex(0.0, 0.0);
+    }
+
+    fft_useStamp(carrA);
+    fft_useStamp(carrB);
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        carrA[i] = carrA[i] * carrB[i];
+    }
+    ifft_useStamp(carrA);
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        uint64_t c = (uint64_t)(carrA[i].real() + 0.5);
+        rarr[i] = c;
+    }
+
+    for (int i = 0; i < dSiz; ++i)
+    {
+        if(rarr[i] >> 32 != 0){
+            rarr[i+1] += rarr[i] >> 32;
+        }
+
+        rrarr[i] = (unsigned int)rarr[i];
+    }
+
+    delete[] rarr;
+    return rrarr;
+}
+
 int main(){
-    CArray carr(2048);
-    CArray carr2(2048);
-    unsigned int* arr = new unsigned int[2048];
-    unsigned int* arr2 = new unsigned int[2048];
-    fft_addStamp(2048);
+    CArray carr(1024);
+    CArray carr2(1024);
+    unsigned int* arr = new unsigned int[1024];
+    unsigned int* arr2 = new unsigned int[1024];
+    uint64_t* rarr = new uint64_t[1024];
+    unsigned int* rrarr = new unsigned int[1024];
+    fft_addStamp(1024);
 
     bool bb = true;
     while (bb)
     {
         for (int i = 0; i < 1024; ++i)
         {
-            arr[i] = (unsigned int)rand();
-            arr2[i] = (unsigned int)rand();
+            arr[i] = (unsigned short)rand();
+            arr2[i] = (unsigned short)rand();
             double d = (double)(arr[i]);
             carr[i] = Complex(d, 0.0);
             d = (double)(arr2[i]);
             carr2[i] = Complex(d, 0.0);
-            // cout << (int)arr[i] << ", ";
         }
-        
-        for (int i = 1024; i < 2048; ++i)
-        {
-            arr[i] = 0.0;
-            arr2[i] = 0.0;
-            double d = (double)(arr[i]);
-            carr[i] = Complex(d, 0.0);
-            d = (double)(arr2[i]);
-            carr2[i] = Complex(d, 0.0);
-            // cout << (int)arr[i] << ", ";
-        }
-        // cout << endl;
-        // cout << endl;
-
-        for (int i = 0; i < 2048; ++i){
-            cout << arr[i] << ", ";
-        }
-        cout << endl;
-        cout << endl;
-
-        for (int i = 0; i < 2048; ++i){
-            cout << arr2[i] << ", ";
-        }
-        cout << endl;
-        cout << endl;
 
         fft_useStamp(carr);
         fft_useStamp(carr2);
 
-        for (int i = 0; i < 2048; ++i)
+        for (int i = 0; i < 1024; ++i)
         {
             carr[i] = carr[i] * carr2[i];
         }
@@ -271,13 +296,18 @@ int main(){
 
         bool b = true;
         int error = 0;
-        for (int i = 0; i < 2048; ++i)
+        for (int i = 0; i < 1024; ++i)
         {
-            unsigned int c = (unsigned int)(carr[i].real() + 0.5);
-            cout << c << ", ";
-            // cout << carr[i].real() << ", ";
-            // b = b & (c == arr[i]);
-            //error += c - arr[i];
+            uint64_t c = (uint64_t)(carr[i].real() + 0.5);
+            rarr[i] = c;
+        }
+
+        for(int i=0;i<1023;++i){
+            if(rarr[i] >> 32 != 0){
+                rarr[i+1] += rarr[i] >> 32;
+            }
+
+            rrarr[i] = (unsigned int)rarr[i];
         }
         // cout << endl;
         // cout << endl;
