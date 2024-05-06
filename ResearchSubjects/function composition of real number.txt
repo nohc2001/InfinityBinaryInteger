@@ -34,3 +34,31 @@ else{
 f(f(x)) = ((x^sqrt2-i)^sqrt2) / sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^sqrt2)^k) + 1
 = (x^2) * sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^(sqrt2 * k)) / sum[k=0 to infinity]((sqrt2)_C_k * (-i)^k / (x^sqrt2)^k) + 1
 = x^2 + 1
+
+
+2. FFT를 활용한 다항식 곱. 그것을 이용한 다항식 분해.
+5x^2 - 3x + 2 -> [5, -3, 2] = A
+10x + 2 -> [0, 10, 2] = B
+A convolution B -> A*B
+
+그렇다면 다항식 X를 세번 제곱한 결과가 A라고 할때,
+A -ifft-> A'
+sqrt(3, A') = X'
+X' -fft-> X
+이런 식으로 다항식의 제곱형태를 근사할 수 있음.
+
+혹은 어떤 다항식의 세번 제곱한 결과를 내보낼 수도 있음
+X -ifft-> X'
+A' = X' * X' * X'
+A' -fft-> A
+
+그렇기 때문에 다항식을 함수로 만들어 그것을 2번 함성한 경우도 결과를 낼 수 있다.
+X = 2x^2 + 4x + 5
+f(x) = X;
+f(f(x)) = f(X) = 2X^2 + 4X + 5;
+
+
+3. 합성함수의 성질
+1. 합성은 반복에 대해서 stackable, 고로 결합법칙이 성립한다. (A@B)@C = A@(B@C)
+2. 합성의 미분은 연계되어 곱하진다. a = f(b), b = g(c), h(c) = f(g(c)), h'(c) = f'(g(c)) * g'(c) = (da/db) * (db/dc) > 치환적분
+3. 항등원은 y=x

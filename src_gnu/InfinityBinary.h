@@ -1483,73 +1483,93 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
     //constexpr v8uf conjV = {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f};
     //혹은 비트만 바꿔서 부호 바꾸기
     unsigned int s = x.size() >> 5;
-    uint si = 0;
-    for(uint si=0; si<s; si += 32){
-        v8ui* so0 = reinterpret_cast<v8ui*>(&x.at(si));
-        v8ui* so1 = reinterpret_cast<v8ui*>(&x.at(si+4));
-        v8ui* so2 = reinterpret_cast<v8ui*>(&x.at(si+8));
-        v8ui* so3 = reinterpret_cast<v8ui*>(&x.at(si+12));
-        v8ui* so4 = reinterpret_cast<v8ui*>(&x.at(si+16));
-        v8ui* so5 = reinterpret_cast<v8ui*>(&x.at(si+20));
-        v8ui* so6 = reinterpret_cast<v8ui*>(&x.at(si+24));
-        v8ui* so7 = reinterpret_cast<v8ui*>(&x.at(si+28));
-        *so0 = *so0 ^ conjB;
-        *so1 = *so1 ^ conjB;
-        *so2 = *so2 ^ conjB;
-        *so3 = *so3 ^ conjB;
-        *so4 = *so4 ^ conjB;
-        *so5 = *so5 ^ conjB;
-        *so6 = *so6 ^ conjB;
-        *so7 = *so7 ^ conjB;
+    if (s >= 32)
+    {
+        for (uint si = 0; si < s; si += 32)
+        {
+            v8ui *so0 = reinterpret_cast<v8ui *>(&x.at(si));
+            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 4));
+            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 8));
+            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 12));
+            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 16));
+            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 20));
+            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 24));
+            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 28));
+            *so0 = *so0 ^ conjB;
+            *so1 = *so1 ^ conjB;
+            *so2 = *so2 ^ conjB;
+            *so3 = *so3 ^ conjB;
+            *so4 = *so4 ^ conjB;
+            *so5 = *so5 ^ conjB;
+            *so6 = *so6 ^ conjB;
+            *so7 = *so7 ^ conjB;
+        }
+
+        // forward fft
+        fft_useStamp(x);
+
+        // conjugate the complex numbers again
+        // x = x.apply(std::conj);
+        for (uint si = 0; si < s; si += 32)
+        {
+            v8ui *so0 = reinterpret_cast<v8ui *>(&x.at(si));
+            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 4));
+            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 8));
+            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 12));
+            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 16));
+            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 20));
+            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 24));
+            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 28));
+            *so0 = *so0 ^ conjB;
+            *so1 = *so1 ^ conjB;
+            *so2 = *so2 ^ conjB;
+            *so3 = *so3 ^ conjB;
+            *so4 = *so4 ^ conjB;
+            *so5 = *so5 ^ conjB;
+            *so6 = *so6 ^ conjB;
+            *so7 = *so7 ^ conjB;
+        }
+
+        // scale the numbers
+        float divf = 1.0f / (float)x.size();
+        v8uf divV = {divf, divf, divf, divf, divf, divf, divf, divf};
+        // x /= x.size();
+        for (uint si = 0; si < s; si += 32)
+        {
+            v8uf *so0 = reinterpret_cast<v8uf *>(&x.at(si));
+            v8uf *so1 = reinterpret_cast<v8uf *>(&x.at(si + 4));
+            v8uf *so2 = reinterpret_cast<v8uf *>(&x.at(si + 8));
+            v8uf *so3 = reinterpret_cast<v8uf *>(&x.at(si + 12));
+            v8uf *so4 = reinterpret_cast<v8uf *>(&x.at(si + 16));
+            v8uf *so5 = reinterpret_cast<v8uf *>(&x.at(si + 20));
+            v8uf *so6 = reinterpret_cast<v8uf *>(&x.at(si + 24));
+            v8uf *so7 = reinterpret_cast<v8uf *>(&x.at(si + 28));
+            *so0 = *so0 * divV;
+            *so1 = *so1 * divV;
+            *so2 = *so2 * divV;
+            *so3 = *so3 * divV;
+            *so4 = *so4 * divV;
+            *so5 = *so5 * divV;
+            *so6 = *so6 * divV;
+            *so7 = *so7 * divV;
+        }
     }
+    else{
+        for(uint si = 0; si < s; si += 1){
+            x.at(si).imag(-1.0f * x.at(si).imag());
+        }
 
-    // forward fft
-    fft_useStamp(x);
+        // forward fft
+        fft_useStamp(x);
 
-    // conjugate the complex numbers again
-    //x = x.apply(std::conj);
-    si = 0;
-    for(uint si=0; si<s; si += 32){
-        v8ui* so0 = reinterpret_cast<v8ui*>(&x.at(si));
-        v8ui* so1 = reinterpret_cast<v8ui*>(&x.at(si+4));
-        v8ui* so2 = reinterpret_cast<v8ui*>(&x.at(si+8));
-        v8ui* so3 = reinterpret_cast<v8ui*>(&x.at(si+12));
-        v8ui* so4 = reinterpret_cast<v8ui*>(&x.at(si+16));
-        v8ui* so5 = reinterpret_cast<v8ui*>(&x.at(si+20));
-        v8ui* so6 = reinterpret_cast<v8ui*>(&x.at(si+24));
-        v8ui* so7 = reinterpret_cast<v8ui*>(&x.at(si+28));
-        *so0 = *so0 ^ conjB;
-        *so1 = *so1 ^ conjB;
-        *so2 = *so2 ^ conjB;
-        *so3 = *so3 ^ conjB;
-        *so4 = *so4 ^ conjB;
-        *so5 = *so5 ^ conjB;
-        *so6 = *so6 ^ conjB;
-        *so7 = *so7 ^ conjB;
-    }
+        for(uint si = 0; si < s; si += 1){
+            x.at(si).imag(-1.0f * x.at(si).imag());
+        }
 
-    // scale the numbers
-    float divf = 1.0f / (float)x.size();
-    v8uf divV = {divf, divf, divf, divf, divf, divf, divf, divf};
-    //x /= x.size();
-    si = 0;
-    for(uint si=0; si<s; si += 32){
-        v8uf* so0 = reinterpret_cast<v8uf*>(&x.at(si));
-        v8uf* so1 = reinterpret_cast<v8uf*>(&x.at(si+4));
-        v8uf* so2 = reinterpret_cast<v8uf*>(&x.at(si+8));
-        v8uf* so3 = reinterpret_cast<v8uf*>(&x.at(si+12));
-        v8uf* so4 = reinterpret_cast<v8uf*>(&x.at(si+16));
-        v8uf* so5 = reinterpret_cast<v8uf*>(&x.at(si+20));
-        v8uf* so6 = reinterpret_cast<v8uf*>(&x.at(si+24));
-        v8uf* so7 = reinterpret_cast<v8uf*>(&x.at(si+28));
-        *so0 = *so0 * divV;
-        *so1 = *so1 * divV;
-        *so2 = *so2 * divV;
-        *so3 = *so3 * divV;
-        *so4 = *so4 * divV;
-        *so5 = *so5 * divV;
-        *so6 = *so6 * divV;
-        *so7 = *so7 * divV;
+        float divf = 1.0f / (float)x.size();
+        for(uint si = 0; si < s; si += 1){
+            x.at(si) = divf * x.at(si);
+        }
     }
 }
 
@@ -1560,7 +1580,14 @@ ibi& ibi::operator*(const ibi &A) const
     r = ibi(0);
     unsigned int dSiz = (this->integer_data.size() > A.integer_data.size()) ? this->integer_data.size() : A.integer_data.size();
     unsigned int Siz = dSiz;
+    unsigned int log2 = 0;
+    while(Siz > (1 << log2)){
+        ++log2;
+    }
+    dSiz = 1 << log2;
+    Siz = dSiz;
     dSiz = dSiz << 1;
+
     fmDynamicArr<Complex> TCArr;
     TCArr.NULLState();
     TCArr.Init(9, false, dSiz);
