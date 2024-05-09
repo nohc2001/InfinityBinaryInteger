@@ -161,6 +161,7 @@ class ibi{
     ibi& operator>>(const int& n) const;
     static ibi& mul_32(unsigned int A, unsigned int B);
     ibi& operator*(const ibi& A) const;
+    ibi& FFTMUL(const ibi& A) const;
     static ibi& div_32(const ibi& A, unsigned int divn);
     ibi& operator/(const ibi& A) const;
     ibi& operator%(const ibi& A) const; 
@@ -875,11 +876,11 @@ ibr ibr::best_e;
 ibi ibr::e_oper_time;
 
 void ibi::StaticInit(){
-    ibi::fftoper = (fmDynamicArr<FFTOperPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTOperPair>()));
+    ibi::fftoper = (fmDynamicArr<FFTOperPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTOperPair>));
     ibi::fftoper->NULLState();
     ibi::fftoper->Init(8, false); // 16byte objs, 256 capacity
 
-    ibi::fftswap = (fmDynamicArr<FFTSwapPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTSwapPair>()));
+    ibi::fftswap = (fmDynamicArr<FFTSwapPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTSwapPair>));
     ibi::fftswap->NULLState();
     ibi::fftswap->Init(9, false); // 8byte objs, 512 capacity
 }
@@ -1418,8 +1419,8 @@ inline unsigned int reverseBits(unsigned int num, int bits)
 void fft_addStamp(unsigned int dataSiz)
 {
     constexpr float PI = 3.14159265358979323846;
-    ibi::fftswap->Init(9, false, dataSiz);
-    ibi::fftoper->Init(8, false, dataSiz);
+    ibi::fftswap->clear();
+    ibi::fftoper->clear();
 
     const size_t N = dataSiz;
     const size_t M = log2(N);
@@ -1573,7 +1574,7 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
     }
 }
 
-ibi& ibi::operator*(const ibi &A) const
+ibi& ibi::FFTMUL(const ibi &A) const
 {
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
@@ -1605,19 +1606,53 @@ ibi& ibi::operator*(const ibi &A) const
 
     for (int i = 0; i < Siz; ++i)
     {
-        double d = (double)(integer_data[i]);
+        float d = (float)(integer_data[i]);
         TCArr[i] = Complex(d, 0.0);
-        d = (double)(A.integer_data[i]);
+        cout << TCArr[i].real() << endl;
+
+        d = (float)(A.integer_data[i]);
         ACArr[i] = Complex(d, 0.0);
+        cout << ACArr[i].real() << endl;
     }
+
+    cout << "TCArr : " << endl;
+    for(int i=0;i<Siz;++i){
+        cout << TCArr[i].real() << ", ";
+    }
+    cout << endl;
+
     for (int i = Siz; i < dSiz; ++i)
     {
         TCArr[i] = Complex(0.0, 0.0);
         ACArr[i] = Complex(0.0, 0.0);
     }
 
+    cout << "TCArr : " << endl;
+    for(int i=0;i<dSiz;++i){
+        cout << TCArr[i].real() << endl;
+    }
+    cout << endl;
+
+    cout << "ACArr : " << endl;
+    for(int i=0;i<dSiz;++i){
+        cout << ACArr[i].real() << ", ";
+    }
+    cout << endl;
+
     fft_useStamp(TCArr);
     fft_useStamp(ACArr);
+
+    cout << "TCArr : " << endl;
+    for(int i=0;i<dSiz;++i){
+        cout << TCArr[i].real() << ", ";
+    }
+    cout << endl;
+
+    cout << "ACArr : " << endl;
+    for(int i=0;i<dSiz;++i){
+        cout << ACArr[i].real() << ", ";
+    }
+    cout << endl;
 
     for (int i = 0; i < dSiz; ++i)
     {
@@ -1625,19 +1660,30 @@ ibi& ibi::operator*(const ibi &A) const
     }
     ifft_useStamp(TCArr);
 
+    cout << "TCArr : " << endl;
+    for(int i=0;i<dSiz;++i){
+        cout << TCArr[i].real() << ", ";
+    }
+    cout << endl;
+
     for (int i = 0; i < dSiz; ++i)
     {
         uint64_t c = (uint64_t)(TCArr[i].real() + 0.5);
         rdata[i] = c;
+        cout << rdata[i] << endl;
     }
 
-    for (int i = 0; i < dSiz; ++i)
+    for (int i = 0; i < dSiz-1; ++i)
     {
-        if(rdata[i] >> 32 != 0){
-            rdata[i+1] += rdata[i] >> 32;
-        }
-        
+        rdata[i+1] += rdata[i] >> 32;
         r.integer_data[i] = (unsigned int)rdata[i];
+        if(rdata[i] != 0){
+            r.integer_data.up = i+1;
+        }
+    }
+    r.integer_data[dSiz-1] = (unsigned int)rdata[dSiz-1];
+    if(rdata[dSiz-1] != 0){
+        r.integer_data.up = dSiz;
     }
 
     return r;

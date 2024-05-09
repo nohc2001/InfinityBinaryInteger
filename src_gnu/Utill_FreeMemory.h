@@ -2324,11 +2324,11 @@ namespace freemem{
 	{
 	public:
 		fmCirculArr<int *> *ptrArray = nullptr; // 8byte
-		fmCirculArr<T*>* lastCArr = nullptr; // 8byte cache
+		fmCirculArr<T>* lastCArr = nullptr; // 8byte cache
 		ui32 last_outerIndex = 0; // 4byte
 		ui32 array_siz = 0; // up 4byte
-		int fragPercent = 0; //4byte
-		ui32 array_capacity_pow2 = 10; // 1byte
+		ui32 fragPercent = 0; //4byte
+		ui32 array_capacity = 10; // 4byte
 		ui8 fragment_siz_pow2 = 10; // 1byte
 		ui8 array_depth = 1; // 1byte
 		bool mbDbg = true; // 1byte
@@ -2342,12 +2342,18 @@ namespace freemem{
 
 		void Init(int fmgsiz_pow, bool isdbg, int up = 0)
 		{
+			if(ptrArray != nullptr){
+				release();
+			}
 			fragment_siz_pow2 = fmgsiz_pow;
 			array_depth = 1;
 			mbDbg = isdbg;
 			if(ptrArray == nullptr){
 				ptrArray = (fmCirculArr<int *> *)fm->_New(sizeof(fmCirculArr<int *>), mbDbg);
 				ptrArray->Init(1 << fmgsiz_pow, mbDbg);
+				for(int i=0;i<1 << fmgsiz_pow;++i){
+					ptrArray->operator[](i) = nullptr;
+				}
 			}
 			
 			if(ptrArray->operator[](0) == nullptr){
@@ -2355,6 +2361,7 @@ namespace freemem{
 					(fmCirculArr<T> *)fm->_New(sizeof(fmCirculArr<T>), mbDbg);
 				arr->Init(1 << fragment_siz_pow2, mbDbg);
 				ptrArray->operator[](0) = (int *)arr;
+				lastCArr = arr;
 			}
 
 			for (int i = 1; i < (1 << fragment_siz_pow2); ++i)
@@ -2362,15 +2369,17 @@ namespace freemem{
 				ptrArray->operator[](i) = nullptr;
 			}
 
-			array_capacity_pow2 = fragment_siz_pow2;
+			array_capacity = 1 << fragment_siz_pow2;
 			array_siz = 0;
 
 			fragPercent = ((2 << (fragment_siz_pow2))-1);
 
+			lastCArr = this->get_bottom_array(0);
+
 			// up -> depth
 			if(up > 0){
-				const unsigned int pushN = 1 + (up >> fragment_siz_pow2);
-				const unsigned int delta = (1 << fragment_siz_pow2) - 1;
+				const unsigned int pushN = 1+(up >> fragment_siz_pow2);
+				const unsigned int delta = (1 << fragment_siz_pow2);
 				for(int i=0;i<pushN;++i){
 					array_siz += delta;
 					T v;
@@ -2410,10 +2419,11 @@ namespace freemem{
 		
 		void push_back(T value)
 		{
-			if (array_siz + 1 <= 1 << array_capacity_pow2)
+			if (array_siz + 1 <= array_capacity)
 			{
 				//set(array_siz, value);
-				(*this)[array_siz] = value;
+				this->operator[](array_siz) = value;
+				//(*this)[array_siz] = value;
 				array_siz += 1;
 			}
 			else
@@ -2471,7 +2481,7 @@ namespace freemem{
 				upcapacity += 1 << fragment_siz_pow2;
 				vptr->operator[](inindex) = value;
 				// capacity update
-				array_capacity_pow2 = log2(upcapacity);
+				array_capacity = upcapacity;
 				array_siz += 1;
 			}
 		}
@@ -2491,12 +2501,18 @@ namespace freemem{
 		T &operator[](size_t index)
 		{
 			if((last_outerIndex >> fragment_siz_pow2) == index >> fragment_siz_pow2){
-				return lastCArr->operator[](index & fragPercent);
+				ui32 k = index & fragPercent;
+				return lastCArr->operator[](k);
 			}
-			T nullv = 0;
-			if (index >= 1 << array_capacity_pow2)
+			
+			if (index >= array_capacity)
 			{
 				cout << "error! array index bigger than capacity!" << endl;
+				T nullv;
+				byte8* carr = reinterpret_cast<byte8*>(&nullv);
+				for(int i=0;i<sizeof(T);++i){
+					carr[i] = 0;
+				}
 				return nullv;
 			}
 			fmCirculArr<int *> *ptr = ptrArray;
@@ -2521,7 +2537,7 @@ namespace freemem{
 				return lastCArr;
 			}
 
-			if (index >= array_capacity_pow2)
+			if (index >= array_capacity)
 			{
 				return nullptr;
 			}
@@ -2537,7 +2553,7 @@ namespace freemem{
 
 		fmCirculArr<int *> *get_ptr_array(int index, int height)
 		{
-			if (index >= array_capacity_pow2)
+			if (index >= array_capacity)
 			{
 				return nullptr;
 			}
@@ -2735,7 +2751,7 @@ namespace freemem{
 			last_outerIndex = 0;
 			array_siz = 0;
 			fragPercent = 0;
-			array_capacity_pow2 = 0;
+			array_capacity = 0;
 			fragment_siz_pow2 = 0;
 			array_depth = 1;
 			mbDbg = false;
@@ -2743,12 +2759,18 @@ namespace freemem{
 
 		T & at(size_t i)
 		{
-			if((last_outerIndex >> fragment_siz_pow2) == index >> fragment_siz_pow2){
-				return lastCArr->operator[](index & fragPercent);
+			ui32 ind = i;
+			if((last_outerIndex >> fragment_siz_pow2) == ind >> fragment_siz_pow2){
+				return lastCArr->operator[](ind & fragPercent);
 			}
-			T nullv = 0;
-			if (index >= 1 << array_capacity_pow2)
+
+			if (ind >= array_capacity)
 			{
+				T nullv;
+				byte8* carr = reinterpret_cast<byte8*>(&nullv);
+				for(int i=0;i<sizeof(T);++i){
+					carr[i] = 0;
+				}
 				cout << "error! array index bigger than capacity!" << endl;
 				return nullv;
 			}
@@ -2756,15 +2778,15 @@ namespace freemem{
 			for (int i = 0; i < array_depth; ++i)
 			{
 				ptr = reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[](
-					(int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
+					(int)((ind >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
 			}
 			fmCirculArr<T> *vptr = reinterpret_cast<fmCirculArr<T> *>(ptr);
 
 			lastCArr = vptr;
-			last_outerIndex = index;
+			last_outerIndex = ind;
 
 			// T *vptr = ptr;
-			int inindex = ((int)(index)) & fragPercent;
+			int inindex = ((int)(ind)) & fragPercent;
 			return vptr->operator[](inindex);
 		}
 

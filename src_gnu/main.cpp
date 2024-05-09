@@ -16,24 +16,28 @@ int main(){
   fm = new FM_System0();
   fm->SetHeapData(4096, 4096, 4096, 4096);
   std::cout << "Hello Math!!" << endl;
+
   fm->_tempPushLayer();
+
+  ibi::StaticInit();
 
   unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
   unsigned int* Bdata = (uint*)fm->_tempNew(4*500);
-  for(int i=0;i<1000;++i){
+  for(int i=0;i<10;++i){
     Adata[i] = i;
   }
-  for(int i=0;i<500;++i){
+  for(int i=0;i<5;++i){
     Bdata[i] = -i;
   }
 
   ibi K;
   K.Init(false);
-  K = ibi(true, Adata, 1000);
+  K = ibi(true, Adata, 10);
   ibi J; J.Init(false);
-  J = ibi(true, Bdata, 500);
+  J = ibi(true, Bdata, 5);
 
-  K = K+J;
+  K = K.FFTMUL(J);
+  std::cout << K.ToString()->c_str() << endl;
 
   ibr A;
   A.Init(false);
