@@ -67,3 +67,8 @@ Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.co
 5. 64바이트 코드 얼라인
 6. 멀티스레딩 활용
 7. 추가적인 최적화 생각해보기
+
+TODO :
+1. FFTMUL 할때 complex double로 계산.
+2. fmDynamicArr이 자꾸 지워짐 (뭐 안했는데) 조치 필요.
+3. 할 수 있다면 fmDynamicArr 데이터 크기 정렬하기.
