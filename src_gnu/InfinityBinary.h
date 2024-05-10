@@ -6,7 +6,7 @@
 #include "Utill_FreeMemory.h"
 using namespace freemem;
 
-typedef std::complex<float> Complex;
+typedef std::complex<double> Complex;
 
 typedef struct FFTSwapPair{
     unsigned int index0;
@@ -38,6 +38,7 @@ typedef struct FFTOperPair{
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));
 typedef unsigned int v8ui __attribute__ ((vector_size (32)));
 typedef float v8uf __attribute__ ((vector_size (32)));
+typedef double v4ud __attribute__ ((vector_size (32)));
 
 constexpr wchar_t bytebased[16][17] = {
     {L'○', L'①' ,L'②' ,L'③' ,L'④' ,L'⑤' ,L'⑥' ,L'⑦' ,L'⑧' ,L'⑨' ,L'⑩' ,L'⑪' ,L'⑫' ,L'⑬' ,L'⑭' ,L'⑮'},
@@ -1418,7 +1419,7 @@ inline unsigned int reverseBits(unsigned int num, int bits)
 
 void fft_addStamp(unsigned int dataSiz)
 {
-    constexpr float PI = 3.14159265358979323846;
+    constexpr double PI = 3.14159265358979323846;
     ibi::fftswap->clear();
     ibi::fftoper->clear();
 
@@ -1438,7 +1439,7 @@ void fft_addStamp(unsigned int dataSiz)
     for (size_t s = 1; s <= M; s++)
     {
         size_t m = 1 << s;
-        Complex wm = std::polar(1.0f, -2.0f * PI / m);
+        Complex wm = std::polar(1.0, -2.0 * PI / (double)m);
 
         for (size_t k = 0; k < N; k += m)
         {
@@ -1478,24 +1479,24 @@ void fft_useStamp(fmDynamicArr<Complex>& x){
 inline void ifft_useStamp(fmDynamicArr<Complex> &x)
 {
     constexpr unsigned int signbit = 1 << 31;
-    constexpr v8ui conjB = {0, signbit, 0, signbit, 0, signbit, 0, signbit};
+    constexpr v8ui conjB = {0, 0, signbit, 0, 0, 0, signbit, 0};
     // conjugate the complex numbers
     //x = x.apply(std::conj);
     //constexpr v8uf conjV = {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f};
     //혹은 비트만 바꿔서 부호 바꾸기
-    unsigned int s = x.size() >> 5;
-    if (s >= 32)
+    unsigned int s = x.size() >> 4;
+    if (s >= 16)
     {
-        for (uint si = 0; si < s; si += 32)
+        for (uint si = 0; si < s; si += 16)
         {
             v8ui *so0 = reinterpret_cast<v8ui *>(&x.at(si));
-            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 4));
-            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 8));
-            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 12));
-            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 16));
-            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 20));
-            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 24));
-            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 28));
+            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 2));
+            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 4));
+            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 6));
+            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 8));
+            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 10));
+            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 12));
+            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 14));
             *so0 = *so0 ^ conjB;
             *so1 = *so1 ^ conjB;
             *so2 = *so2 ^ conjB;
@@ -1511,16 +1512,16 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
 
         // conjugate the complex numbers again
         // x = x.apply(std::conj);
-        for (uint si = 0; si < s; si += 32)
+        for (uint si = 0; si < s; si += 16)
         {
             v8ui *so0 = reinterpret_cast<v8ui *>(&x.at(si));
-            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 4));
-            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 8));
-            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 12));
-            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 16));
-            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 20));
-            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 24));
-            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 28));
+            v8ui *so1 = reinterpret_cast<v8ui *>(&x.at(si + 2));
+            v8ui *so2 = reinterpret_cast<v8ui *>(&x.at(si + 4));
+            v8ui *so3 = reinterpret_cast<v8ui *>(&x.at(si + 6));
+            v8ui *so4 = reinterpret_cast<v8ui *>(&x.at(si + 8));
+            v8ui *so5 = reinterpret_cast<v8ui *>(&x.at(si + 10));
+            v8ui *so6 = reinterpret_cast<v8ui *>(&x.at(si + 12));
+            v8ui *so7 = reinterpret_cast<v8ui *>(&x.at(si + 14));
             *so0 = *so0 ^ conjB;
             *so1 = *so1 ^ conjB;
             *so2 = *so2 ^ conjB;
@@ -1532,19 +1533,19 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
         }
 
         // scale the numbers
-        float divf = 1.0f / (float)x.size();
-        v8uf divV = {divf, divf, divf, divf, divf, divf, divf, divf};
+        double divf = 1.0f / (double)x.size();
+        v4ud divV = {divf, divf, divf, divf};
         // x /= x.size();
-        for (uint si = 0; si < s; si += 32)
+        for (uint si = 0; si < s; si += 16)
         {
-            v8uf *so0 = reinterpret_cast<v8uf *>(&x.at(si));
-            v8uf *so1 = reinterpret_cast<v8uf *>(&x.at(si + 4));
-            v8uf *so2 = reinterpret_cast<v8uf *>(&x.at(si + 8));
-            v8uf *so3 = reinterpret_cast<v8uf *>(&x.at(si + 12));
-            v8uf *so4 = reinterpret_cast<v8uf *>(&x.at(si + 16));
-            v8uf *so5 = reinterpret_cast<v8uf *>(&x.at(si + 20));
-            v8uf *so6 = reinterpret_cast<v8uf *>(&x.at(si + 24));
-            v8uf *so7 = reinterpret_cast<v8uf *>(&x.at(si + 28));
+            v4ud *so0 = reinterpret_cast<v4ud *>(&x.at(si));
+            v4ud *so1 = reinterpret_cast<v4ud *>(&x.at(si + 2));
+            v4ud *so2 = reinterpret_cast<v4ud *>(&x.at(si + 4));
+            v4ud *so3 = reinterpret_cast<v4ud *>(&x.at(si + 6));
+            v4ud *so4 = reinterpret_cast<v4ud *>(&x.at(si + 8));
+            v4ud *so5 = reinterpret_cast<v4ud *>(&x.at(si + 10));
+            v4ud *so6 = reinterpret_cast<v4ud *>(&x.at(si + 12));
+            v4ud *so7 = reinterpret_cast<v4ud *>(&x.at(si + 14));
             *so0 = *so0 * divV;
             *so1 = *so1 * divV;
             *so2 = *so2 * divV;
@@ -1557,17 +1558,17 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
     }
     else{
         for(uint si = 0; si < s; si += 1){
-            x.at(si).imag(-1.0f * x.at(si).imag());
+            x.at(si).imag(-1.0 * x.at(si).imag());
         }
 
         // forward fft
         fft_useStamp(x);
 
         for(uint si = 0; si < s; si += 1){
-            x.at(si).imag(-1.0f * x.at(si).imag());
+            x.at(si).imag(-1.0 * x.at(si).imag());
         }
 
-        float divf = 1.0f / (float)x.size();
+        double divf = 1.0 / (double)x.size();
         for(uint si = 0; si < s; si += 1){
             x.at(si) = divf * x.at(si);
         }
@@ -1591,11 +1592,11 @@ ibi& ibi::FFTMUL(const ibi &A) const
 
     fmDynamicArr<Complex> TCArr;
     TCArr.NULLState();
-    TCArr.Init(9, false, dSiz);
+    TCArr.Init(8, false, dSiz);
 
     fmDynamicArr<Complex> ACArr;
     ACArr.NULLState();
-    ACArr.Init(9, false, dSiz);
+    ACArr.Init(8, false, dSiz);
 
     r.integer_data.Init(dSiz, false);
     fmDynamicArr<uint64_t> rdata;
@@ -1606,20 +1607,12 @@ ibi& ibi::FFTMUL(const ibi &A) const
 
     for (int i = 0; i < Siz; ++i)
     {
-        float d = (float)(integer_data[i]);
+        double d = (integer_data.size()-1 < i) ? 0 : (double)(integer_data[i]);
         TCArr[i] = Complex(d, 0.0);
-        cout << TCArr[i].real() << endl;
 
-        d = (float)(A.integer_data[i]);
+        d = (A.integer_data.size()-1 < i) ? 0 : (double)(A.integer_data[i]);
         ACArr[i] = Complex(d, 0.0);
-        cout << ACArr[i].real() << endl;
     }
-
-    cout << "TCArr : " << endl;
-    for(int i=0;i<Siz;++i){
-        cout << TCArr[i].real() << ", ";
-    }
-    cout << endl;
 
     for (int i = Siz; i < dSiz; ++i)
     {
@@ -1629,7 +1622,7 @@ ibi& ibi::FFTMUL(const ibi &A) const
 
     cout << "TCArr : " << endl;
     for(int i=0;i<dSiz;++i){
-        cout << TCArr[i].real() << endl;
+        cout << TCArr[i].real() << ", ";
     }
     cout << endl;
 
@@ -1666,22 +1659,28 @@ ibi& ibi::FFTMUL(const ibi &A) const
     }
     cout << endl;
 
+    cout << "rdata : " << endl;
     for (int i = 0; i < dSiz; ++i)
     {
         uint64_t c = (uint64_t)(TCArr[i].real() + 0.5);
         rdata[i] = c;
-        cout << rdata[i] << endl;
+        cout << rdata[i] << ", ";
     }
+    cout << endl;
 
+    cout << "return data : " << endl;
     for (int i = 0; i < dSiz-1; ++i)
     {
         rdata[i+1] += rdata[i] >> 32;
         r.integer_data[i] = (unsigned int)rdata[i];
+        cout << r.integer_data[i] << ", ";
         if(rdata[i] != 0){
             r.integer_data.up = i+1;
         }
     }
     r.integer_data[dSiz-1] = (unsigned int)rdata[dSiz-1];
+    cout << r.integer_data[dSiz - 1] << ", ";
+    cout << endl;
     if(rdata[dSiz-1] != 0){
         r.integer_data.up = dSiz;
     }

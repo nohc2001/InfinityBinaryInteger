@@ -1438,6 +1438,8 @@ namespace freemem
 		{
 			if (isHeapDebug == false)
 			{
+				return _tempNew(byteSiz);
+				/*
 				for (int i = 0; i < (int)TempFM.size(); ++i)
 				{
 					byte8 *ptr = TempFM[i]->_New(byteSiz);
@@ -1451,6 +1453,7 @@ namespace freemem
 				TempFM.push_back(tempFM);
 				byte8 *ptr = TempFM[TempFM.size() - 1]->_New(byteSiz);
 				return ptr;
+				*/
 			}
 			else
 			{
@@ -2350,8 +2353,9 @@ namespace freemem{
 			mbDbg = isdbg;
 			if(ptrArray == nullptr){
 				ptrArray = (fmCirculArr<int *> *)fm->_New(sizeof(fmCirculArr<int *>), mbDbg);
-				ptrArray->Init(1 << fmgsiz_pow, mbDbg);
-				for(int i=0;i<1 << fmgsiz_pow;++i){
+				ptrArray->Init(fmgsiz_pow, mbDbg);
+				int fmgsiz = 1 << fmgsiz_pow;
+				for(int i=0;i<fmgsiz;++i){
 					ptrArray->operator[](i) = nullptr;
 				}
 			}
@@ -2359,7 +2363,7 @@ namespace freemem{
 			if(ptrArray->operator[](0) == nullptr){
 				fmCirculArr<T> *arr =
 					(fmCirculArr<T> *)fm->_New(sizeof(fmCirculArr<T>), mbDbg);
-				arr->Init(1 << fragment_siz_pow2, mbDbg);
+				arr->Init(fragment_siz_pow2, mbDbg);
 				ptrArray->operator[](0) = (int *)arr;
 				lastCArr = arr;
 			}
@@ -2460,7 +2464,7 @@ namespace freemem{
 						{
 							fmCirculArr<T> *aptr =
 								reinterpret_cast<fmCirculArr<T> *>(fm->_New(sizeof(fmCirculArr<T>), mbDbg));
-							aptr->Init(1 << fragment_siz_pow2, mbDbg);
+							aptr->Init(fragment_siz_pow2, mbDbg);
 							tptr->operator[](inindex) = (int *)aptr;
 							ptr = reinterpret_cast<fmCirculArr<int *> *>(tptr->operator[](inindex));
 						}
@@ -2468,7 +2472,7 @@ namespace freemem{
 						{
 							fmCirculArr<int *> *insptr =
 								reinterpret_cast<fmCirculArr<int *>*>(fm->_New(sizeof(fmCirculArr<int *>), mbDbg));
-							insptr->Init(1 << fragment_siz_pow2, mbDbg);
+							insptr->Init(fragment_siz_pow2, mbDbg);
 							tptr->operator[](inindex) = (int *)insptr;
 
 							ptr = reinterpret_cast<fmCirculArr<int *> *>(tptr->operator[](inindex));

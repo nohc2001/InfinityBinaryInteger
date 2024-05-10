@@ -12,6 +12,7 @@ unsigned int count = 0;
 int main(){
   std::wcout.sync_with_stdio(false);
   std::wcout.imbue(std::locale("en_US.utf8"));
+  cout.precision(16);
 
   fm = new FM_System0();
   fm->SetHeapData(4096, 4096, 4096, 4096);
