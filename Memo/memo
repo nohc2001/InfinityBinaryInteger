@@ -69,9 +69,20 @@ Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.co
 7. 추가적인 최적화 생각해보기
 
 TODO :
-1. FFTMUL 할때 complex double로 계산. > 완
-2. fmDynamicArr이 자꾸 지워짐 (뭐 안했는데) 조치 필요. > 완
+<완료 목록>
+1. FFTMUL 할때 complex double로 계산. > 완료!
+2. fmDynamicArr이 자꾸 지워짐 (뭐 안했는데) 조치 필요. > 완료!
+6. 빠른 나누기 (Bitwise, O_N_DIV) > 완료!
+7. 빠른 ToString > 완료!
+
 3. 할 수 있다면 fmDynamicArr 데이터 크기 정렬하기.
+4. 빠른 더하기, 빼기 (SIMD)
+    - 일단 코드는 짰는데, 뭔가 오류가 있는 듯 하다. 빼먹은거 있나 탐색 ㄱㄱ
+5. 빠른 곱하기 (FFT, Convolution)
+    - 일단 일반 곱하기와 비교해서 같은지 확인이 필요.
+    - 정확성을 판단할 수 있는 기준이 있음?
+8. 빠른 나누기 SIMD 사용해서 더 빠르게 못함?
+
 
 f\left(x\right)\ =\ -\frac{a}{c}x^{2\ }+\ 2x
 f(x) = -(a)/(c)*x^2 + 2x

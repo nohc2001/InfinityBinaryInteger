@@ -2694,6 +2694,12 @@ lcstr* ibi::ToString(bool showpos) const
 
     for(int i = numstack.size() - 1;i >= 0;--i){
         string numstr = to_string(numstack.at(i));
+        if(i != numstack.size()-1){
+            for(int k = 0; k < 10 - numstr.size();++k){
+                r->push_back('0');
+            }
+        }
+        
         for(int k=0;k<numstr.size();++k){
             r->push_back(numstr.at(k));
         }
