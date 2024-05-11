@@ -160,12 +160,15 @@ class ibi{
     ibi& operator-(const ibi& A) const;
     ibi& operator<<(const int& n) const;
     ibi& operator>>(const int& n) const;
+    ibi& bitShiftL(const int& n) const;
+    ibi& bitShiftR(const int& n) const;
     static ibi& mul_32(unsigned int A, unsigned int B);
     ibi& operator*(const ibi& A) const;
     ibi& FFTMUL(const ibi& A) const;
     static ibi& div_32(const ibi& A, unsigned int divn);
     ibi& operator/(const ibi& A) const;
-    ibi& operator%(const ibi& A) const; 
+    ibi& operator%(const ibi& A) const;
+    ibi& O_N_DIV(const ibi& A) const;
     bool isint(int a) const;
     static void prime_data_init();
     static void make_new_prime(); // prime level update
@@ -1359,6 +1362,49 @@ ibi& ibi::operator>>(const int& n) const
     return r;
 }
 
+ibi& ibi::bitShiftL(const int& n) const
+{
+    CreateDataFM(ibi, r);
+    fm->_tempPushLayer();
+    int sh = n / 32;
+    int rn = n - sh;
+    r = *this >> sh;
+    for (int i = sh; i < r.integer_data.size(); ++i)
+    {
+        int ti = sh - i;
+        unsigned int upfrag = this->integer_data[ti] >> rn;
+        unsigned int downfrag = 0;
+        if(ti >= r.integer_data.size()-1){
+            downfrag = (this->integer_data[ti+1] << (32-rn)) >> (32-rn);
+        }
+
+        r.integer_data[i] = upfrag + downfrag;
+    }
+    fm->_tempPopLayer();
+    return r;
+}
+ibi& ibi::bitShiftR(const int& n) const
+{
+    CreateDataFM(ibi, r);
+    fm->_tempPushLayer();
+    int sh = n / 32;
+    int rn = n - sh;
+    r = *this << sh;
+    for (int i = sh; i < r.integer_data.size(); ++i)
+    {
+        int ti = sh - i;
+        unsigned int upfrag = this->integer_data[ti] << rn;
+        unsigned int downfrag = 0;
+        if(ti != 0){
+            downfrag = (this->integer_data[ti-1] >> (32-rn)) << (32-rn);
+        }
+
+        r.integer_data[i] = upfrag + downfrag;
+    }
+    fm->_tempPopLayer();
+    return r;
+}
+
 ibi& ibi::mul_32(unsigned int A, unsigned int B)
 {
     CreateDataFM(ibi, r);
@@ -1948,6 +1994,21 @@ ibi& ibi::operator/(const ibi &A) const
     return r;
 }
 
+ibi& ibi::O_N_DIV(const ibi& A) const
+{
+     // this / a
+    CreateDataFM(ibi, r);
+
+    fm->_tempPushLayer();
+    r = ibi(0);
+
+
+
+    fm->_tempPopLayer();
+
+    return r;
+}
+
 ibi& ibi::operator%(const ibi &A) const
 {
     CreateDataFM(ibi, r);
@@ -2437,17 +2498,32 @@ lcstr* ibi::ToString(bool showpos) const
     }
 
     ibi resultv; resultv.Init(false); resultv = ibi(0);
+    ibi tempv; tempv.Init(false); tempv = ibi(0);
+    ibi hm; hm.Init(false); hm = ibi(1000000000);
+    fmvecarr<unsigned int> numstack;
+    numstack.NULLState();
+    numstack.Init(8, false, false);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
-        resultv = present_value % ibi(10);
-        char addc = '0' + resultv.integer_data[0];
-        r->push_back(addc);
-        present_value = present_value / ibi(10);
+        tempv = present_value / hm;
+        resultv = present_value - tempv * hm;
+        present_value = tempv;
+        numstack.push_back(resultv.integer_data[0]);
+        //char addc = '0' + resultv.integer_data[0];
+        //r->push_back(addc);
         fm->_tempPopLayer();
+    }
+
+    for(int i = numstack.size() - 1;i >= 0;--i){
+        string numstr = to_string(numstack.at(i));
+        for(int k=0;k<numstr.size();++k){
+            r->push_back(numstr.at(k));
+        }
     }
 
     fm->_tempPopLayer();
 
+/*
     int len = r->size();
     int dlen = (len>>1);
     int i = 0;
@@ -2464,6 +2540,7 @@ lcstr* ibi::ToString(bool showpos) const
         r->at(i) = r->at(len-i);
         r->at(len-i) = c;
     }
+*/
 
     if(showpos && r->size() == 1){
         r->push_back('0');

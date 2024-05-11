@@ -69,6 +69,16 @@ Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.co
 7. 추가적인 최적화 생각해보기
 
 TODO :
-1. FFTMUL 할때 complex double로 계산.
-2. fmDynamicArr이 자꾸 지워짐 (뭐 안했는데) 조치 필요.
+1. FFTMUL 할때 complex double로 계산. > 완
+2. fmDynamicArr이 자꾸 지워짐 (뭐 안했는데) 조치 필요. > 완
 3. 할 수 있다면 fmDynamicArr 데이터 크기 정렬하기.
+
+f\left(x\right)\ =\ -\frac{a}{c}x^{2\ }+\ 2x
+f(x) = -(a)/(c)*x^2 + 2x
+-> 나누기 뉴턴랩슨법 f를 무한번 합성하면, c/a의 결과가 나옴.
+
+하지만 문제는 우리가 ibi의 정수연산을 할때는, 항상 c가 a보다 큰데, 그러면 
+a*x^2 보다 작은 c에 대해서만 연산이 가능하다.
+1000000/7을 하면, 2800 이상의 x에서는 작동이 불가하다.
+게다가 나누기 연산을 하는데, 그안에 나누기가 들어가 있다..
+이건좀..
