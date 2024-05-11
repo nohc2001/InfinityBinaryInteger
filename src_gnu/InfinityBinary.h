@@ -156,19 +156,25 @@ class ibi{
     static void carry_under(ibi* num, int carryloc);
     static ibi& add_absolute(const ibi& A, const ibi& B);
     static ibi& sub_absolute(const ibi& A, const ibi& B);
+    static ibi& add_absolute_simd(const ibi& A, const ibi& B);
+    static ibi& sub_absolute_simd(const ibi& A, const ibi& B);
     ibi& operator+(const ibi& A) const;
     ibi& operator-(const ibi& A) const;
     ibi& operator<<(const int& n) const;
     ibi& operator>>(const int& n) const;
     ibi& bitShiftL(const int& n) const;
     ibi& bitShiftR(const int& n) const;
+
     static ibi& mul_32(unsigned int A, unsigned int B);
     ibi& operator*(const ibi& A) const;
+
     ibi& FFTMUL(const ibi& A) const;
-    static ibi& div_32(const ibi& A, unsigned int divn);
+
     ibi& operator/(const ibi& A) const;
     ibi& operator%(const ibi& A) const;
+
     ibi& O_N_DIV(const ibi& A) const;
+
     bool isint(int a) const;
     static void prime_data_init();
     static void make_new_prime(); // prime level update
@@ -1084,6 +1090,90 @@ void ibi::carry_under(ibi *num, int carryloc)
 ibi& ibi::add_absolute(const ibi &A, const ibi &B)
 {
 	CreateDataFM(ibi, r);
+    
+    fm->_tempPushLayer();
+    // no optim
+    
+    r = B;
+    unsigned int maxsiz = (A.integer_data.size() > B.integer_data.size()) ? A.integer_data.size() : B.integer_data.size();
+
+    for (int i = 0; i < maxsiz; ++i)
+    {
+        unsigned int Ax = (A.integer_data.up > i) ? A.integer_data[i] : 0;
+        unsigned int Tx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
+        unsigned int max = (Ax > Tx) ? Ax : Tx;
+        Tx += Ax;
+        if (Tx < max)
+        {
+            carry(&r, i + 1);
+        }
+        
+        if(r.integer_data.up <= i){
+            r.integer_data.push_back(Tx);
+        }
+        else{
+            r.integer_data[i] = Tx;
+        }
+    }
+
+    fm->_tempPopLayer();
+    return r;
+}
+
+ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
+{
+    bool pos[2] = {A.isPositive, !B.isPositive};
+    CreateDataFM(ibi, r);
+	
+	ibi At, Bt;
+    At.Init(false);
+    Bt.Init(false);
+	
+    At = A;
+    Bt = B;
+    At.isPositive = true;
+    Bt.isPositive = true;
+
+    fm->_tempPushLayer();
+    if (At > Bt)
+    {
+        r = At;
+        for (int i = 0; i < At.integer_data.up; ++i)
+        {
+            unsigned int Ax = (r.integer_data.up > i) ? r.integer_data[i] : 0;
+            unsigned int Bx = (Bt.integer_data.up > i) ? Bt.integer_data[i] : 0;
+            if (Ax < Bx)
+            {
+                carry_under(&r, i + 1);
+            }
+            Ax -= Bx;
+            r.integer_data[i] = Ax;
+        }
+        r.isPositive = pos[0];
+    }
+    else
+    {
+        r = Bt;
+        for (int i = 0; i < Bt.integer_data.up; ++i)
+        {
+            unsigned int Bx = (r.integer_data.up > i) ? r.integer_data[i] : 0;
+            unsigned int Ax = (At.integer_data.up > i) ? At.integer_data[i] : 0;
+            if (Bx < Ax)
+            {
+                carry_under(&r, i + 1);
+            }
+            Bx -= Ax;
+            r.integer_data[i] = Bx;
+        }
+        r.isPositive = pos[1];
+    }
+    fm->_tempPopLayer();
+    return r;
+}
+
+ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
+{
+	CreateDataFM(ibi, r);
     if(A > B){
         r = A;
     }
@@ -1256,8 +1346,9 @@ ibi& ibi::add_absolute(const ibi &A, const ibi &B)
     return r;
 }
 
-ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
+ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
 {
+    /*
     bool pos[2] = {A.isPositive, !B.isPositive};
     CreateDataFM(ibi, r);
 	
@@ -1302,6 +1393,145 @@ ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
             r.integer_data[i] = Bx;
         }
         r.isPositive = pos[1];
+    }
+    fm->_tempPopLayer();
+    return r;
+    */
+    
+    CreateDataFM(ibi, r);
+    fm->_tempPushLayer();
+
+    ibi MaxI; MaxI.Init(false); MaxI = ibi(0);
+    ibi MinI; MinI.Init(false); MinI = ibi(0);
+    if(A > B){
+        r = A;
+        MaxI = A;
+        MinI = B;
+    }
+    else{
+        r = B;
+        MaxI = B;
+        MinI = A;
+    }
+
+    //simd optimized
+    register unsigned int temp = MaxI.integer_data.size();
+    unsigned int addSiz = 1;
+    addSiz += temp;
+    unsigned int addSiz_v8 = addSiz >> 3;
+    unsigned int addSiz_v88 = addSiz >> 6;
+    unsigned int* APBarr = (unsigned int*)&r.integer_data[0]; // max[i]-min[i]
+    unsigned int* Carr = (unsigned int*)fm->_tempNew((addSiz+1) << 2); // carry
+    Carr[0] = 0;
+    if(addSiz_v88){
+        register v8ui Ar, Br, Ar2, Br2;
+        register v8ui Ar3, Br3, Ar4, Br4;
+        constexpr v8ui ActiveVec = {1, 1, 1, 1, 1, 1, 1, 1};
+        constexpr v8ui OffVec = {0, 0, 0, 0, 0, 0, 0, 0};
+        v8ui* APBptr = (v8ui*)&APBarr[0];
+        temp = (addSiz_v88<<6);
+        for(uint si=0;si<temp;si+=64){
+            Ar = *(v8ui*)&MaxI.integer_data[si];
+            Br = *(v8ui*)&MinI.integer_data[si];
+            Ar2 = *(v8ui*)&MaxI.integer_data[si+8];
+            Br2 = *(v8ui*)&MinI.integer_data[si+8];
+            Ar3 = *(v8ui*)&MaxI.integer_data[si+16];
+            Br3 = *(v8ui*)&MinI.integer_data[si+16];
+            Ar4 = *(v8ui*)&MaxI.integer_data[si+24];
+            Br4 = *(v8ui*)&MinI.integer_data[si+24];
+            *APBptr = Ar - Br;
+            *(APBptr+1) = Ar2 - Br2;
+            *(APBptr+2) = Ar3 - Br3;
+            *(APBptr+3) = Ar4 - Br4;
+            APBptr+=4;
+
+            *(v8ui*)&Carr[si+1] = (*(v8ui*)&Ar[si] < *(v8ui*)&Br[si]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+9] = (*(v8ui*)&Ar2[si+8] < *(v8ui*)&Br2[si+8]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+17] = (*(v8ui*)&Ar3[si+16] < *(v8ui*)&Br3[si+16]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+25] = (*(v8ui*)&Ar4[si+24] < *(v8ui*)&Br4[si+24]) ? ActiveVec : OffVec;
+
+            Ar = *(v8ui*)&MaxI.integer_data[si+32];
+            Br = *(v8ui*)&MinI.integer_data[si+32];
+            Ar2 = *(v8ui*)&MaxI.integer_data[si+40];
+            Br2 = *(v8ui*)&MinI.integer_data[si+40];
+            Ar3 = *(v8ui*)&MaxI.integer_data[si+48];
+            Br3 = *(v8ui*)&MinI.integer_data[si+48];
+            Ar4 = *(v8ui*)&MaxI.integer_data[si+56];
+            Br4 = *(v8ui*)&MinI.integer_data[si+56];
+            *APBptr = Ar - Br;
+            *(APBptr+1) = Ar2 - Br2;
+            *(APBptr+2) = Ar3 - Br3;
+            *(APBptr+3) = Ar4 - Br4;
+            APBptr+=4;
+
+            *(v8ui*)&Carr[si+33] = (*(v8ui*)&Ar[si+32] < *(v8ui*)&Br[si+32]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+41] = (*(v8ui*)&Ar2[si+40] < *(v8ui*)&Br2[si+40]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+49] = (*(v8ui*)&Ar3[si+48] < *(v8ui*)&Br3[si+48]) ? ActiveVec : OffVec;
+            *(v8ui*)&Carr[si+57] = (*(v8ui*)&Ar4[si+56] < *(v8ui*)&Br4[si+56]) ? ActiveVec : OffVec;
+        }
+
+        temp = addSiz_v8 << 3;
+        for(uint si=(addSiz_v88 << 6);si<temp;si+=8){
+            Ar = *(v8ui*)&MaxI.integer_data[si];
+            Br = *(v8ui*)&MinI.integer_data[si];
+            *(v8ui*)&APBarr[si] = Ar - Br;
+            *(v8ui*)&Carr[si+1] = (*(v8ui*)&Ar[si] < *(v8ui*)&Br[si]) ? ActiveVec : OffVec;
+        }
+
+        register unsigned int uA, uB;
+        for(uint i=temp;i<addSiz;++i){
+            uA = MaxI.integer_data[i];
+            uB = MinI.integer_data[i];
+            APBarr[i] = uA - uB;
+            Carr[i+1] = (uA < uB) ? 1 : 0;
+        }
+
+        for(uint i=0;i<addSiz;++i){
+            if(Carr[i]){
+                carry_under(&r, i);
+            }
+        }
+    }
+    else if(addSiz_v8){
+        register v8ui Ar, Br;
+        constexpr v8ui ActiveVec = {1, 1, 1, 1, 1, 1, 1, 1};
+        constexpr v8ui OffVec = {0, 0, 0, 0, 0, 0, 0, 0};
+        for(uint i=0;i<addSiz_v8;++i){
+            uint si = i << 3;
+            Ar = *(v8ui*)&MaxI.integer_data[si];
+            Br = *(v8ui*)&MinI.integer_data[si];
+            *(v8ui*)&APBarr[si] = Ar - Br;
+            *(v8ui*)&Carr[si+1] = (Ar < Br) ? ActiveVec : OffVec;
+        }
+
+        register unsigned int uA, uB;
+        for(uint i=(addSiz_v8 << 3);i<addSiz;++i){
+            uA = MaxI.integer_data[i];
+            uB = MinI.integer_data[i];
+            APBarr[i] = uA - uB;
+            Carr[i+1] = (uA < uB) ? 1 : 0;
+        }
+
+        for(uint i=0;i<addSiz;++i){
+            if(Carr[i]){
+                carry_under(&r, i);
+            }
+        }
+    }
+    else{
+        register unsigned int uA, uB;
+        for(uint i=0;i<addSiz;++i){
+            uA = MaxI.integer_data[i];
+            uB = MinI.integer_data[i];
+            APBarr[i] = uA - uB;
+            Carr[i+1] = (uA < uB) ? 1 : 0;
+        }
+
+        for(uint i=1;i<addSiz;++i){
+            if(Carr[i]){
+                carry_under(&r, i);
+            }
+        }
     }
     fm->_tempPopLayer();
     return r;
@@ -1366,19 +1596,29 @@ ibi& ibi::bitShiftL(const int& n) const
 {
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
-    int sh = n / 32;
-    int rn = n - sh;
-    r = *this >> sh;
+    int sh = n >> 5;
+    int rn = n - (sh << 5);
+    r = *this << sh;
+    ibi temp; temp.Init(false); temp = *this;
+    temp.integer_data.push_back(0);
+    r.integer_data.push_back(0);
     for (int i = sh; i < r.integer_data.size(); ++i)
     {
-        int ti = sh - i;
-        unsigned int upfrag = this->integer_data[ti] >> rn;
+        int ti = i - sh;
+        unsigned int upfrag = temp.integer_data[ti] << rn;
         unsigned int downfrag = 0;
-        if(ti >= r.integer_data.size()-1){
-            downfrag = (this->integer_data[ti+1] << (32-rn)) >> (32-rn);
+        if(ti != 0){
+            downfrag = temp.integer_data[ti-1] >> (32-rn);
         }
 
         r.integer_data[i] = upfrag + downfrag;
+    }
+
+    for(int i = r.integer_data.size()-1;i>=1;--i){
+        if(r.integer_data[i] == 0){
+            r.integer_data.pop_back();
+        }
+        else break;
     }
     fm->_tempPopLayer();
     return r;
@@ -1387,20 +1627,32 @@ ibi& ibi::bitShiftR(const int& n) const
 {
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
-    int sh = n / 32;
-    int rn = n - sh;
-    r = *this << sh;
+    int sh = n >> 5;
+    int rn = n - (sh << 5);
+    r = *this >> sh;
+    ibi temp; temp.Init(false); temp = *this;
+    temp.integer_data.push_back(0);
+    r.integer_data.push_back(0);
+
     for (int i = sh; i < r.integer_data.size(); ++i)
     {
-        int ti = sh - i;
-        unsigned int upfrag = this->integer_data[ti] << rn;
+        int ti = i - sh;
+        unsigned int upfrag = temp.integer_data[ti] >> rn;
         unsigned int downfrag = 0;
-        if(ti != 0){
-            downfrag = (this->integer_data[ti-1] >> (32-rn)) << (32-rn);
+        if(ti < r.integer_data.size()-1){
+            downfrag = temp.integer_data[ti+1] << (32-rn);
         }
 
         r.integer_data[i] = upfrag + downfrag;
     }
+
+    for(int i = r.integer_data.size()-1;i>=1;--i){
+        if(r.integer_data[i] == 0){
+            r.integer_data.pop_back();
+        }
+        else break;
+    }
+
     fm->_tempPopLayer();
     return r;
 }
@@ -1769,96 +2021,6 @@ ibi& ibi::operator*(const ibi &A) const
     return r;
 }
 
-ibi& ibi::div_32(const ibi &A, unsigned int divn)
-{
-    CreateDataFM(ibi, r);
-    
-    r.integer_data.push_back(0);
-    r.integer_data.Init(A.integer_data.up, false);
-    for (int i = 0; i < r.integer_data.up; ++i)
-    {
-        r.integer_data[i] = 0;
-    }
-    if (divn == 0)
-    {
-        return r;
-    }
-
-    fm->_tempPushLayer();
-
-    ibi tempA;
-    tempA.Init(false);
-    tempA = A;
-
-    ibi tempDivn;
-    tempDivn.Init(false);
-    tempDivn = divn;
-    
-    double max = powf64(2.0, 32.0);
-    double dv = (double)divn;
-    bool updatefirst = true;
-
-    bool zero_stack = 0;
-    for (int i = tempA.integer_data.up - 1; i >= 0; --i)
-    {
-        if (zero_stack == false)
-        {
-            unsigned int ad = tempA.integer_data[i] / divn;
-            if (ad == 0)
-            {
-                zero_stack = true;
-            }
-            else
-            {
-                r.integer_data[i] = ad;
-            }
-        }
-        else
-        {
-            unsigned int seekstart = (unsigned int)((double)tempA.integer_data[i + 1] * max / dv);
-            bool saturate = false;
-            unsigned int lastnum = seekstart;
-            while (!saturate)
-            {
-                fm->_tempPushLayer();
-                ibi temp;
-                temp.Init(false);
-                temp.integer_data.push_back(A.integer_data[i]);
-                temp.integer_data.push_back(tempA.integer_data[i + 1]);
-                    ibi dv = mul_32(divn, seekstart);
-                if (dv > temp)
-                {
-                    saturate = true;
-                }
-                else
-                {
-                    lastnum = seekstart;
-                    ++seekstart;
-                }
-                fm->_tempPopLayer();
-            }
-
-            ibi tempB;
-            tempB.Init(false);
-            tempB.integer_data.Init(i, false);
-            for (int k = 0; k < i; ++k)
-            {
-                tempB.integer_data[k] = 0;
-            }
-            tempB.integer_data[i] = lastnum;
-
-            if (updatefirst)
-                r.integer_data.up = i + 1;
-            r.integer_data[i] = lastnum;
-            tempA = tempA - (tempB * tempDivn);
-            zero_stack = false;
-        }
-    }
-
-    fm->_tempPopLayer();
-    return r;
-}
-
 ibi& ibi::operator/(const ibi &A) const
 {
     // this / a
@@ -2001,8 +2163,24 @@ ibi& ibi::O_N_DIV(const ibi& A) const
 
     fm->_tempPushLayer();
     r = ibi(0);
+    ibi tempT; tempT.Init(false); tempT = *this;
+    unsigned int bitSiz = tempT.integer_data.size() << 5;
+    ibi tempB; tempB.Init(false); tempB = A;
+    ibi tempBit; tempBit.Init(false); tempBit = ibi(1);
+    tempB = tempB.bitShiftL(bitSiz-1);
+    tempBit = tempBit.bitShiftL(bitSiz-1);
+    tempBit.isPositive = true;
 
-
+    ibi tempSave; tempSave.Init(false); tempSave = ibi(1);
+    for(int i = bitSiz-1;i>=0;--i){
+        tempSave = tempT - tempB;
+        if(tempSave > ibi(0)){
+            tempT = tempSave;
+            r = r + tempBit;
+        }
+        tempB = tempB.bitShiftR(1);
+        tempBit = tempBit.bitShiftR(1);
+    }
 
     fm->_tempPopLayer();
 
@@ -2505,7 +2683,7 @@ lcstr* ibi::ToString(bool showpos) const
     numstack.Init(8, false, false);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
-        tempv = present_value / hm;
+        tempv = present_value.O_N_DIV(hm);
         resultv = present_value - tempv * hm;
         present_value = tempv;
         numstack.push_back(resultv.integer_data[0]);

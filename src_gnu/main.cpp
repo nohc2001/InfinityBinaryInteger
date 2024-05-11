@@ -37,6 +37,8 @@ int main(){
   ibi J; J.Init(false);
   J = ibi(true, Bdata, 5);
 
+  std::cout << K.ToString()->c_str() << endl;
+
   K = K.FFTMUL(J);
   std::cout << K.ToString()->c_str() << endl;
 
