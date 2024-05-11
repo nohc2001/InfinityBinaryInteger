@@ -2707,25 +2707,6 @@ lcstr* ibi::ToString(bool showpos) const
 
     fm->_tempPopLayer();
 
-/*
-    int len = r->size();
-    int dlen = (len>>1);
-    int i = 0;
-    if(showpos) {
-        i = 1;
-        dlen = (len+1>>1);
-    }
-    else{
-        len-=1;
-    }
-    
-    for(;i<dlen;++i){
-        char c = r->at(i);
-        r->at(i) = r->at(len-i);
-        r->at(len-i) = c;
-    }
-*/
-
     if(showpos && r->size() == 1){
         r->push_back('0');
     }

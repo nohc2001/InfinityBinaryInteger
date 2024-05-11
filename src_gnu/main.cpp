@@ -36,11 +36,17 @@ int main(){
   K = ibi(true, Adata, 10);
   ibi J; J.Init(false);
   J = ibi(true, Bdata, 5);
+  ibi R0; R0.Init(false); R0 = ibi(0);
+  ibi R1; R1.Init(false); R1 = ibi(0);
 
   std::cout << K.ToString()->c_str() << endl;
+  std::cout << J.ToString()->c_str() << endl;
 
-  K = K.FFTMUL(J);
-  std::cout << K.ToString()->c_str() << endl;
+  R0 = K.FFTMUL(J);
+  std::cout << R0.ToString()->c_str() << endl;
+
+  R1 = K * J;
+  std::cout << R1.ToString()->c_str() << endl;
 
   ibr A;
   A.Init(false);
