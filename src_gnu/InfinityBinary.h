@@ -1174,14 +1174,23 @@ ibi& ibi::sub_absolute(const ibi &A, const ibi &B)
 ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
 {
 	CreateDataFM(ibi, r);
+    
+    fm->_tempPushLayer();
+
+    ibi Atemp; Atemp.Init(false); Atemp = A;
+    ibi Btemp; Btemp.Init(false); Btemp = B;
     if(A > B){
         r = A;
+        for(int i=B.integer_data.size(); i < A.integer_data.size();++i){
+            Btemp.integer_data.push_back(0);
+        }
     }
     else{
         r = B;
+        for(int i=A.integer_data.size(); i < B.integer_data.size();++i){
+            Atemp.integer_data.push_back(0);
+        }
     }
-
-    fm->_tempPushLayer();
     // no optim
     /*
     r = B;
@@ -1227,14 +1236,14 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
         v8ui* Mptr = (v8ui*)&Marr[0];
         temp = (addSiz_v88<<6);
         for(uint si=0;si<temp;si+=64){
-            Ar = *(v8ui*)&A.integer_data[si];
-            Br = *(v8ui*)&B.integer_data[si];
-            Ar2 = *(v8ui*)&A.integer_data[si+8];
-            Br2 = *(v8ui*)&B.integer_data[si+8];
-            Ar3 = *(v8ui*)&A.integer_data[si+16];
-            Br3 = *(v8ui*)&B.integer_data[si+16];
-            Ar4 = *(v8ui*)&A.integer_data[si+24];
-            Br4 = *(v8ui*)&B.integer_data[si+24];
+            Ar = *(v8ui*)&Atemp.integer_data[si];
+            Br = *(v8ui*)&Btemp.integer_data[si];
+            Ar2 = *(v8ui*)&Atemp.integer_data[si+8];
+            Br2 = *(v8ui*)&Btemp.integer_data[si+8];
+            Ar3 = *(v8ui*)&Atemp.integer_data[si+16];
+            Br3 = *(v8ui*)&Btemp.integer_data[si+16];
+            Ar4 = *(v8ui*)&Atemp.integer_data[si+24];
+            Br4 = *(v8ui*)&Btemp.integer_data[si+24];
             *APBptr = Ar + Br;
             *Mptr = (Ar > Br) ? Ar : Br;
             *(APBptr+1) = Ar2 + Br2;
@@ -1245,14 +1254,14 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
             *(Mptr+3) = (Ar4 > Br4) ? Ar4 : Br4;
             APBptr+=4;
             Mptr+=4;
-            Ar = *(v8ui*)&A.integer_data[si+32];
-            Br = *(v8ui*)&B.integer_data[si+32];
-            Ar2 = *(v8ui*)&A.integer_data[si+40];
-            Br2 = *(v8ui*)&B.integer_data[si+40];
-            Ar3 = *(v8ui*)&A.integer_data[si+48];
-            Br3 = *(v8ui*)&B.integer_data[si+48];
-            Ar4 = *(v8ui*)&A.integer_data[si+56];
-            Br4 = *(v8ui*)&B.integer_data[si+56];
+            Ar = *(v8ui*)&Atemp.integer_data[si+32];
+            Br = *(v8ui*)&Btemp.integer_data[si+32];
+            Ar2 = *(v8ui*)&Atemp.integer_data[si+40];
+            Br2 = *(v8ui*)&Btemp.integer_data[si+40];
+            Ar3 = *(v8ui*)&Atemp.integer_data[si+48];
+            Br3 = *(v8ui*)&Btemp.integer_data[si+48];
+            Ar4 = *(v8ui*)&Atemp.integer_data[si+56];
+            Br4 = *(v8ui*)&Btemp.integer_data[si+56];
             *APBptr = Ar + Br;
             *Mptr = (Ar > Br) ? Ar : Br;
             *(APBptr+1) = Ar2 + Br2;
@@ -1276,8 +1285,8 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
 
         temp = addSiz_v8 << 3;
         for(uint si=(addSiz_v88 << 6);si<temp;si+=8){
-            Ar = *(v8ui*)&A.integer_data[si];
-            Br = *(v8ui*)&B.integer_data[si];
+            Ar = *(v8ui*)&Atemp.integer_data[si];
+            Br = *(v8ui*)&Btemp.integer_data[si];
             *(v8ui*)&APBarr[si] = Ar + Br;
             *(v8ui*)&Marr[si] = (Ar > Br) ? Ar : Br;
             *(v8ui*)&Carr[si+1] = (*(v8ui*)&Marr[si] > *(v8ui*)&APBarr[si]) ? ActiveVec : OffVec;
@@ -1285,8 +1294,8 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
 
         register unsigned int uA, uB;
         for(uint i=temp;i<addSiz;++i){
-            uA = A.integer_data[i];
-            uB = B.integer_data[i];
+            uA = Atemp.integer_data[i];
+            uB = Btemp.integer_data[i];
             APBarr[i] = uA + uB;
             Marr[i] = (uA > uB) ? uA : uB;
             Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
@@ -1296,6 +1305,9 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
             if(Carr[i]){
                 carry(&r, i);
             }
+        }
+        if(Carr[addSiz]){
+            r.integer_data.push_back(1);
         }
     }
     else if(addSiz_v8){
@@ -1304,8 +1316,8 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
         constexpr v8ui OffVec = {0, 0, 0, 0, 0, 0, 0, 0};
         for(uint i=0;i<addSiz_v8;++i){
             uint si = i << 3;
-            Ar = *(v8ui*)&A.integer_data[si];
-            Br = *(v8ui*)&B.integer_data[si];
+            Ar = *(v8ui*)&Atemp.integer_data[si];
+            Br = *(v8ui*)&Btemp.integer_data[si];
             *(v8ui*)&APBarr[si] = Ar + Br;
             *(v8ui*)&Marr[si] = (Ar > Br) ? Ar : Br;
             *(v8ui*)&Carr[si+1] = (*(v8ui*)&Marr[si] > *(v8ui*)&APBarr[si]) ? ActiveVec : OffVec;
@@ -1313,8 +1325,8 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
 
         register unsigned int uA, uB;
         for(uint i=(addSiz_v8 << 3);i<addSiz;++i){
-            uA = A.integer_data[i];
-            uB = B.integer_data[i];
+            uA = Atemp.integer_data[i];
+            uB = Btemp.integer_data[i];
             APBarr[i] = uA + uB;
             Marr[i] = (uA > uB) ? uA : uB;
             Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
@@ -1325,12 +1337,15 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
                 carry(&r, i);
             }
         }
+        if(Carr[addSiz]){
+            r.integer_data.push_back(1);
+        }
     }
     else{
         register unsigned int uA, uB;
         for(uint i=0;i<addSiz;++i){
-            uA = A.integer_data[i];
-            uB = B.integer_data[i];
+            uA = Atemp.integer_data[i];
+            uB = Btemp.integer_data[i];
             APBarr[i] = uA + uB;
             Marr[i] = (uA > uB) ? uA : uB;
             Carr[i+1] = (Marr[i] > APBarr[i]) ? 1 : 0;
@@ -1340,6 +1355,9 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
             if(Carr[i]){
                 carry(&r, i);
             }
+        }
+        if(Carr[addSiz]){
+            r.integer_data.push_back(1);
         }
     }
     fm->_tempPopLayer();
@@ -1401,9 +1419,12 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
 
-    ibi MaxI; MaxI.Init(false); MaxI = ibi(0);
-    ibi MinI; MinI.Init(false); MinI = ibi(0);
-    if(A > B){
+    ibi MaxI; MaxI.Init(false); MaxI = A;
+    ibi MinI; MinI.Init(false); MinI = B;
+    MaxI.isPositive = true;
+    MinI.isPositive = true;
+    bool bab = MaxI > MinI;
+    if(bab){
         r = A;
         MaxI = A;
         MinI = B;
@@ -1413,7 +1434,9 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
         MaxI = B;
         MinI = A;
     }
-
+    MaxI.isPositive = true;
+    MinI.isPositive = true;
+    
     //simd optimized
     register unsigned int temp = MaxI.integer_data.size();
     unsigned int addSiz = 1;
@@ -1533,6 +1556,13 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
             }
         }
     }
+
+    if(bab){
+        r.isPositive = A.isPositive;
+    }
+    else{
+        r.isPositive = !B.isPositive;
+    }
     fm->_tempPopLayer();
     return r;
 }
@@ -1540,16 +1570,16 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
 ibi& ibi::operator+(const ibi &A) const
 {
     if(*this == ibi(0) && A == ibi(0)){
-        return ibi::add_absolute(*this, A);
+        return ibi::add_absolute_simd(*this, A);
     }
 
     if (isPositive == A.isPositive)
     {
-        return ibi::add_absolute(*this, A);
+        return ibi::add_absolute_simd(*this, A);
     }
     else
     {
-        return ibi::sub_absolute(*this, A);
+        return ibi::sub_absolute_simd(*this, A);
     }
 }
 
@@ -1557,11 +1587,11 @@ ibi& ibi::operator-(const ibi &A) const
 {
     if (isPositive == A.isPositive)
     {
-        return ibi::sub_absolute(*this, A);
+        return ibi::sub_absolute_simd(*this, A);
     }
     else
     {
-        return ibi::add_absolute(*this, A);
+        return ibi::add_absolute_simd(*this, A);
     }
 }
 
@@ -2158,7 +2188,7 @@ ibi& ibi::operator/(const ibi &A) const
 
 ibi& ibi::O_N_DIV(const ibi& A) const
 {
-     // this / a
+    // this / a
     CreateDataFM(ibi, r);
 
     fm->_tempPushLayer();
@@ -2177,11 +2207,16 @@ ibi& ibi::O_N_DIV(const ibi& A) const
         if(tempSave > ibi(0)){
             tempT = tempSave;
             r = r + tempBit;
+            //std::wcout << tempT.dataString()->c_str() << endl;
+            //std::wcout << r.dataString()->c_str() << endl;
         }
         tempB = tempB.bitShiftR(1);
         tempBit = tempBit.bitShiftR(1);
     }
 
+    //std::wcout << this->dataString()->c_str() << endl;
+    //std::wcout << A.dataString()->c_str() << endl;
+    //std::wcout << r.dataString()->c_str() << endl;
     fm->_tempPopLayer();
 
     return r;
@@ -2683,6 +2718,7 @@ lcstr* ibi::ToString(bool showpos) const
     numstack.Init(8, false, false);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
+        std::wcout << present_value.dataString()->c_str() << endl;
         tempv = present_value.O_N_DIV(hm);
         resultv = present_value - tempv * hm;
         present_value = tempv;
@@ -2741,7 +2777,7 @@ lwstr* ibi::dataString() const
         uint_wstr uintstr = Get256BasedExpr(integer_data[i]);
         for(int k=0;k<4;++k){
             str->push_back(uintstr.str[k]);
-            //str->push_back(L' ');
+            str->push_back(L' ');
         }
     }
 
