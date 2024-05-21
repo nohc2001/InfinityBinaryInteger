@@ -2781,7 +2781,7 @@ lcstr* ibi::ToString(bool showpos) const
     numstack.Init(8, false, false);
     while(present_value != ibi(0)){
         fm->_tempPushLayer();
-        std::wcout << present_value.dataString()->c_str() << endl;
+        //std::wcout << present_value.dataString()->c_str() << endl;
         tempv = present_value.O_N_DIV(hm);
         resultv = present_value - tempv * hm;
         present_value = tempv;
