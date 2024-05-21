@@ -142,6 +142,8 @@ class ibi{
     ibi(int num);
     ibi(bool isp, unsigned int* data, unsigned int size);
     ~ibi();
+
+    void clean();
     void Init(bool plocal);
     void Release();
     void operator=(const ibi& ref);
@@ -933,6 +935,17 @@ ibi::~ibi()
         integer_data.release();
 }
 
+void ibi::clean(){
+    for(int i=integer_data.size()-1;i >=0;--i){
+        if(integer_data[i] == 0){
+            integer_data.up -= 1;
+        }
+        else{
+            break;
+        }
+    }
+}
+
 void ibi::Init(bool plocal)
 {
     integer_data.NULLState();
@@ -1077,6 +1090,7 @@ void ibi::carry(ibi *num, int carryloc)
 
 void ibi::carry_under(ibi *num, int carryloc)
 {
+    wcout << "dbg carry num : " << num->dataString()->c_str() << endl;
     if (carryloc >= num->integer_data.size())
         return;
     if (num->integer_data[carryloc] == 0)
@@ -1436,6 +1450,10 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
     }
     MaxI.isPositive = true;
     MinI.isPositive = true;
+    MinI.integer_data.Init(MaxI.integer_data.size(), false);
+    for(int i=MinI.integer_data.size();i<MinI.integer_data.maxsize;++i){
+        MinI.integer_data[i] = 0;
+    }
     
     //simd optimized
     register unsigned int temp = MaxI.integer_data.size();
@@ -1509,7 +1527,9 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
             Carr[i+1] = (uA < uB) ? 1 : 0;
         }
 
-        for(uint i=0;i<addSiz;++i){
+        r.clean();
+
+        for(uint i=1;i<addSiz+1;++i){
             if(Carr[i]){
                 carry_under(&r, i);
             }
@@ -1535,7 +1555,9 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
             Carr[i+1] = (uA < uB) ? 1 : 0;
         }
 
-        for(uint i=0;i<addSiz;++i){
+        r.clean();
+
+        for(uint i=1;i<addSiz+1;++i){
             if(Carr[i]){
                 carry_under(&r, i);
             }
@@ -1550,7 +1572,9 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
             Carr[i+1] = (uA < uB) ? 1 : 0;
         }
 
-        for(uint i=1;i<addSiz;++i){
+        r.clean();
+
+        for(uint i=1;i<addSiz+1;++i){
             if(Carr[i]){
                 carry_under(&r, i);
             }
@@ -1910,6 +1934,7 @@ ibi& ibi::FFTMUL(const ibi &A) const
     r = ibi(0);
     unsigned int dSiz = (this->integer_data.size() > A.integer_data.size()) ? this->integer_data.size() : A.integer_data.size();
     unsigned int Siz = dSiz;
+    
     unsigned int log2 = 0;
     while(Siz > (1 << log2)){
         ++log2;
@@ -1917,32 +1942,42 @@ ibi& ibi::FFTMUL(const ibi &A) const
     dSiz = 1 << log2;
     Siz = dSiz;
     dSiz = dSiz << 1;
+    unsigned int qSiz = dSiz << 1;
 
     fmDynamicArr<Complex> TCArr;
     TCArr.NULLState();
-    TCArr.Init(8, false, dSiz);
+    TCArr.Init(8, false, qSiz);
 
     fmDynamicArr<Complex> ACArr;
     ACArr.NULLState();
-    ACArr.Init(8, false, dSiz);
+    ACArr.Init(8, false, qSiz);
 
     r.integer_data.Init(dSiz, false);
-    fmDynamicArr<uint64_t> rdata;
+    fmDynamicArr<unsigned int> rdata;
     rdata.NULLState();
-    rdata.Init(9, false, dSiz);
+    rdata.Init(9, false, qSiz);
 
-    fft_addStamp(dSiz);
+    fft_addStamp(qSiz);
 
     for (int i = 0; i < Siz; ++i)
     {
-        double d = (integer_data.size()-1 < i) ? 0 : (double)(integer_data[i]);
-        TCArr[i] = Complex(d, 0.0);
+        unsigned int di = i << 1;
+        unsigned short put_temp0 = (unsigned short)integer_data[i];
+        unsigned short put_temp1 = (unsigned short)(integer_data[i] >> 16);
+        double d0 = (integer_data.size()-1 < i) ? 0 : (double)(put_temp0);
+        TCArr[di] = Complex(d0, 0.0);
+        double d1 = (integer_data.size()-1 < i) ? 0 : (double)(put_temp1);
+        TCArr[di+1] = Complex(d1, 0.0);
 
-        d = (A.integer_data.size()-1 < i) ? 0 : (double)(A.integer_data[i]);
-        ACArr[i] = Complex(d, 0.0);
+        put_temp0 = (unsigned short)A.integer_data[i];
+        put_temp1 = (unsigned short)(A.integer_data[i] >> 16);
+        d0 = (A.integer_data.size()-1 < i) ? 0 : (double)(put_temp0);
+        ACArr[di] = Complex(d0, 0.0);
+        d1 = (A.integer_data.size()-1 < i) ? 0 : (double)(put_temp1);
+        ACArr[di+1] = Complex(d1, 0.0);
     }
 
-    for (int i = Siz; i < dSiz; ++i)
+    for (int i = dSiz; i < qSiz; ++i)
     {
         TCArr[i] = Complex(0.0, 0.0);
         ACArr[i] = Complex(0.0, 0.0);
@@ -1988,30 +2023,47 @@ ibi& ibi::FFTMUL(const ibi &A) const
     cout << endl;
 
     cout << "rdata : " << endl;
-    for (int i = 0; i < dSiz; ++i)
+    for (int i = 0; i < qSiz; ++i)
     {
-        uint64_t c = (uint64_t)(TCArr[i].real() + 0.5);
+        unsigned int c = (unsigned int)(TCArr[i].real() + 0.5);
         rdata[i] = c;
         cout << rdata[i] << ", ";
     }
     cout << endl;
 
     cout << "return data : " << endl;
-    for (int i = 0; i < dSiz-1; ++i)
+    for (unsigned int i = 0; i < qSiz; ++i)
     {
-        rdata[i+1] += rdata[i] >> 32;
-        r.integer_data[i] = (unsigned int)rdata[i];
-        cout << r.integer_data[i] << ", ";
+        // i/2 = index, i%2 == 0 -> just add, i%2 == 1 -> add low << 16, add to next index high >> 16
+        unsigned int divi = i >> 1;
+        if(i & 1){
+            if(r.integer_data[divi] > r.integer_data[divi] + rdata[i] << 16){
+                r.integer_data[divi] += rdata[i] << 16;
+                ibi::carry(&r, divi+1);
+            }
+            
+            if(r.integer_data[divi+1] > r.integer_data[divi+1] + rdata[i] >> 16){
+                r.integer_data[divi] += rdata[i] >> 16;
+                ibi::carry(&r, divi+2);
+            }
+        }
+        else{
+            if(r.integer_data[divi] > r.integer_data[divi] + rdata[i]){
+                r.integer_data[divi] += rdata[i];
+                ibi::carry(&r, divi+1);
+            }
+        }
+
         if(rdata[i] != 0){
-            r.integer_data.up = i+1;
+            r.integer_data.up = divi+1;
         }
     }
-    r.integer_data[dSiz-1] = (unsigned int)rdata[dSiz-1];
-    cout << r.integer_data[dSiz - 1] << ", ";
-    cout << endl;
-    if(rdata[dSiz-1] != 0){
-        r.integer_data.up = dSiz;
+
+    cout << "RESULT : " << endl;
+    for(int i=0;i<r.integer_data.size();++i){
+        cout << r.integer_data[i] << ", ";
     }
+    cout << endl;
 
     return r;
 }
@@ -2202,11 +2254,22 @@ ibi& ibi::O_N_DIV(const ibi& A) const
     tempBit.isPositive = true;
 
     ibi tempSave; tempSave.Init(false); tempSave = ibi(1);
+    wcout << L"init state : " << endl;
+    wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
+    wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
+    wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
     for(int i = bitSiz-1;i>=0;--i){
-        tempSave = tempT - tempB;
-        if(tempSave > ibi(0)){
+        wcout << L"\nLoop : " << i << endl;
+        wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
+        wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
+        wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
+        if(tempT - tempB > ibi(0)){
+            tempSave = tempT - tempB;
+            wcout << L"tempSave(T-B) : " << tempSave.dataString()->c_str() << endl;
+            wcout << L"update!" << endl;
             tempT = tempSave;
             r = r + tempBit;
+            wcout << L"r : " << r.dataString()->c_str() << endl;
             //std::wcout << tempT.dataString()->c_str() << endl;
             //std::wcout << r.dataString()->c_str() << endl;
         }
