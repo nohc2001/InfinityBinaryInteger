@@ -1090,7 +1090,7 @@ void ibi::carry(ibi *num, int carryloc)
 
 void ibi::carry_under(ibi *num, int carryloc)
 {
-    wcout << "dbg carry num : " << num->dataString()->c_str() << endl;
+    //wcout << "dbg carry num : " << num->dataString()->c_str() << endl;
     if (carryloc >= num->integer_data.size())
         return;
     if (num->integer_data[carryloc] == 0)
@@ -2254,22 +2254,22 @@ ibi& ibi::O_N_DIV(const ibi& A) const
     tempBit.isPositive = true;
 
     ibi tempSave; tempSave.Init(false); tempSave = ibi(1);
-    wcout << L"init state : " << endl;
-    wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
-    wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
-    wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
+    //wcout << L"init state : " << endl;
+    //wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
+    //wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
+    //wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
     for(int i = bitSiz-1;i>=0;--i){
-        wcout << L"\nLoop : " << i << endl;
-        wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
-        wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
-        wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
+        //wcout << L"\nLoop : " << i << endl;
+        //wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
+        //wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
+        //wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
         if(tempT - tempB > ibi(0)){
             tempSave = tempT - tempB;
-            wcout << L"tempSave(T-B) : " << tempSave.dataString()->c_str() << endl;
-            wcout << L"update!" << endl;
+            //wcout << L"tempSave(T-B) : " << tempSave.dataString()->c_str() << endl;
+            //wcout << L"update!" << endl;
             tempT = tempSave;
             r = r + tempBit;
-            wcout << L"r : " << r.dataString()->c_str() << endl;
+            //wcout << L"r : " << r.dataString()->c_str() << endl;
             //std::wcout << tempT.dataString()->c_str() << endl;
             //std::wcout << r.dataString()->c_str() << endl;
         }
