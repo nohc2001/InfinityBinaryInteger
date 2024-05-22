@@ -2767,16 +2767,18 @@ ibi& ibi::dimenplus(const ibi &X, const ibi &dim, const ibi &ordermap) const
     }
 }
 
-lcstr* ibi::ToString(bool showpos) const
+lcstr *ibi::ToString(bool showpos) const
 {
-    lcstr* r = (lcstr*)fm->_tempNew(sizeof(lcstr));
+    lcstr *r = (lcstr *)fm->_tempNew(sizeof(lcstr));
     r->NULLState();
     r->Init(8, false);
 
-    //based 10.
+    // based 10.
     fm->_tempPushLayer();
 
-    ibi present_value; present_value.Init(false); present_value = ibi(*this);
+    ibi present_value;
+    present_value.Init(false);
+    present_value = ibi(*this);
     if (showpos)
     {
         if (present_value.isPositive)
@@ -2789,47 +2791,84 @@ lcstr* ibi::ToString(bool showpos) const
         }
     }
 
-    ibi resultv; resultv.Init(false); resultv = ibi(0);
-    ibi tempv; tempv.Init(false); tempv = ibi(0);
-    ibi hm; hm.Init(false); hm = ibi(1000000000);
+    ibi resultv;
+    resultv.Init(false);
+    resultv = ibi(0);
+    ibi tempv;
+    tempv.Init(false);
+    tempv = ibi(0);
+    ibi hm;
+    hm.Init(false);
+    hm = ibi(1000000000);
     fmvecarr<unsigned int> numstack;
     numstack.NULLState();
     numstack.Init(8, false, false);
-    while(present_value != ibi(0)){
-        fm->_tempPushLayer();
-        //std::wcout << present_value.dataString()->c_str() << endl;
-        tempv = present_value.O_N_DIV(hm);
-        resultv = present_value - tempv * hm;
-        present_value = tempv;
-        numstack.push_back(resultv.integer_data[0]);
-        //char addc = '0' + resultv.integer_data[0];
-        //r->push_back(addc);
-        fm->_tempPopLayer();
+    if (present_value.integer_data.size() > 10)
+    {
+        wcout << "present_value : " << present_value.dataString()->c_str() << endl;
+        int half = present_value.integer_data.size() / 2;
+        ibi largeHM; largeHM.Init(false); largeHM = hm.pow(ibi(half));
+        wcout << "largeHM : " << largeHM.dataString()->c_str() << endl;
+        ibi Temp0; Temp0.Init(false); Temp0 = present_value.O_N_DIV(largeHM);
+        wcout << "temp0 : " << Temp0.dataString()->c_str() << endl;
+        ibi Temp1; Temp1.Init(false); Temp1 = Temp0.FFTMUL(largeHM);
+        wcout << "temp1 : " << Temp1.dataString()->c_str() << endl;
+        Temp1 = present_value - Temp1;
+        wcout << "temp1 : " << Temp1.dataString()->c_str() << endl;
+        lcstr* str0 = Temp0.ToString(false);
+        lcstr* str1 = Temp1.ToString(false);
+        
+        for(int i=0;i<str0->size();++i){
+            r->push_back(str0->at(i));
+        }
+        for(int i=0;i<str1->size();++i){
+            r->push_back(str1->at(i));
+        }
     }
+    else
+    {
+        while (present_value != ibi(0))
+        {
+            fm->_tempPushLayer();
+            // std::wcout << present_value.dataString()->c_str() << endl;
+            tempv = present_value.O_N_DIV(hm);
+            resultv = present_value - tempv * hm;
+            present_value = tempv;
+            numstack.push_back(resultv.integer_data[0]);
+            // char addc = '0' + resultv.integer_data[0];
+            // r->push_back(addc);
+            fm->_tempPopLayer();
+        }
 
-    for(int i = numstack.size() - 1;i >= 0;--i){
-        string numstr = to_string(numstack.at(i));
-        if(i != numstack.size()-1){
-            for(int k = 0; k < 10 - numstr.size();++k){
-                r->push_back('0');
+        for (int i = numstack.size() - 1; i >= 0; --i)
+        {
+            string numstr = to_string(numstack.at(i));
+            if (i != numstack.size() - 1)
+            {
+                for (int k = 0; k < 10 - numstr.size(); ++k)
+                {
+                    r->push_back('0');
+                }
+            }
+
+            for (int k = 0; k < numstr.size(); ++k)
+            {
+                r->push_back(numstr.at(k));
             }
         }
-        
-        for(int k=0;k<numstr.size();++k){
-            r->push_back(numstr.at(k));
+
+        fm->_tempPopLayer();
+
+        if (showpos && r->size() == 1)
+        {
+            r->push_back('0');
+        }
+
+        if (r->size() == 0)
+        {
+            r->push_back('0');
         }
     }
-
-    fm->_tempPopLayer();
-
-    if(showpos && r->size() == 1){
-        r->push_back('0');
-    }
-
-    if(r->size() == 0){
-        r->push_back('0');
-    }
-
     return r;
 }
 

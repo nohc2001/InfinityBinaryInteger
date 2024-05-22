@@ -2379,7 +2379,7 @@ namespace freemem{
 			array_capacity = 1 << fragment_siz_pow2;
 			array_siz = 0;
 
-			fragPercent = ((2 << (fragment_siz_pow2))-1);
+			fragPercent = ((1 << (fragment_siz_pow2))-1);
 
 			lastCArr = this->get_bottom_array(0);
 
@@ -2429,6 +2429,9 @@ namespace freemem{
 			if (array_siz + 1 <= array_capacity)
 			{
 				//set(array_siz, value);
+				if(array_siz == 256){
+					cout << "break!" << endl;
+				}
 				this->operator[](array_siz) = value;
 				//(*this)[array_siz] = value;
 				array_siz += 1;
@@ -2801,6 +2804,7 @@ namespace freemem{
 		void clear()
 		{
 			array_siz = 0;
+			//NULLState();
 		}
 
 		T & last() const
