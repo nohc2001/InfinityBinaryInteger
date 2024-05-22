@@ -22,28 +22,28 @@ int main(){
 
   ibi::StaticInit();
 
-  unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
-  unsigned int* Bdata = (uint*)fm->_tempNew(4*500);
-  for(int i=0;i<10;++i){
+  unsigned int* Adata = (uint*)fm->_tempNew(4*100);
+  unsigned int* Bdata = (uint*)fm->_tempNew(4*50);
+  for(int i=0;i<100;++i){
     Adata[i] = i;
   }
-  for(int i=0;i<5;++i){
-    Bdata[i] = -i;
+  for(int i=0;i<50;++i){
+    Bdata[i] = i+1;
   }
 
   ibi K;
   K.Init(false);
-  K = ibi(true, Adata, 10);
+  K = ibi(true, Adata, 100);
   ibi J; J.Init(false);
-  J = ibi(true, Bdata, 5);
+  J = ibi(true, Bdata, 50);
   ibi R0; R0.Init(false); R0 = ibi(0);
   ibi R1; R1.Init(false); R1 = ibi(0);
 
   std::cout << K.ToString()->c_str() << endl;
   std::cout << J.ToString()->c_str() << endl;
 
-  R0 = K.FFTMUL(J);
-  std::cout << R0.ToString()->c_str() << endl;
+  //R0 = K.FFTMUL(J);
+  //std::cout << R0.ToString()->c_str() << endl;
 
   R1 = K * J;
   std::cout << R1.ToString()->c_str() << endl;

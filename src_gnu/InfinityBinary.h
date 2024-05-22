@@ -1836,7 +1836,7 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
     //x = x.apply(std::conj);
     //constexpr v8uf conjV = {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f};
     //혹은 비트만 바꿔서 부호 바꾸기
-    unsigned int s = x.size() >> 4;
+    unsigned int s = x.size();
     if (s >= 16)
     {
         for (uint si = 0; si < s; si += 16)
@@ -1984,13 +1984,13 @@ ibi& ibi::FFTMUL(const ibi &A) const
     }
 
     cout << "TCArr : " << endl;
-    for(int i=0;i<dSiz;++i){
+    for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
     }
     cout << endl;
 
     cout << "ACArr : " << endl;
-    for(int i=0;i<dSiz;++i){
+    for(int i=0;i<qSiz;++i){
         cout << ACArr[i].real() << ", ";
     }
     cout << endl;
@@ -1999,25 +1999,25 @@ ibi& ibi::FFTMUL(const ibi &A) const
     fft_useStamp(ACArr);
 
     cout << "TCArr : " << endl;
-    for(int i=0;i<dSiz;++i){
+    for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
     }
     cout << endl;
 
     cout << "ACArr : " << endl;
-    for(int i=0;i<dSiz;++i){
+    for(int i=0;i<qSiz;++i){
         cout << ACArr[i].real() << ", ";
     }
     cout << endl;
 
-    for (int i = 0; i < dSiz; ++i)
+    for (int i = 0; i < qSiz; ++i)
     {
         TCArr[i] = TCArr[i] * ACArr[i];
     }
     ifft_useStamp(TCArr);
 
     cout << "TCArr : " << endl;
-    for(int i=0;i<dSiz;++i){
+    for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
     }
     cout << endl;
@@ -2038,20 +2038,20 @@ ibi& ibi::FFTMUL(const ibi &A) const
         unsigned int divi = i >> 1;
         if(i & 1){
             if(r.integer_data[divi] > r.integer_data[divi] + rdata[i] << 16){
-                r.integer_data[divi] += rdata[i] << 16;
                 ibi::carry(&r, divi+1);
             }
+            r.integer_data[divi] += rdata[i] << 16;
             
             if(r.integer_data[divi+1] > r.integer_data[divi+1] + rdata[i] >> 16){
-                r.integer_data[divi] += rdata[i] >> 16;
                 ibi::carry(&r, divi+2);
             }
+            r.integer_data[divi] += rdata[i] >> 16;
         }
         else{
             if(r.integer_data[divi] > r.integer_data[divi] + rdata[i]){
-                r.integer_data[divi] += rdata[i];
                 ibi::carry(&r, divi+1);
             }
+            r.integer_data[divi] += rdata[i];
         }
 
         if(rdata[i] != 0){
@@ -2064,7 +2064,7 @@ ibi& ibi::FFTMUL(const ibi &A) const
         cout << r.integer_data[i] << ", ";
     }
     cout << endl;
-
+    
     return r;
 }
 
@@ -2100,6 +2100,8 @@ ibi& ibi::operator*(const ibi &A) const
     }
     delete[] thismulibi;
     fm->_tempPopLayer();
+
+    
     return r;
 }
 
