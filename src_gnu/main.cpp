@@ -34,9 +34,9 @@ int main(){
 
   ibi K;
   K.Init(false);
-  K = ibi(true, Adata, 1000);
+  K = ibi(true, Adata, 100);
   ibi J; J.Init(false);
-  J = ibi(true, Bdata, 500);
+  J = ibi(true, Bdata, 50);
   ibi R0; R0.Init(false); R0 = ibi(0);
   ibi R1; R1.Init(false); R1 = ibi(0);
 
