@@ -23,12 +23,12 @@ int main(){
 
   ibi::StaticInit();
 
-  unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
-  unsigned int* Bdata = (uint*)fm->_tempNew(4*500);
-  for(int i=0;i<1000;++i){
+  unsigned int* Adata = (uint*)fm->_tempNew(4*100);
+  unsigned int* Bdata = (uint*)fm->_tempNew(4*50);
+  for(int i=0;i<100;++i){
     Adata[i] = i;
   }
-  for(int i=0;i<500;++i){
+  for(int i=0;i<50;++i){
     Bdata[i] = i+1;
   }
 
