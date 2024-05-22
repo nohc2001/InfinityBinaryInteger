@@ -1983,6 +1983,7 @@ ibi& ibi::FFTMUL(const ibi &A) const
         ACArr[i] = Complex(0.0, 0.0);
     }
 
+    /*
     cout << "TCArr : " << endl;
     for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
@@ -1994,10 +1995,13 @@ ibi& ibi::FFTMUL(const ibi &A) const
         cout << ACArr[i].real() << ", ";
     }
     cout << endl;
+    */
+    
 
     fft_useStamp(TCArr);
     fft_useStamp(ACArr);
 
+    /*
     cout << "TCArr : " << endl;
     for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
@@ -2009,6 +2013,7 @@ ibi& ibi::FFTMUL(const ibi &A) const
         cout << ACArr[i].real() << ", ";
     }
     cout << endl;
+    */
 
     for (int i = 0; i < qSiz; ++i)
     {
@@ -2016,22 +2021,25 @@ ibi& ibi::FFTMUL(const ibi &A) const
     }
     ifft_useStamp(TCArr);
 
+    /*
     cout << "TCArr : " << endl;
     for(int i=0;i<qSiz;++i){
         cout << TCArr[i].real() << ", ";
     }
     cout << endl;
+    */
+    
 
-    cout << "rdata : " << endl;
+    //cout << "rdata : " << endl;
     for (int i = 0; i < qSiz; ++i)
     {
         unsigned int c = (unsigned int)(TCArr[i].real() + 0.5);
         rdata[i] = c;
-        cout << rdata[i] << ", ";
+        //cout << rdata[i] << ", ";
     }
-    cout << endl;
+    //cout << endl;
 
-    cout << "return data : " << endl;
+    //cout << "return data : " << endl;
     for (unsigned int i = 0; i < qSiz; ++i)
     {
         // i/2 = index, i%2 == 0 -> just add, i%2 == 1 -> add low << 16, add to next index high >> 16
@@ -2059,12 +2067,18 @@ ibi& ibi::FFTMUL(const ibi &A) const
         }
     }
 
+    /*
     cout << "RESULT : " << endl;
     for(int i=0;i<r.integer_data.size();++i){
         cout << r.integer_data[i] << ", ";
     }
     cout << endl;
-    
+    */
+
+    //TCArr.release();
+    //ACArr.release();
+    //rdata.release();
+    fm->_tempPopLayer();
     return r;
 }
 

@@ -1193,7 +1193,10 @@ namespace freemem
 			{
 				for (int i = 0; i < large.last()->size(); ++i)
 				{
-					delete[](byte8 *) large.last()->at(i).ptr;
+					if(large.last()->at(i).ptr != nullptr){
+						delete[](byte8 *) large.last()->at(i).ptr;
+						large.last()->at(i).ptr = nullptr;
+					}
 				}
 				//large.last()->release();
 				large.last()->up = 0;
@@ -2519,11 +2522,12 @@ namespace freemem{
 				}
 				return nullv;
 			}
+
 			fmCirculArr<int *> *ptr = ptrArray;
 			for (int i = 0; i < array_depth; ++i)
 			{
-				ptr = reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[](
-					(int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
+				int depth_index = (index >> (fragment_siz_pow2 * (array_depth - i))) & fragPercent;
+				ptr = reinterpret_cast<fmCirculArr<int *> *>( ptr->operator[](depth_index));
 			}
 			fmCirculArr<T> *vptr = reinterpret_cast<fmCirculArr<T> *>(ptr);
 

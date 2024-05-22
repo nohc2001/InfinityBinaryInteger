@@ -15,37 +15,37 @@ int main(){
   cout.precision(16);
 
   fm = new FM_System0();
-  fm->SetHeapData(4096, 4096, 4096, 4096);
+  // 4KB, 4KB, 128KB, 1MB
+  fm->SetHeapData(1 << 10, 1 << 10, 1 << 15, 1 << 20);
   std::cout << "Hello Math!!" << endl;
 
   fm->_tempPushLayer();
 
   ibi::StaticInit();
 
-  unsigned int* Adata = (uint*)fm->_tempNew(4*100);
-  unsigned int* Bdata = (uint*)fm->_tempNew(4*50);
-  for(int i=0;i<100;++i){
+  unsigned int* Adata = (uint*)fm->_tempNew(4*1000);
+  unsigned int* Bdata = (uint*)fm->_tempNew(4*500);
+  for(int i=0;i<1000;++i){
     Adata[i] = i;
   }
-  for(int i=0;i<50;++i){
+  for(int i=0;i<500;++i){
     Bdata[i] = i+1;
   }
 
   ibi K;
   K.Init(false);
-  K = ibi(true, Adata, 100);
+  K = ibi(true, Adata, 1000);
   ibi J; J.Init(false);
-  J = ibi(true, Bdata, 50);
+  J = ibi(true, Bdata, 500);
   ibi R0; R0.Init(false); R0 = ibi(0);
   ibi R1; R1.Init(false); R1 = ibi(0);
 
-  std::cout << K.ToString()->c_str() << endl;
-  std::cout << J.ToString()->c_str() << endl;
+  //std::cout << K.ToString()->c_str() << endl;
+  //std::cout << J.ToString()->c_str() << endl;
 
-  //R0 = K.FFTMUL(J);
-  //std::cout << R0.ToString()->c_str() << endl;
-
+  R0 = K.FFTMUL(J);
   R1 = K * J;
+  std::cout << R0.ToString()->c_str() << endl;
   std::cout << R1.ToString()->c_str() << endl;
 
   ibr A;
