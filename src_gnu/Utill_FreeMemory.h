@@ -2555,8 +2555,9 @@ namespace freemem{
 			fmCirculArr<int *> *ptr = ptrArray;
 			for (int i = 0; i < array_depth; ++i)
 			{
-				ptr = reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[](
-					(int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
+				int depth_index = (index >> (fragment_siz_pow2 * (array_depth - i))) & fragPercent;
+				ptr = reinterpret_cast<fmCirculArr<int *> *>( ptr->operator[](depth_index));
+				//ptr = reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[]((int)((index >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
 			}
 			fmCirculArr<T> *vptr = reinterpret_cast<fmCirculArr<T> *>(ptr);
 			return vptr;
@@ -2571,9 +2572,8 @@ namespace freemem{
 			fmCirculArr<int *> *ptr = ptrArray;
 			for (int i = 0; i < array_depth - height; ++i)
 			{
-				ptr =
-					reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[](
-						(int)((index >> ((1 << fragment_siz_pow2) * (array_depth - i)))) & fragPercent));
+				int depth_index = (index >> (fragment_siz_pow2 * (array_depth - i))) & fragPercent;
+				ptr = reinterpret_cast<fmCirculArr<int *> *>( ptr->operator[](depth_index));
 			}
 			return ptr;
 		}
@@ -2788,8 +2788,8 @@ namespace freemem{
 			fmCirculArr<int *> *ptr = ptrArray;
 			for (int i = 0; i < array_depth; ++i)
 			{
-				ptr = reinterpret_cast<fmCirculArr<int *> *>(ptr->operator[](
-					(int)((ind >> (1 << fragment_siz_pow2) * (array_depth - i))) & fragPercent));
+				int depth_index = (ind >> (fragment_siz_pow2 * (array_depth - i))) & fragPercent;
+				ptr = reinterpret_cast<fmCirculArr<int *> *>( ptr->operator[](depth_index));
 			}
 			fmCirculArr<T> *vptr = reinterpret_cast<fmCirculArr<T> *>(ptr);
 
@@ -2804,6 +2804,8 @@ namespace freemem{
 		void clear()
 		{
 			array_siz = 0;
+			last_outerIndex = 0;
+			lastCArr = get_bottom_array(0);
 			//NULLState();
 		}
 
