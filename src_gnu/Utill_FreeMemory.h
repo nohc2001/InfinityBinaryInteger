@@ -940,130 +940,6 @@ namespace freemem
 		}
 	};
 
-	template < typename T > class InfiniteArray
-	{
-	  public:
-		FM_Model * FM;
-		T *Arr;
-		size_t maxsize = 0;
-		size_t up = 0;
-
-	  InfiniteArray():
-		FM(nullptr), Arr(nullptr), maxsize(0)
-		{
-
-		}
-
-		virtual ~ InfiniteArray()
-		{
-
-		}
-
-		void SetFM(FM_Model * fm)
-		{
-			FM = fm;
-		}
-
-		void NULLState()
-		{
-			FM = nullptr;
-			Arr = nullptr;
-			maxsize = 0;
-			up = 0;
-		}
-
-		void Init(size_t siz)
-		{
-			Init_VPTR < InfiniteArray < T >> (this);
-
-			T *newArr = (T *) FM->_New(sizeof(T) * siz);
-			if (Arr != nullptr)
-			{
-				for (int i = 0; i < maxsize; ++i)
-				{
-					newArr[i] = Arr[i];
-				}
-
-				if (FM->bAlloc((byte8 *) Arr, sizeof(T) * maxsize))
-				{
-					FM->_Delete((byte8 *) Arr, sizeof(T) * maxsize);
-				}
-			}
-
-			Arr = newArr;
-			maxsize = siz;
-		}
-
-		T & at(size_t i)
-		{
-			return Arr[i];
-		}
-
-		T & operator[](size_t i)
-		{
-			return Arr[i];
-		}
-
-		void push_back(const T & value)
-		{
-			if (up < maxsize)
-			{
-				Arr[up] = value;
-				up += 1;
-			}
-			else
-			{
-				Init(maxsize * 2 + 1);
-				Arr[up] = value;
-				up += 1;
-			}
-		}
-
-		void erase(size_t i)
-		{
-			for (int k = i; k < up; ++k)
-			{
-				Arr[k] = Arr[k + 1];
-			}
-			up -= 1;
-		}
-
-		void insert(size_t i, const T & value)
-		{
-			push_back(value);
-			for (int k = maxsize - 1; k > i; k--)
-			{
-				Arr[k] = Arr[k - 1];
-			}
-			Arr[i] = value;
-		}
-
-		size_t size()
-		{
-			return up;
-		}
-
-		void SetVPTR()
-		{
-			for (int i = 0; i < up; ++i)
-			{
-				Init_VPTR < T > (&Arr[i]);
-			}
-		}
-
-		void clear()
-		{
-			if (FM->bAlloc((byte8 *) Arr, sizeof(T) * maxsize))
-			{
-				FM->_Delete((byte8 *) Arr, sizeof(T) * maxsize);
-			}
-			Arr = nullptr;
-			up = 0;
-
-			Init(2);
-		}
-	};
-
 	struct large_alloc
 	{
 		int *ptr;
@@ -1668,7 +1544,6 @@ namespace freemem
 			}
 		}
 	};
-
 }
 
 extern freemem::FM_System0 *fm;
