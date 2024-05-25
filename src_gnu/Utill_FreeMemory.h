@@ -1669,95 +1669,6 @@ namespace freemem
 		}
 	};
 
-	class BitArray
-	{
-	  public:
-		FM_Model * FM = nullptr;
-		int bit_arr_size = 0;	// saved bit count.
-		int byte_arr_size = 0;	// saved byte count.
-		byte8 *Arr = nullptr;
-		int up = 0;
-
-		  BitArray():FM(nullptr), bit_arr_size(0), byte_arr_size(0), Arr(nullptr), up(0)
-		{
-
-		}
-
-		BitArray(FM_Model * fm, size_t bitsize):
-			FM(fm), bit_arr_size(bitsize), byte_arr_size((bitsize / 8) + 1), up(0)
-		{
-			Arr = FM->_New(byte_arr_size);
-		}
-
-		virtual ~ BitArray()
-		{
-			FM->_Delete(Arr, byte_arr_size);
-		}
-
-		string get_bit_char()
-		{
-			string str;
-			int byteup = (up / 8) + 1;
-			for (int i = 0; i < byteup; ++i)
-			{
-				for (int lo = 0; lo < 8; ++lo)
-				{
-					if (up <= i * 8 + lo)
-						break;
-					int n = _GetByte(Arr[i], lo);
-					if (n == 0)
-					{
-						str.push_back('0');
-					}
-					else if (n == 1)
-					{
-						str.push_back('1');
-					}
-				}
-			}
-			return str;
-		}
-
-		void addbit(bool bit)
-		{
-			if (up + 1 <= bit_arr_size)
-			{
-				++up;
-				int i = up / 8;
-				int loc = up % 8;
-				_SetByte(Arr[i], loc, bit);
-			}
-		}
-
-		void SetUp(int n)
-		{
-			up = n;
-			if (up <= bit_arr_size)
-			{
-				up = bit_arr_size;
-			}
-		}
-
-		void setbit(int index, bool bit)
-		{
-			if (0 <= index && index < up)
-			{
-				int i = index / 8;
-				int loc = index % 8;
-				Arr[i] = SetByte8(Arr[i], loc, bit);
-			}
-		}
-
-		bool getbit(int index)
-		{
-			if (0 <= index && index < up)
-			{
-				int i = index / 8;
-				int loc = index % 8;
-				return _GetByte(Arr[i], loc);
-			}
-		}
-	};
 }
 
 extern freemem::FM_System0 *fm;
@@ -1804,7 +1715,7 @@ namespace freemem{
 			isdebug = false;
 		}
 
-		void Init(size_t siz, bool local, bool isdebug = false)
+		void Init(size_t siz, bool local, bool isdebug = false, int pfmlayer = -1)
 		{
 			T *newArr;
 			if (isdebug)
@@ -1813,12 +1724,10 @@ namespace freemem{
 			}
 			else
 			{
+				fmlayer = pfmlayer;
 				newArr = (T *) fm->_tempNew(sizeof(T) * siz, fmlayer);
 				if(fmlayer < 0){
 					fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size()-1;
-				}
-				else{
-					//cout << "reuse" << endl;
 				}
 			}
 			if (Arr != nullptr)
@@ -1860,7 +1769,7 @@ namespace freemem{
 			}
 			else
 			{
-				Init(maxsize * 2 + 1, islocal, isdebug);
+				Init(maxsize * 2 + 1, islocal, isdebug, fmlayer);
 				Arr[up] = value;
 				up += 1;
 			}
@@ -1906,7 +1815,7 @@ namespace freemem{
 			Arr = nullptr;
 			up = 0;
 
-			Init(2, islocal, isdebug);
+			Init(2, islocal, isdebug, fmlayer);
 		}
 
 		T & last() const
@@ -1937,10 +1846,11 @@ namespace freemem{
 	template < typename T > class fmlist
 	{
 	  public:
+	  	fmlist_node < T > *first;
+		size_t size = 0;
+		short fmlayer = -1;
 		bool isdebug = false;
 		bool islocal = false;
-		size_t size = 0;
-		fmlist_node < T > *first;
 
 		fmlist(){}
 		~fmlist(){
@@ -1957,6 +1867,23 @@ namespace freemem{
 			}
 		}
 
+		void NULLState(){
+			first = nullptr;
+			size = 0;
+			fmlayer = -1;
+			isdebug = false;
+			islocal = false;
+		}
+
+		void Init(bool isDbg, bool isLocal, short pfmlayer){
+			isdebug = isDbg;
+			islocal = isLocal;
+			fmlayer = pfmlayer;
+			if(fmlayer < 0){
+				fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size()-1;
+			}
+		}
+
 		void release()
 		{
 		}
@@ -1964,7 +1891,7 @@ namespace freemem{
 		void push_front(T value)
 		{
 			fmlist_node < T > *sav = first;
-			first = (fmlist_node < T > *)fm->_New(sizeof(fmlist_node < T >), isdebug);
+			first = (fmlist_node < T > *)fm->_New(sizeof(fmlist_node < T >), isdebug, (int)fmlayer);
 			first->value = value;
 			first->next = sav;
 			first->prev = nullptr;
@@ -2020,12 +1947,13 @@ namespace freemem{
 	{
 	  public:
 		fmvecarr < range < T, V > >* ranges;
+		fmvecarr < VP > graph;
+		short fmlayer = -1;
+		bool islocal = false;
+		bool isdebug = true;
 		T minx = 0;
 		T maxx = 0;
 		T margin = 0;
-		bool islocal = false;
-		bool isdebug = true;
-		fmvecarr < VP > graph;
 
 		ArrGraph()
 		{
@@ -2047,14 +1975,18 @@ namespace freemem{
 			}
 		}
 
-		ArrGraph *Init(T min, T max, FM_System0 * _fm)
+		ArrGraph *Init(T min, T max, bool isdbg, int pfmlayer = -1)
 		{
 			minx = min;
 			maxx = max;
-			fm = _fm;
-			ranges = (fmvecarr < range < T, V > >*)fm->_New(sizeof(fmvecarr < range < T, V > >), true);
+			fmlayer = (short)pfmlayer;
+			isdebug = isdbg;
+			ranges = (fmvecarr < range < T, V > >*)fm->_New(sizeof(fmvecarr < range < T, V > >), isdebug, (int)fmlayer);
 			ranges->NULLState();
-			ranges->Init(2, false, true);
+			ranges->Init(2, false, true, fmlayer);
+			if(fmlayer < 0){
+				fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size()-1;
+			}
 			islocal = false;
 			return this;
 		}
@@ -2110,8 +2042,8 @@ namespace freemem{
 						{
 							// graph
 							ArrGraph < T, V > *newgraph =
-								(ArrGraph < T, V > *)fm->_New(sizeof(ArrGraph < T, V >), true);
-							newgraph->Init(start, end, fm);
+								(ArrGraph < T, V > *)fm->_New(sizeof(ArrGraph < T, V >), isdebug, fmlayer);
+							newgraph->Init(start, end, isdebug, fmlayer);
 							newgraph->push_range(ranges->at(k));
 							range < T, V > *r = &ranges->at(k + 1);
 							while (r->end <= end)
@@ -2141,7 +2073,7 @@ namespace freemem{
 			else if (ranges->size() == 2)
 			{
 				graph.NULLState();
-				graph.Init(2, false, true);
+				graph.Init(2, false, isdebug, fmlayer);
 				T center = ranges->at(0).end;
 				T start = minx;
 				T end = maxx - 1;
@@ -2868,6 +2800,118 @@ namespace freemem{
 			ptrArray->Release();
 			fm->_Delete((byte8 *)ptrArray, sizeof(fmCirculArr<int *>));
 			// delete[]ptrArray;
+		}
+	};
+
+	class BitArray
+	{
+	  public:
+	  	byte8 *Arr = nullptr;
+		ui32 bit_arr_size = 0;	// saved bit count.
+		ui32 byte_arr_size = 0;	// saved byte count.
+		ui32 up = 0;
+		short fmlayer = -1;
+		bool isdebug = false;
+		
+
+		  BitArray(): bit_arr_size(0), byte_arr_size(0), Arr(nullptr), up(0), fmlayer(-1), isdebug(false)
+		{
+
+		}
+
+		/*
+		BitArray(size_t bitsize):
+			bit_arr_size(bitsize), byte_arr_size((bitsize / 8) + 1), up(0)
+		{
+			Arr = fm->_New(byte_arr_size);
+		}
+		*/
+
+		virtual ~ BitArray()
+		{
+			if(isdebug){
+				fm->_Delete(Arr, byte_arr_size);
+				Arr = nullptr;
+			}
+		}
+
+		void NULLState(){
+
+		}
+
+		void Init(ui32 siz, bool isdbg, int pfmlayer = -1){
+			bit_arr_size = siz;
+			byte_arr_size = (bit_arr_size >> 3) + 1;
+			isdebug = isdbg;
+			fmlayer = pfmlayer;
+			Arr = fm->_New(byte_arr_size, isdebug, fmlayer);
+			if(fmlayer < 0){
+				fmlayer = fm->tempStack[fm->get_threadid(std::this_thread::get_id())]->tempFM.size()-1;
+			}
+		}
+
+		string get_bit_char()
+		{
+			string str;
+			int byteup = (up / 8) + 1;
+			for (int i = 0; i < byteup; ++i)
+			{
+				for (int lo = 0; lo < 8; ++lo)
+				{
+					if (up <= i * 8 + lo)
+						break;
+					int n = _GetByte(Arr[i], lo);
+					if (n == 0)
+					{
+						str.push_back('0');
+					}
+					else if (n == 1)
+					{
+						str.push_back('1');
+					}
+				}
+			}
+			return str;
+		}
+
+		void addbit(bool bit)
+		{
+			if (up + 1 <= bit_arr_size)
+			{
+				++up;
+				int i = up / 8;
+				int loc = up % 8;
+				_SetByte(Arr[i], loc, bit);
+			}
+		}
+
+		void SetUp(int n)
+		{
+			up = n;
+			if (up <= bit_arr_size)
+			{
+				up = bit_arr_size;
+			}
+		}
+
+		void setbit(int index, bool bit)
+		{
+			if (0 <= index && index < up)
+			{
+				int i = index / 8;
+				int loc = index % 8;
+				Arr[i] = SetByte8(Arr[i], loc, bit);
+			}
+		}
+
+		bool getbit(int index)
+		{
+			if (0 <= index && index < up)
+			{
+				int i = index / 8;
+				int loc = index % 8;
+				return _GetByte(Arr[i], loc);
+			}
 		}
 	};
 }
