@@ -2100,11 +2100,6 @@ ibi& ibi::operator*(const ibi &A) const
         fm->_tempPushLayer();
         thismulibi[i].Init(false);
         thismulibi[i] = ibi(0);
-        if(ibi::fftoper->get_bottom_array(256) != nullptr){
-            if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                cout << "corrupt" << endl;
-            }
-        }
         unsigned int uii = integer_data[i];
         //ibi *mulibi = new ibi[A.integer_data.up];
         ibi *mulibi = (ibi*)fm->_tempNew(sizeof(ibi)*A.integer_data.up);
@@ -2113,11 +2108,6 @@ ibi& ibi::operator*(const ibi &A) const
             fm->_tempPushLayer();
             mulibi[k].Init(false);
             mulibi[k] = mul_32(uii, A.integer_data[k]);
-            if(ibi::fftoper->get_bottom_array(256) != nullptr){
-                if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                    cout << "corrupt" << endl;
-                }
-            }
             mulibi[k] = mulibi[k] << k;
             if(ibi::fftoper->get_bottom_array(256) != nullptr){
                 if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
@@ -2126,25 +2116,10 @@ ibi& ibi::operator*(const ibi &A) const
             }
             //wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
             thismulibi[i] = thismulibi[i] + mulibi[k];
-            if(ibi::fftoper->get_bottom_array(256) != nullptr){
-                if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                    cout << "corrupt" << endl;
-                }
-            }
             fm->_tempPopLayer();
         }
         thismulibi[i] = thismulibi[i] << i;
-        if(ibi::fftoper->get_bottom_array(256) != nullptr){
-            if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                cout << "corrupt" << endl;
-            }
-        }
         r = r + thismulibi[i];
-        if(ibi::fftoper->get_bottom_array(256) != nullptr){
-            if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                cout << "corrupt" << endl;
-            }
-        }
         //wcout << "TM["<< i <<"] : " << thismulibi[i].dataString()->c_str() << endl;
         //wcout << "r : " << r.dataString()->c_str() << endl;
         fm->_tempPopLayer();
@@ -2670,9 +2645,6 @@ ibi& ibi::pow(const ibi &A) const
         if (A.integer_data[loc / 32] & (1 << (loc % 32)))
         {
             r = r * muln;
-            if(ibi::fftoper->get_bottom_array(256) != nullptr){
-                cout << "fftoper_corr : " << ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 << endl;
-            }
         }
         
         muln = muln * muln;
