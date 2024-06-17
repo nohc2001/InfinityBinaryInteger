@@ -170,6 +170,7 @@ class ibi{
     static ibi& mul_32(unsigned int A, unsigned int B);
     ibi& operator*(const ibi& A) const;
 
+    ibi& BottomFFTMUL_2uint(unsigned int A[2], unsigned int B[2]);
     ibi& FFTMUL(const ibi& A) const;
 
     ibi& operator/(const ibi& A) const;
@@ -1935,7 +1936,20 @@ inline void ifft_useStamp(fmDynamicArr<Complex> &x)
     }
 }
 
-ibi& ibi::FFTMUL(const ibi &A) const
+inline ibi &ibi::BottomFFTMUL_2uint(unsigned int A[2], unsigned int B[2])
+{
+    CreateDataFM(ibi, r);
+    fm->_tempPushLayer();
+    r = ibi(0);
+    int64_t temp[4] = {A[0]*B[0]-A[1]*B[1], A[0]*B[1]+A[1]*B[0], 0, 0};
+    int64_t cr[4] = {(A[0]+A[1])*(B[0]+B[1]),temp[0], (A[0]-A[1])*(B[0]-B[1]), temp[0]};
+    int64_t ci[4] = {0, temp[1], 0, -temp[1]};
+
+    fm->_tempPopLayer();
+    return r;
+}
+
+ibi &ibi::FFTMUL(const ibi &A) const
 {
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
