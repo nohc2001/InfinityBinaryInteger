@@ -136,6 +136,8 @@ class ibi{
     static fmDynamicArr<FFTOperPair>* fftoper;
     static fmDynamicArr<FFTSwapPair>* fftswap;
     static void StaticInit();
+    static ibi w;
+    static ibi mod;
 
     ibi();
     ibi(const ibi& ref);
@@ -195,6 +197,10 @@ class ibi{
 
     lcstr* ToString(bool showpos = true) const;
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
+
+    ibi& NTT_power_mod(ibi& a, ibi& b);
+    ibi* NTT(ibi* A, unsigned int n, bool inv = false);
+    ibi* NTT_multiply(ibi* a, ibi* b, unsigned int n);
 };
 
 struct range_prime
@@ -2926,6 +2932,94 @@ lwstr* ibi::dataString() const
     str->push_back(L']');
     fm->_tempPopLayer();
     return str;
+}
+
+ibi& ibi::NTT_power_mod(ibi& a, ibi& b)
+{
+    ibi ret = ibi(1);
+    while(b != ibi(0)){
+        if (b.integer_data[0] & 1) {
+            ret = (ret * a) % ibi::mod;
+        }
+        a = (a * a) % ibi::mod;
+        b = b.bitShiftR(1);
+    }
+    
+    return ret;
+}
+
+ibi* ibi::NTT(ibi* A, unsigned int n, bool inv = false){
+    ibi rev; //= [0] * n
+    for(int i=0;i<n;++i){
+        rev.integer_data[i] = rev.integer_data[i >> 1]>>1;
+        if(i&1){
+            rev.integer_data[i] |= n >> 1;
+        }
+        if(i < rev.integer_data[i]){
+            ibi temp = A[i];
+            A[i] = A[rev.integer_data[i]];
+            A[rev.integer_data[i]] = temp;
+        }
+    }
+    
+    ibi x = NTT_power_mod(w, (mod - ibi(1)) / ibi(n));
+    if(inv){
+        x = NTT_power_mod(x, mod - ibi(2));
+    }
+    
+    ibi* root = (ibi*)fm->_New(sizeof(ibi)*n, true);
+    root[0] = ibi(1);
+    for(int i=1;i<=n;++i){
+        root[i] = ibi(root[i-1] * x) % mod;
+    }
+
+    unsigned int i = 2;
+    while(i <= n){
+        unsigned int step = n / i;
+        for(unsigned int j=0;j<n;j+=i){
+            for(unsigned int k=0;k<i>>1;++k){
+                ibi u = ibi(A[j|k]);
+                ibi v = (ibi(A[j|k|i >> 1]) * root[step*k]) % mod;
+                A[j|k] = (ibi(u) + ibi(v)) % mod;
+                A[j|k|i >> 1] = (ibi(u) - ibi(v)) % mod;
+                if(A[j|k|i >> 1] < 0) {
+                    A[j|k|i >> 1] = A[j|k|i >> 1] + ibi::mod;
+                }
+            }
+        }
+        i = i<<1;
+    }
+
+    if(inv){
+        ibi ibin = ibi(n);
+        ibi t = NTT_power_mod(ibin, mod - ibi(2));
+        for(int i=0;i<n;++i){
+            A[i] = (A[i] * t) % mod;
+        }
+    }
+
+    return A;
+}
+
+ibi* ibi::NTT_multiply(ibi* a, ibi* b, unsigned int n){
+    //NTT
+    ibi* A = NTT(a, false);
+    ibi* B = NTT(b, false);
+    ibi* C;
+
+    // A*B(convolusions)
+    for(int i=0;i<n;++i){
+        C[i] = A[i]*B[i];
+    }
+
+    for(int i=0;i<n;++i){
+        C[i] = C[i] % mod;
+    }
+
+    //INTT
+    C = NTT(C, true);
+
+    return C;
 }
 
 ibr::ibr()
