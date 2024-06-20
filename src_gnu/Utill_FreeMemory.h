@@ -968,6 +968,14 @@ namespace freemem
 			large.Init(10, false);
 			tempFM.NULLState();
 			tempFM.Init(10, false);
+
+			for (int i = 0; i < 10; ++i) {
+				tempFM[i] = nullptr;
+			}
+			for (int i = 0; i < 10; ++i) {
+				large[i] = nullptr;
+			}
+			
 			//watch("tempFM init", 0);
 		}
 

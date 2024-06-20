@@ -23,15 +23,17 @@ int main(){
 
   ibi::StaticInit();
 
-  fft_addStamp(4);
-  for(int i=0;i<ibi::fftswap->size();++i){
-    FFTSwapPair fsp = ibi::fftswap->at(i);
-    cout << "SwapData : " << fsp.index0 << ", " << fsp.index1 << endl;
+  ibi* NTTtest = (ibi*)fm->_New(sizeof(ibi)*1024, false);
+  for(int i=0;i<1024;++i){
+    NTTtest[i].Init(false);
+    NTTtest[i] = ibi(i);
   }
 
-  for(int i=0;i<ibi::fftoper->size();++i){
-    FFTOperPair fsp = ibi::fftoper->at(i);
-    cout << "OperData : w = " << fsp.w.real() << "+ i*(" << fsp.w.imag() << "), tindex : " << fsp.t_index << ", uindex : " << fsp.u_index << endl;
+  NTTtest = ibi::NTT(NTTtest, 1024, false);
+  NTTtest = ibi::NTT(NTTtest, 1024, true);
+
+  for(int i=0;i<1024;++i){
+    cout << NTTtest[i].ToString()->c_str() << endl;
   }
 
   unsigned int* Adata = (uint*)fm->_tempNew(4*100);

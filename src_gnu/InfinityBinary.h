@@ -120,7 +120,9 @@ struct DeltaObj{
     ibi ibi::max_primeMul = ibi(); \
     ibi ibi::max_primecount = ibi(); \
     fmDynamicArr<FFTOperPair>* ibi::fftoper = nullptr;\
-    fmDynamicArr<FFTSwapPair>* ibi::fftswap = nullptr;
+    fmDynamicArr<FFTSwapPair>* ibi::fftswap = nullptr;\
+    ibi ibi::mod;\
+    ibi ibi::w;
 
 class ibi{
     public:
@@ -198,9 +200,9 @@ class ibi{
     lcstr* ToString(bool showpos = true) const;
     lwstr* dataString() const; // data origin(pow(2, 32) based expression of number)
 
-    ibi& NTT_power_mod(ibi& a, ibi& b);
-    ibi* NTT(ibi* A, unsigned int n, bool inv = false);
-    ibi* NTT_multiply(ibi* a, ibi* b, unsigned int n);
+    static ibi& NTT_power_mod(ibi& a, ibi& b);
+    static ibi* NTT(ibi* A, unsigned int n, bool inv);
+    static ibi* NTT_multiply(ibi* a, ibi* b, unsigned int n);
 };
 
 struct range_prime
@@ -902,6 +904,9 @@ void ibi::StaticInit(){
     ibi::fftswap = (fmDynamicArr<FFTSwapPair>*)fm->_tempNew(sizeof(fmDynamicArr<FFTSwapPair>));
     ibi::fftswap->NULLState();
     ibi::fftswap->Init(9, false); // 8byte objs, 512 capacity
+
+    ibi::w = ibi(3);
+    ibi::mod = ibi(998244353);
 }
 
 ibi::ibi() : isPositive(true)
@@ -970,7 +975,7 @@ void ibi::operator=(const ibi &ref)
     isPositive = ref.isPositive;
     size_t ref_size = (int)ref.integer_data.up;
     while (ref_size > integer_data.maxsize)
-        integer_data.Init(ref_size+2, integer_data.islocal);
+        integer_data.Init(ref_size+2, integer_data.islocal, false, integer_data.fmlayer);
     integer_data.up = ref_size;
 
     for (int i = 0; i < ref_size; ++i)
@@ -2129,11 +2134,6 @@ ibi& ibi::operator*(const ibi &A) const
             mulibi[k].Init(false);
             mulibi[k] = mul_32(uii, A.integer_data[k]);
             mulibi[k] = mulibi[k] << k;
-            if(ibi::fftoper->get_bottom_array(256) != nullptr){
-                if(ibi::fftoper->get_bottom_array(256)->maxsiz_pow2 != 8){
-                    cout << "corrupt" << endl;
-                }
-            }
             //wcout << "AxB=" << uii << "x" << A.integer_data[k] << "=" << mulibi[k].dataString()->c_str() << endl;
             thismulibi[i] = thismulibi[i] + mulibi[k];
             fm->_tempPopLayer();
@@ -2336,7 +2336,7 @@ ibi& ibi::operator%(const ibi &A) const
     CreateDataFM(ibi, r);
     fm->_tempPushLayer();
     r = ibi(0);
-    r = *this - (*this / A) * A;
+    r = *this - (*this).O_N_DIV(A) * A;
     fm->_tempPopLayer();
     return r;
 }
@@ -2936,33 +2936,67 @@ lwstr* ibi::dataString() const
 
 ibi& ibi::NTT_power_mod(ibi& a, ibi& b)
 {
-    ibi ret = ibi(1);
-    while(b != ibi(0)){
-        if (b.integer_data[0] & 1) {
-            ret = (ret * a) % ibi::mod;
+    CreateDataFM(ibi, ret);
+    fm->_tempPushLayer();
+    ret = ibi(1);
+
+    ibi tempA;
+    tempA.Init(false);
+    tempA = a;
+
+    ibi tempB;
+    tempB.Init(false);
+    tempB = b;
+
+    while(tempB != ibi(0)){
+        fm->_tempPushLayer();
+        if (tempB.integer_data[0] & 1) {
+            ret = (ret * tempA) % ibi::mod;
         }
-        a = (a * a) % ibi::mod;
-        b = b.bitShiftR(1);
+        tempA = tempA.pow(ibi(2)) % ibi::mod;
+        tempB = tempB.bitShiftR(1);
+        wcout << tempB.dataString()->c_str() << endl;
+        fm->_tempPopLayer();
     }
-    
+
+    fm->_tempPopLayer();
     return ret;
 }
 
-ibi* ibi::NTT(ibi* A, unsigned int n, bool inv = false){
-    ibi rev; //= [0] * n
+ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
+    ibi* nttA = (ibi*)fm->_New(sizeof(ibi)*n, true);
     for(int i=0;i<n;++i){
-        rev.integer_data[i] = rev.integer_data[i >> 1]>>1;
+        nttA[i].Init(false);
+        nttA[i] = A[i];
+    }
+
+    fm->_tempPushLayer();
+    fmDynamicArr<unsigned int> rev;
+    rev.NULLState();
+    rev.Init(10, false, n);
+    for(int i=0;i<n;++i){
+        rev[i] = 0;
+    }
+    ibi temp;
+    temp.Init(false);
+    for(int i=0;i<n;++i){
+        rev[i] = rev[i >> 1]>>1;
         if(i&1){
-            rev.integer_data[i] |= n >> 1;
+            rev[i] |= n >> 1;
         }
-        if(i < rev.integer_data[i]){
-            ibi temp = A[i];
-            A[i] = A[rev.integer_data[i]];
-            A[rev.integer_data[i]] = temp;
+        if(i < rev[i]){
+            fm->_tempPushLayer();
+            temp = nttA[i];
+            nttA[i] = nttA[rev[i]];
+            nttA[rev[i]] = temp;
+            fm->_tempPopLayer();
         }
     }
     
-    ibi x = NTT_power_mod(w, (mod - ibi(1)) / ibi(n));
+    ibi x;
+    x.Init(false);
+    x = ibi(0);
+    x = NTT_power_mod(w, (mod - ibi(1)) / ibi(n));
     if(inv){
         x = NTT_power_mod(x, mod - ibi(2));
     }
@@ -2970,55 +3004,73 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv = false){
     ibi* root = (ibi*)fm->_New(sizeof(ibi)*n, true);
     root[0] = ibi(1);
     for(int i=1;i<=n;++i){
+        root[i].Init(false);
+        root[i] = ibi(0);
         root[i] = ibi(root[i-1] * x) % mod;
     }
 
     unsigned int i = 2;
+    ibi v;
+    v.Init(false);
     while(i <= n){
         unsigned int step = n / i;
         for(unsigned int j=0;j<n;j+=i){
-            for(unsigned int k=0;k<i>>1;++k){
-                ibi u = ibi(A[j|k]);
-                ibi v = (ibi(A[j|k|i >> 1]) * root[step*k]) % mod;
-                A[j|k] = (ibi(u) + ibi(v)) % mod;
-                A[j|k|i >> 1] = (ibi(u) - ibi(v)) % mod;
-                if(A[j|k|i >> 1] < 0) {
-                    A[j|k|i >> 1] = A[j|k|i >> 1] + ibi::mod;
+            for(unsigned int k=0;k<(i>>1);++k){
+                //ibi u = A[j|k];
+                v = (nttA[j|k|i >> 1] * root[step*k]) % mod;
+                nttA[j|k] = (nttA[j|k] + v) % mod;
+                nttA[j|k|i >> 1] = (nttA[j|k] - v) % mod;
+                if(nttA[j|k|i >> 1] < ibi(0)) {
+                    nttA[j|k|i >> 1] = nttA[j|k|i >> 1] + ibi::mod;
                 }
             }
         }
         i = i<<1;
     }
 
+    
     if(inv){
         ibi ibin = ibi(n);
         ibi t = NTT_power_mod(ibin, mod - ibi(2));
         for(int i=0;i<n;++i){
-            A[i] = (A[i] * t) % mod;
+            nttA[i] = (nttA[i] * t) % mod;
         }
     }
 
-    return A;
+    fm->_tempPopLayer();
+
+    return nttA;
 }
 
 ibi* ibi::NTT_multiply(ibi* a, ibi* b, unsigned int n){
-    //NTT
-    ibi* A = NTT(a, false);
-    ibi* B = NTT(b, false);
-    ibi* C;
+    ibi* C = (ibi*)fm->_New(sizeof(ibi) * n, false);
+    for(int i=0;i<n;++i){
+        C[i].Init(false);
+        C[i] = ibi(0);
+    }
+    fm->_tempPushLayer();
 
+    //NTT
+    ibi* A = NTT(a, n, false);
+    ibi* B = NTT(b, n, false);
+    
     // A*B(convolusions)
     for(int i=0;i<n;++i){
-        C[i] = A[i]*B[i];
+        A[i].Init(false);
+        A[i] = A[i]*B[i];
     }
 
     for(int i=0;i<n;++i){
-        C[i] = C[i] % mod;
+        A[i] = A[i] % mod;
     }
 
     //INTT
-    C = NTT(C, true);
+    ibi* tempC = NTT(A, n, true);
+    for(int i=0;i<n;++i){
+        C[i] = tempC[i];
+    }
 
+    fm->_tempPopLayer();
     return C;
 }
 
