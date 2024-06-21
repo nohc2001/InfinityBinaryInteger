@@ -179,6 +179,7 @@ class ibi{
 
     ibi& operator/(const ibi& A) const;
     ibi& operator%(const ibi& A) const;
+    ibi& On_Percent(const ibi &A) const;
 
     ibi& O_N_DIV(const ibi& A) const;
 
@@ -905,7 +906,9 @@ void ibi::StaticInit(){
     ibi::fftswap->NULLState();
     ibi::fftswap->Init(9, false); // 8byte objs, 512 capacity
 
+    ibi::w.Init(false);
     ibi::w = ibi(3);
+    ibi::mod.Init(false);
     ibi::mod = ibi(998244353);
 }
 
@@ -2288,16 +2291,17 @@ ibi& ibi::O_N_DIV(const ibi& A) const
 {
     // this / a
     CreateDataFM(ibi, r);
-
     fm->_tempPushLayer();
     r = ibi(0);
     ibi tempT; tempT.Init(false); tempT = *this;
+    tempT.isPositive = true;
     unsigned int bitSiz = tempT.integer_data.size() << 5;
     ibi tempB; tempB.Init(false); tempB = A;
     ibi tempBit; tempBit.Init(false); tempBit = ibi(1);
     tempB = tempB.bitShiftL(bitSiz-1);
     tempBit = tempBit.bitShiftL(bitSiz-1);
     tempBit.isPositive = true;
+    tempB.isPositive = true;
 
     ibi tempSave; tempSave.Init(false); tempSave = ibi(1);
     //wcout << L"init state : " << endl;
@@ -2309,7 +2313,7 @@ ibi& ibi::O_N_DIV(const ibi& A) const
         //wcout << L"tempT : " << tempT.dataString()->c_str() << endl;
         //wcout << L"tempB : " << tempB.dataString()->c_str() << endl;
         //wcout << L"tempBit : " << tempBit.dataString()->c_str() << endl;
-        if(tempT - tempB > ibi(0)){
+        if(tempT - tempB >= ibi(0)){
             tempSave = tempT - tempB;
             //wcout << L"tempSave(T-B) : " << tempSave.dataString()->c_str() << endl;
             //wcout << L"update!" << endl;
@@ -2327,16 +2331,51 @@ ibi& ibi::O_N_DIV(const ibi& A) const
     //std::wcout << A.dataString()->c_str() << endl;
     //std::wcout << r.dataString()->c_str() << endl;
     fm->_tempPopLayer();
-
+    r.isPositive = this->isPositive;
     return r;
 }
 
 ibi& ibi::operator%(const ibi &A) const
 {
     CreateDataFM(ibi, r);
-    fm->_tempPushLayer();
     r = ibi(0);
-    r = *this - (*this).O_N_DIV(A) * A;
+    fm->_tempPushLayer();
+    r = *this - (((*this).O_N_DIV(A)) * A);
+    if(r > A){
+        cout << "break;" << endl;
+        r.isPositive = true;
+        r = *this - (((*this).O_N_DIV(A)) * A);
+    }
+    fm->_tempPopLayer();
+    return r;
+}
+
+ibi& ibi::On_Percent(const ibi &A) const
+{
+    CreateDataFM(ibi, r);
+    r = ibi(0);
+    fm->_tempPushLayer();
+
+    ibi N;
+    N.Init(false);
+    N = ibi(1);
+    N = N << 1;
+
+    for(int i=0;i<integer_data.size();++i){
+        ibi Ai;
+        Ai.Init(false);
+        Ai = ibi(integer_data[i]);
+
+        ibi tempN; tempN.Init(false);
+        tempN = 1;
+        for(int k=0;k<i;++k){
+            tempN = tempN * N;
+            tempN = tempN % A;
+        }
+
+        r = (r + (tempN * Ai) % A) % A;
+    }
+
     fm->_tempPopLayer();
     return r;
 }
@@ -2951,9 +2990,9 @@ ibi& ibi::NTT_power_mod(ibi& a, ibi& b)
     while(tempB != ibi(0)){
         fm->_tempPushLayer();
         if (tempB.integer_data[0] & 1) {
-            ret = (ret * tempA) % ibi::mod;
+            ret = ((tempA.On_Percent(ibi::mod)) * ret).On_Percent(ibi::mod);
         }
-        tempA = tempA.pow(ibi(2)) % ibi::mod;
+        tempA = ((tempA.On_Percent(ibi::mod)) * tempA).On_Percent(ibi::mod);
         tempB = tempB.bitShiftR(1);
         wcout << tempB.dataString()->c_str() << endl;
         fm->_tempPopLayer();
@@ -3006,7 +3045,7 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
     for(int i=1;i<=n;++i){
         root[i].Init(false);
         root[i] = ibi(0);
-        root[i] = ibi(root[i-1] * x) % mod;
+        root[i] = ibi(root[i-1] * x).On_Percent(ibi::mod);
     }
 
     unsigned int i = 2;
@@ -3017,9 +3056,9 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
         for(unsigned int j=0;j<n;j+=i){
             for(unsigned int k=0;k<(i>>1);++k){
                 //ibi u = A[j|k];
-                v = (nttA[j|k|i >> 1] * root[step*k]) % mod;
-                nttA[j|k] = (nttA[j|k] + v) % mod;
-                nttA[j|k|i >> 1] = (nttA[j|k] - v) % mod;
+                v = ((nttA[j|k|i >> 1].On_Percent(ibi::mod)) * root[step*k]).On_Percent(ibi::mod);
+                nttA[j|k] = (nttA[j|k] + v).On_Percent(ibi::mod);
+                nttA[j|k|i >> 1] = (nttA[j|k] - v).On_Percent(ibi::mod);
                 if(nttA[j|k|i >> 1] < ibi(0)) {
                     nttA[j|k|i >> 1] = nttA[j|k|i >> 1] + ibi::mod;
                 }
@@ -3033,7 +3072,7 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
         ibi ibin = ibi(n);
         ibi t = NTT_power_mod(ibin, mod - ibi(2));
         for(int i=0;i<n;++i){
-            nttA[i] = (nttA[i] * t) % mod;
+            nttA[i] = ((nttA[i].On_Percent(ibi::mod)) * t).On_Percent(ibi::mod);
         }
     }
 
@@ -3061,7 +3100,7 @@ ibi* ibi::NTT_multiply(ibi* a, ibi* b, unsigned int n){
     }
 
     for(int i=0;i<n;++i){
-        A[i] = A[i] % mod;
+        A[i] = A[i].On_Percent(mod);
     }
 
     //INTT

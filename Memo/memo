@@ -66,7 +66,8 @@ Mirror's Edge Soundtrack - Introduction by Solar Fields : https://www.youtube.co
 4. 코드를 asm으로 변환, 디펜던시 체인 탐색
 5. 64바이트 코드 얼라인
 6. 멀티스레딩 활용
-7. 추가적인 최적화 생각해보기
+7. % 최적화 - %는 분할 정복이 가능함.
++ 추가적인 최적화 생각해보기
 
 TODO :
 <완료 목록>
