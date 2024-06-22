@@ -2345,22 +2345,7 @@ ibi& ibi::operator%(const ibi &A) const
     CreateDataFM(ibi, r);
     r = ibi(0);
     fm->_tempPushLayer();
-    if(*this > ibi(0) && *this < (((*this).O_N_DIV(A)) * A)){
-        cout << "break;" << endl;
-        wcout << L"this : " << this->dataString()->c_str() << endl;
-        ibi temp0; temp0.Init(false);
-        temp0 = (*this).O_N_DIV(A);
-        wcout << L"A : " << A.dataString()->c_str() << endl;
-        wcout << L"this/A : " << temp0.dataString()->c_str() << endl;
-        temp0 = temp0 * A;
-        wcout << L"(this/A)*A : " << temp0.dataString()->c_str() << endl;
-    }
     r = *this - (((*this).O_N_DIV(A)) * A);
-    if(r > A){
-        cout << "break;" << endl;
-        r.isPositive = true;
-        r = *this - (((*this).O_N_DIV(A)) * A);
-    }
     fm->_tempPopLayer();
     return r;
 }
@@ -3009,12 +2994,25 @@ ibi& ibi::NTT_power_mod(ibi& a, ibi& b)
         }
         tempA = ((tempA.On_Percent(ibi::mod)) * tempA).On_Percent(ibi::mod);
         tempB = tempB.bitShiftR(1);
-        wcout << tempB.dataString()->c_str() << endl;
+        //wcout << tempB.dataString()->c_str() << endl;
         fm->_tempPopLayer();
     }
 
     fm->_tempPopLayer();
     return ret;
+}
+
+ibi& pw(ibi& a, ibi& b){
+    CreateDataFM(ibi, r);
+    r = ibi(1);
+    fm->_tempPushLayer();
+    while(b != ibi(0)){
+        if(b.integer_data[0] & 1) r = r * a % r;
+        b = b.bitShiftR(1); 
+        a = a * a % r;
+    }
+    fm->_tempPopLayer();
+    return r;
 }
 
 ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
@@ -3023,6 +3021,63 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
         nttA[i].Init(false);
         nttA[i] = A[i];
     }
+
+    fm->_tempPushLayer();
+    int j = 0;
+    ibi temp;
+    temp.Init(false);
+    for(int i=1; i<n; i++){
+        int bit = (n >> 1);
+        while(j >= bit){
+            j -= bit; bit >>= 1;
+        }
+        j += bit;
+        if(i < j){
+            fm->_tempPushLayer();
+            temp = nttA[i];
+            nttA[i] = nttA[j];
+            nttA[j] = temp;
+            fm->_tempPopLayer();
+        }
+    }
+
+    ibi* root = (ibi*)fm->_New(sizeof(ibi)*(n>>1), true);
+    ibi ang;
+    ang.Init(false);
+    ang = pw(w, (mod - 1) / n); 
+    if(inv) ang = pw(ang, mod - 2);
+    root[0].Init(false);
+    root[0] = 1; 
+    for(int i=1; i<(n >> 1); i++){
+        root[i].Init(false);
+        root[i] = root[i-1] * ang % mod;
+    }
+        
+    for(int i=2; i<=n; i<<=1){
+        int step = n / i;
+        for(int j=0; j<n; j+=i){
+            for(int k=0; k<(i >> 1); k++){
+                fm->_tempPushLayer();
+                ibi u;
+                u.Init(false);
+                u = nttA[j | k];
+                ibi v;
+                v.Init(false);
+                v = nttA[j | k | i >> 1] * root[step * k] % mod;
+                nttA[j | k] = (u + v) % mod;
+                nttA[j | k | i >> 1] = (u - v) % mod;
+                if(nttA[j | k | i >> 1] < 0) nttA[j | k | i >> 1] = nttA[j | k | i >> 1] + mod;
+                fm->_tempPopLayer();
+            }
+        }
+    }
+    ibi N; N.Init(false); N = ibi(n);
+    ibi t;
+    t.Init(false);
+    t = pw(N, mod - 2);
+    if(inv) for(int i=0; i<n; i++) nttA[i] = nttA[i] * t % mod;
+
+    /*
 
     fm->_tempPushLayer();
     fmDynamicArr<unsigned int> rev;
@@ -3090,6 +3145,7 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
             nttA[i] = ((nttA[i].On_Percent(ibi::mod)) * t).On_Percent(ibi::mod);
         }
     }
+    */
 
     fm->_tempPopLayer();
 

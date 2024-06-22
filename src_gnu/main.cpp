@@ -28,13 +28,27 @@ int main(){
     NTTtest[i].Init(false);
     NTTtest[i] = ibi(i);
   }
+  cout << "[";
+  for(int i=0;i<1024;++i){
+    cout << NTTtest[i].ToString()->c_str() << ", ";
+  }
+  cout << endl;
 
   NTTtest = ibi::NTT(NTTtest, 1024, false);
+
+  cout << "[";
+  for(int i=0;i<1024;++i){
+    cout << NTTtest[i].ToString()->c_str() << ", ";
+  }
+  cout << endl;
+
   NTTtest = ibi::NTT(NTTtest, 1024, true);
 
+  cout << "[";
   for(int i=0;i<1024;++i){
-    cout << NTTtest[i].ToString()->c_str() << endl;
+    cout << NTTtest[i].ToString()->c_str() << ", ";
   }
+  cout << endl;
 
   unsigned int* Adata = (uint*)fm->_tempNew(4*100);
   unsigned int* Bdata = (uint*)fm->_tempNew(4*50);
