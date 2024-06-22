@@ -23,32 +23,45 @@ int main(){
 
   ibi::StaticInit();
 
-  ibi* NTTtest = (ibi*)fm->_New(sizeof(ibi)*1024, false);
-  for(int i=0;i<1024;++i){
-    NTTtest[i].Init(false);
-    NTTtest[i] = ibi(i);
+  ibi* NTTtest0 = (ibi*)fm->_New(sizeof(ibi)*32, false);
+  ibi* NTTtest1 = (ibi*)fm->_New(sizeof(ibi)*32, false);
+  for(int i=0;i<32;++i){
+    NTTtest0[i].Init(false);
+    if(i > 2){
+      NTTtest0[i] = ibi(0);
+    }
+    else{
+      NTTtest0[i] = ibi(1);
+    }
   }
-  cout << "[";
-  for(int i=0;i<1024;++i){
-    cout << NTTtest[i].ToString()->c_str() << ", ";
+  cout << "R0 : [";
+  for(int i=0;i<32;++i){
+    cout << NTTtest0[i].ToString()->c_str() << ", ";
   }
-  cout << endl;
+  cout << "]" << endl;
 
-  NTTtest = ibi::NTT(NTTtest, 1024, false);
-
-  cout << "[";
-  for(int i=0;i<1024;++i){
-    cout << NTTtest[i].ToString()->c_str() << ", ";
+  for(int i=0;i<32;++i){
+    NTTtest1[i].Init(false);
+    if(i > 2){
+      NTTtest1[i] = ibi(0);
+    }
+    else{
+      NTTtest1[i] = ibi(1);
+    }
   }
-  cout << endl;
-
-  NTTtest = ibi::NTT(NTTtest, 1024, true);
-
-  cout << "[";
-  for(int i=0;i<1024;++i){
-    cout << NTTtest[i].ToString()->c_str() << ", ";
+  cout << "R1 : [";
+  for(int i=0;i<32;++i){
+    cout << NTTtest1[i].ToString()->c_str() << ", ";
   }
-  cout << endl;
+  cout << "]" << endl;
+
+  ibi* NTTResult = ibi::NTT_multiply(NTTtest0, NTTtest0, 32);
+
+  cout << "result : [";
+  for(int i=0;i<32;++i){
+    cout << NTTResult[i].ToString()->c_str() << ", ";
+  }
+  cout << "]" << endl;
 
   unsigned int* Adata = (uint*)fm->_tempNew(4*100);
   unsigned int* Bdata = (uint*)fm->_tempNew(4*50);

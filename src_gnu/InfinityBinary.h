@@ -3007,9 +3007,13 @@ ibi& pw(ibi& a, ibi& b){
     r = ibi(1);
     fm->_tempPushLayer();
     while(b != ibi(0)){
-        if(b.integer_data[0] & 1) r = r * a % r;
+        fm->_tempPushLayer();
+        if(b.integer_data[0] & 1) {
+            r = r * a % r;
+        }
         b = b.bitShiftR(1); 
         a = a * a % r;
+        fm->_tempPopLayer();
     }
     fm->_tempPopLayer();
     return r;
@@ -3044,13 +3048,15 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
     ibi* root = (ibi*)fm->_New(sizeof(ibi)*(n>>1), true);
     ibi ang;
     ang.Init(false);
-    ang = pw(w, (mod - 1) / n); 
-    if(inv) ang = pw(ang, mod - 2);
+    ang = pw(w, (mod - ibi(1)) / n); 
+    if(inv) ang = pw(ang, mod - ibi(2));
     root[0].Init(false);
-    root[0] = 1; 
+    root[0] = ibi(1); 
     for(int i=1; i<(n >> 1); i++){
+        fm->_tempPushLayer();
         root[i].Init(false);
         root[i] = root[i-1] * ang % mod;
+        fm->_tempPopLayer();
     }
         
     for(int i=2; i<=n; i<<=1){
@@ -3074,9 +3080,16 @@ ibi* ibi::NTT(ibi* A, unsigned int n, bool inv){
     ibi N; N.Init(false); N = ibi(n);
     ibi t;
     t.Init(false);
-    t = pw(N, mod - 2);
+    t = pw(N, mod - ibi(2));
     if(inv) for(int i=0; i<n; i++) nttA[i] = nttA[i] * t % mod;
 
+    ibi twoD;
+    twoD.Init(false);
+    twoD = ibi(1) << 1;
+    for(int i=0; i<n-1; ++i){
+		nttA[i+1] = nttA[i+1] + nttA[i] / twoD;
+		nttA[i] = nttA[i] % twoD;
+	}
     /*
 
     fm->_tempPushLayer();
@@ -3166,12 +3179,7 @@ ibi* ibi::NTT_multiply(ibi* a, ibi* b, unsigned int n){
     
     // A*B(convolusions)
     for(int i=0;i<n;++i){
-        A[i].Init(false);
-        A[i] = A[i]*B[i];
-    }
-
-    for(int i=0;i<n;++i){
-        A[i] = A[i].On_Percent(mod);
+        A[i] = A[i]*B[i] % mod;
     }
 
     //INTT
