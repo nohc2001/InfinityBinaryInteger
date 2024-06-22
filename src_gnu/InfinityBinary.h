@@ -1249,7 +1249,7 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
     //simd optimized
     register unsigned int temp = (A.integer_data.size() > B.integer_data.size()) ? B.integer_data.size() : A.integer_data.size();
     unsigned int addSiz = 1;
-    addSiz += temp;
+    addSiz = temp;
     unsigned int addSiz_v8 = addSiz >> 3;
     unsigned int addSiz_v88 = addSiz >> 6;
     unsigned int* APBarr = (unsigned int*)&r.integer_data[0]; // max
@@ -1386,7 +1386,12 @@ ibi& ibi::add_absolute_simd(const ibi &A, const ibi &B)
             }
         }
         if(Carr[addSiz]){
-            r.integer_data.push_back(1);
+            if(r.integer_data.size() == addSiz){
+                r.integer_data.push_back(1);
+            }
+            else{
+                carry(&r, addSiz);
+            }
         }
     }
     fm->_tempPopLayer();
@@ -1473,7 +1478,7 @@ ibi& ibi::sub_absolute_simd(const ibi &A, const ibi &B)
     //simd optimized
     register unsigned int temp = MaxI.integer_data.size();
     unsigned int addSiz = 1;
-    addSiz += temp;
+    addSiz = temp;
     unsigned int addSiz_v8 = addSiz >> 3;
     unsigned int addSiz_v88 = addSiz >> 6;
     unsigned int* APBarr = (unsigned int*)&r.integer_data[0]; // max[i]-min[i]
@@ -2340,6 +2345,16 @@ ibi& ibi::operator%(const ibi &A) const
     CreateDataFM(ibi, r);
     r = ibi(0);
     fm->_tempPushLayer();
+    if(*this > ibi(0) && *this < (((*this).O_N_DIV(A)) * A)){
+        cout << "break;" << endl;
+        wcout << L"this : " << this->dataString()->c_str() << endl;
+        ibi temp0; temp0.Init(false);
+        temp0 = (*this).O_N_DIV(A);
+        wcout << L"A : " << A.dataString()->c_str() << endl;
+        wcout << L"this/A : " << temp0.dataString()->c_str() << endl;
+        temp0 = temp0 * A;
+        wcout << L"(this/A)*A : " << temp0.dataString()->c_str() << endl;
+    }
     r = *this - (((*this).O_N_DIV(A)) * A);
     if(r > A){
         cout << "break;" << endl;
